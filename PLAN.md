@@ -32,7 +32,7 @@
 - [x] `docs/new-module.md` : template, contrat, gravites et mappings existants, `--select`, fiche, avant la release — 2026-10-17
 - [x] Gabarit `blackberrylabs/template` (`Logiciels/Template`) : core/cli/app, promesses testees, `report` conforme, `rename.sh` — 2026-10-17
 - [x] Mise a jour de toute la doc de la famille : README des trois modules (« Part of Blackberrylabs », statut), CLAUDE.md et CONTRIBUTING (fondations, mapping), README des trois fondations, CONVENTIONS et PROJETS 00_moi — 2026-10-17
-- [ ] Commits et pushes (docs seulement) — sur accord
+- [x] Commits et pushes (docs seulement) — sur accord — les commits « docs: » des modules sont dans `origin/main` (constate le 2026-10-26)
 
 ## Etape 5. Tour 0.3 — « un logiciel, pas un lanceur » (decision T6, 2026-10-17) — faite, 0.3.0 et 0.3.1 publiees le 2026-10-17
 
@@ -65,6 +65,7 @@ module non plus.
       modules masquees (0.3.1) ; tour legere conservee — 2026-10-17
 - [ ] Captures d'ecran de Billfold et Linstruct dans leur README (a faire sur l'ecran
       d'Alexandre) ; aperçus sociaux GitHub des six depots (reglage manuel).
+      Au 2026-10-26 : Billfold est fait (`docs/screenshots/light.png`) ; il manque Linstruct et Lastrun. Les aperçus sociaux restent un réglage manuel (Settings, Social preview).
 
 ## Etape 6. Sixieme module : Lastrun — tour 0.4.0
 
@@ -75,6 +76,11 @@ module non plus.
       et verifiees depuis l'exterieur le 2026-10-17
 - [x] Passage reel de `bbl refresh` avec Lastrun installe (complet 0.4.0) : 7 constats en
       0,8 s, six modules installes
+
+## Etape 7. Promotion et passation (2026-10-26)
+- [x] Plan de promotion module par module, exporte dans `00_cadrage/promotion.md` (hors git) — 2026-10-26
+- [x] Passation a OpenCode : `AGENTS.md` (source unique des regles, `CLAUDE.md` en pointeur) et `opencode.json` dans les douze depots ; etat de la serie dans `Logiciels/PASSATION.md` — 2026-10-26
+- [ ] Publications (X, Reddit, autres) : decision d'Alexandre, module par module, selon le plan
 
 ## Apres 0.1.0 (idees, non engagees)
 - Lire aussi des fiches deposees dans `~/.config/blackberrylabs/modules/` (modules tiers), en plus des fiches embarquees.
