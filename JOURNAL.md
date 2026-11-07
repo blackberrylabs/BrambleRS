@@ -3,6 +3,15 @@
 
 ---
 
+## 2026-11-07, audit de sécurité : F7 corrigé
+
+- Décision d'Alexandre (« go avec ta reco ») : garder le scan des invites et des réponses pour trouver les identifiants, et corriger les textes plutôt que restreindre le scan.
+- Textes alignés : `lastrun/core/src/lib.rs`, `lastrun/core/src/model.rs`, description du registre, `CHANGELOG.md` 0.1.6. La promesse dit maintenant que le texte est lu en mémoire pour chercher des identifiants, et jamais conservé, montré ou écrit ; seules les formes masquées entrent dans un constat. Commit `b181508`.
+- Preuves : `cargo test --workspace` passe 241 tests, `cargo clippy --workspace --all-targets` et `cargo fmt --check` propres. Le commit reste local.
+- Restent les constats F8 à F15 du rapport.
+
+---
+
 ## 2026-11-07, audit de sécurité : F5 et F6 corrigés
 
 - F6, CLI : `safe` remplace les caractères de contrôle par des espaces dans la liste humaine et dans les erreurs de lancement ; la sortie JSON n'est pas touchée, `serde_json` l'échappe déjà. Test avec une séquence OSC 52 dans un titre. Commit `6decda2`.

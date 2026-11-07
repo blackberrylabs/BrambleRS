@@ -11,7 +11,7 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 
 ## État au 2026-11-07
 
-- `main` : restructuration fusionnée et poussée. Dernier commit de code `b646c9f` (audit : secrets des sondes, masquage, terminal, script Cleanator) ; les corrections de textes suivent sur `main`. Dernier tag publié : `bramblers-v0.1.0`, avec `.deb`, `.rpm`, AppImage et `SHA256SUMS`.
+- `main` : restructuration fusionnée et poussée. Dernier commit de code `b181508` (audit : secrets des sondes, masquage, terminal, script Cleanator) ; les corrections de textes suivent sur `main`. Dernier tag publié : `bramblers-v0.1.0`, avec `.deb`, `.rpm`, AppImage et `SHA256SUMS`.
 - Le dépôt GitHub s'appelle `blackberrylabs/BrambleRS` ; le dossier local est `Logiciels/BrambleRS`. Les dix anciens dépôts (trois fondations, six modules, template) et leurs releases ont été supprimés le 2026-11-07. Le profil de l'organisation présente BrambleRS.
 - Arborescence du 2026-11-07 : `crates/bramblers` (app), `crates/bramblers-core`, `crates/bramblers-cli`, les trois fondations, et `crates/modules/<id>/core` et `view` pour les six modules.
 - Paquet `bramblers` 0.1.0 construit et `.deb` installé ; l'AppImage a été lancée. Le workspace est en 0.1.6 ; cette version n'a ni paquet ni release. `cargo test --workspace` passe (241 tests au 2026-11-07), fmt et clippy propres.
@@ -35,7 +35,7 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 - `crates/bramblers-report`, `crates/bramblers-hostrules`, `crates/bramblers-ui` : les trois fondations.
 - `crates/bramblers/` : l'app iced, paquet `bramblers`, binaire `bramblers` : en-tête, rail, routeur, langue et thème. `crates/bramblers-cli/` : `bramblers-cli`, une bibliothèque liée dans ce même binaire.
 - Tests : `cargo test --workspace`. Le registre et les rapports : `crates/bramblers-core/tests/tower.rs` et `fixtures/reports/`.
-- `00_cadrage/2026-11-07_plan_vues_modules.md` : l'inventaire des six vues, hors git. `00_cadrage/references/<id>/` : les sources des anciennes apps, hors git. `00_cadrage/2026-11-07_audit_securite.md` : l'audit statique, 15 constats, F1 à F6 corrigés.
+- `00_cadrage/2026-11-07_plan_vues_modules.md` : l'inventaire des six vues, hors git. `00_cadrage/references/<id>/` : les sources des anciennes apps, hors git. `00_cadrage/2026-11-07_audit_securite.md` : l'audit statique, 15 constats, F1 à F7 corrigés.
 - `README.md` décrit l'architecture, sans numéro de version ; `CHANGELOG.md` est à jour pour la 0.1.6. Le BRIEF, le PLAN et ce fichier restent en français.
 
 ## Commandes (sur le PC d'Alexandre, depuis la racine du dépôt)
