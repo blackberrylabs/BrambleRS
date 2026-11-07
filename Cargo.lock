@@ -419,6 +419,7 @@ version = "0.1.0"
 dependencies = [
  "bramblers-cli",
  "bramblers-core",
+ "bramblers-permitt-view",
  "bramblers-report",
  "bramblers-ui",
  "iced",
@@ -565,6 +566,17 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.21",
  "toml",
+]
+
+[[package]]
+name = "bramblers-permitt-view"
+version = "0.1.0"
+dependencies = [
+ "bramblers-hostrules",
+ "bramblers-permitt-core",
+ "bramblers-ui",
+ "iced",
+ "serde",
 ]
 
 [[package]]

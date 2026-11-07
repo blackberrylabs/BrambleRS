@@ -1,0 +1,15 @@
+[package]
+name = "bramblers-permitt-view"
+description = "Permitt's screen in BrambleRS: the sheet of hosts and capabilities, the evidence behind each state, the findings"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+bramblers-hostrules.workspace = true
+bramblers-permitt-core.workspace = true
+bramblers-ui.workspace = true
+iced = "=0.13.1"
+serde.workspace = true

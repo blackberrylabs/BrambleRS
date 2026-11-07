@@ -16,6 +16,7 @@ use iced::{Alignment, Background, Border, Color, Element, Length, Task, Theme};
 
 use bramblers_core::dashboard::ReportState;
 use bramblers_core::{Cache, Dashboard, ModuleStatus, Run, RunError};
+use bramblers_permitt_view as permitt_view;
 use bramblers_report::{ActionKind, Finding, Severity, SubjectKind, Tone};
 use bramblers_ui::palette::{alert, amber, blend, good, muted};
 use bramblers_ui::widgets::{card, inner, small_button, swatch};
@@ -62,6 +63,8 @@ enum Message {
     OpenFile(String),
     OpenUrl(String),
     Copy(String),
+    /// A message from a module's detailed view.
+    Permitt(permitt_view::Message),
 }
 
 struct App {
@@ -80,6 +83,8 @@ struct App {
     show_info: bool,
     /// `(module id, finding id)`.
     selected: Option<(String, String)>,
+    /// Built the first time the Permitt tab is opened, then kept.
+    permitt: Option<permitt_view::View>,
 }
 
 impl App {
@@ -103,6 +108,7 @@ impl App {
             severity_filter: None,
             show_info: false,
             selected: None,
+            permitt: None,
         };
         // `BRAMBLERS_MODULE=permitt` opens on a module tab (documentation screenshots);
         // `BRAMBLERS_SELECT=module:finding-id` preselects a finding; `BRAMBLERS_NO_REFRESH=1`
@@ -123,12 +129,29 @@ impl App {
         // the background and replaces its report when ready.
         let no_refresh =
             std::env::var_os("BRAMBLERS_NO_REFRESH").or_else(|| std::env::var_os("BBL_NO_REFRESH"));
-        let task = if no_refresh.is_some() {
-            Task::none()
-        } else {
-            app.refresh_all()
-        };
-        (app, task)
+        let mut tasks: Vec<Task<Message>> = Vec::new();
+        // `BRAMBLERS_MODULE=permitt` opens the tab at once, even with the refresh off.
+        if let Some(id) = app.module_filter.clone() {
+            if let Some(t) = app.open_view(&id) {
+                tasks.push(t);
+            }
+        }
+        if no_refresh.is_none() {
+            tasks.push(app.refresh_all());
+        }
+        (app, Task::batch(tasks))
+    }
+
+    /// Build a module's detailed view the first time its tab is opened.
+    fn open_view(&mut self, id: &str) -> Option<Task<Message>> {
+        if id != "permitt" || self.permitt.is_some() {
+            return None;
+        }
+        let (mut view, task) = permitt_view::View::new();
+        view.set_lang(self.lang);
+        view.set_dark(self.dark);
+        self.permitt = Some(view);
+        Some(task.map(Message::Permitt))
     }
 
     fn title(&self) -> String {
@@ -205,15 +228,30 @@ impl App {
                     }
                 }
             }
-            Message::RefreshAll => return self.refresh_all(),
+            Message::RefreshAll => {
+                let mut tasks = vec![self.refresh_all()];
+                // The header refreshes what is on screen, not only the reports behind the rail.
+                if self.module_filter.as_deref() == Some("permitt") {
+                    if let Some(v) = &mut self.permitt {
+                        tasks.push(v.refresh().map(Message::Permitt));
+                    }
+                }
+                return Task::batch(tasks);
+            }
             Message::Refresh(id) => return self.refresh(id),
             Message::SetLang(l) => {
                 self.lang = l;
                 self.strings = Strings::load(EN, FR, l);
+                if let Some(v) = &mut self.permitt {
+                    v.set_lang(l);
+                }
                 self.remember();
             }
             Message::ToggleTheme => {
                 self.dark = !self.dark;
+                if let Some(v) = &mut self.permitt {
+                    v.set_dark(self.dark);
+                }
                 self.remember();
             }
             Message::Search(s) => self.search = s,
@@ -222,7 +260,9 @@ impl App {
                     self.selected = None;
                     self.severity_filter = None;
                 }
+                let opened = m.as_deref().and_then(|id| self.open_view(id));
                 self.module_filter = m;
+                return opened.unwrap_or_else(Task::none);
             }
             Message::FilterSeverity(s) => {
                 self.severity_filter = if self.severity_filter == Some(s) {
@@ -236,6 +276,11 @@ impl App {
             }
             Message::ToggleInfo(b) => self.show_info = b,
             Message::Select(m, f) => self.selected = Some((m, f)),
+            Message::Permitt(m) => {
+                if let Some(v) = &mut self.permitt {
+                    return v.update(m).map(Message::Permitt);
+                }
+            }
             Message::OpenFile(p) | Message::OpenUrl(p) => {
                 let _ = std::process::Command::new("xdg-open").arg(&p).spawn();
             }
@@ -313,6 +358,16 @@ impl App {
     // ------------------------------------------------------------------ view
 
     fn view(&self) -> Element<'_, Message> {
+        if self.module_filter.as_deref() == Some("permitt") {
+            if let Some(v) = &self.permitt {
+                return column![self.view_page_head(), v.view().map(Message::Permitt),]
+                    .spacing(12)
+                    .padding(14)
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .into();
+            }
+        }
         let content = column![
             self.view_page_head(),
             self.view_severities(),
