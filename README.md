@@ -26,8 +26,10 @@ where it comes from and what you could do.
 BrambleRS never edits an agent's configuration, never deletes a file, and makes no network
 request. Every action in the interface is yours to take.
 
-The only files it writes are `~/.config/bramblers/settings.json` for the language and theme,
-and `~/.local/state/bramblers/<module>/report.json` for the saved reports.
+The only writes are its own settings under `~/.config/bramblers/` (language, theme, the
+module preferences, MCProster's probe results), the saved reports under
+`~/.local/state/bramblers/<module>/report.json`, and the cleanup script Cleanator offers to
+save.
 
 ## Install
 
