@@ -874,9 +874,17 @@ impl View {
         })
         .width(Length::Fill)
         .height(Length::Fill);
-        card(column![head, map, self.view_legend()].spacing(10).into())
-            .height(Length::Fill)
-            .into()
+        // The canvas owns the whole card: in iced 0.13 a canvas inside a padded container
+        // is drawn at the container's outer origin, so the head and the legend stay outside
+        // the card instead of being overlaid by the tiles.
+        column![
+            head,
+            card(map.into()).height(Length::Fill),
+            self.view_legend()
+        ]
+        .spacing(10)
+        .height(Length::Fill)
+        .into()
     }
 
     fn view_legend(&self) -> Element<'_, Message> {

@@ -134,6 +134,23 @@ pub struct Treemap {
 
 const GAP: f32 = 3.0;
 
+/// The canvas is drawn at the root of its layout tree in iced 0.13: the card padding and
+/// the head above it do not shift it. The treemap therefore keeps its own margins, so the
+/// tiles never cover the title or the legend.
+const INSET_TOP: f32 = 48.0;
+const INSET_BOTTOM: f32 = 64.0;
+const INSET_SIDE: f32 = 14.0;
+
+fn content(bounds: Rectangle) -> Rectangle {
+    Rectangle::new(
+        Point::new(INSET_SIDE, INSET_TOP),
+        Size::new(
+            (bounds.width - 2.0 * INSET_SIDE).max(0.0),
+            (bounds.height - INSET_TOP - INSET_BOTTOM).max(0.0),
+        ),
+    )
+}
+
 impl<Message: Clone> canvas::Program<Message> for Treemap
 where
     Message: From<TreemapEvent>,
@@ -149,7 +166,7 @@ where
     ) -> (canvas::event::Status, Option<Message>) {
         if let canvas::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
             if let Some(pos) = cursor.position_in(bounds) {
-                let local = Rectangle::new(Point::ORIGIN, bounds.size());
+                let local = content(bounds);
                 for tile in layout(&self.items, local) {
                     if tile.rect.contains(pos) {
                         if let Some(p) = &tile.item.path {
@@ -174,7 +191,7 @@ where
         cursor: mouse::Cursor,
     ) -> Vec<Geometry> {
         let mut frame = Frame::new(renderer, bounds.size());
-        let local = Rectangle::new(Point::ORIGIN, bounds.size());
+        let local = content(bounds);
         let palette = theme.extended_palette();
         let hover = cursor.position_in(bounds);
         for tile in layout(&self.items, local) {
@@ -243,7 +260,7 @@ where
         cursor: mouse::Cursor,
     ) -> mouse::Interaction {
         if let Some(pos) = cursor.position_in(bounds) {
-            let local = Rectangle::new(Point::ORIGIN, bounds.size());
+            let local = content(bounds);
             if layout(&self.items, local)
                 .iter()
                 .any(|t| t.rect.contains(pos) && t.item.path.is_some())
@@ -312,6 +329,18 @@ mod tests {
             assert!(t.rect.x >= -0.01 && t.rect.y >= -0.01);
             assert!(t.rect.x + t.rect.width <= 200.01 && t.rect.y + t.rect.height <= 100.01);
         }
+    }
+
+    #[test]
+    fn content_keeps_the_header_and_legend_clear() {
+        let bounds = Rectangle::new(Point::ORIGIN, Size::new(800.0, 600.0));
+        let c = content(bounds);
+        assert_eq!(c.x, INSET_SIDE);
+        assert_eq!(c.y, INSET_TOP);
+        assert_eq!(c.width, 800.0 - 2.0 * INSET_SIDE);
+        assert_eq!(c.height, 600.0 - INSET_TOP - INSET_BOTTOM);
+        let small = content(Rectangle::new(Point::ORIGIN, Size::new(10.0, 10.0)));
+        assert!(small.width >= 0.0 && small.height >= 0.0);
     }
 
     #[test]
