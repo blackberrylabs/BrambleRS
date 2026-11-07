@@ -92,14 +92,17 @@ module non plus.
 
 - [x] BRIEF rev. 2 validé (« Oui, je valide ») ; nom BrambleRS, radical technique `bramblers`, org Blackberrylabs — 2026-11-07
 - [x] Trois fondations importées (subtree) et renommées `bramblers-*` ; tour renommée `bramblers` ; `cargo test --workspace` passe (63 tests), fmt et clippy propres — 2026-11-07, commit `8190546`
-- [ ] Six cores importés, registre interne, dépendances par chemin
-- [ ] Registre interne : plus de PATH ni de sous-processus, l'app appelle les six cores ; tests et rapports identiques
-- [ ] Binaire et CLI `bramblers` : `report --json`, `report <module> --json`
+- [x] Six cores importés avec leur historique (`crates/modules/<id>/core`), données `hosts/`, `rules/`, `providers/`, `prices/` comprises ; dépendances par chemin ; schéma interne `bramblers-report/1` — 2026-11-07, commits `b133f27` et `57aedb2`
+- [x] Registre interne `registry` : six fournisseurs statiques, `runner` en processus avec limite de temps, plus de PATH ni de sous-processus pour les modules ; app et CLI adaptés ; `Dashboard::from_saved` sans découverte — 2026-11-07, commit `7b3c115`
+- [x] Preuve du registre : `cargo test --workspace` passe (202 tests), fmt et clippy propres ; `bramblers-cli refresh permitt` sur la machine : 16 constats en 0,1 s, un seul fichier écrit (`<state>/permitt/report.json`) — 2026-11-07
+- [ ] Binaire et CLI `bramblers` : `report --json`, `report <module> --json` ; sans argument, l'app
 - [ ] Paquet `bramblers` : .deb/.rpm/AppImage, menu `BrambleRS`, icône `bramblers`, shim config/état
 - [ ] GitHub : renommer le dépôt en `BrambleRS`, archiver les dix anciens dépôts (pas supprimer), profil d'org, release 0.1.0, tag `bramblers-v0.1.0`
 - [ ] Nettoyage local : dossier `BrambleRS`, AGENTS/CLAUDE/PLAN/JOURNAL
 - [ ] 0.2.0+ : portage des six vues détaillées (Cleanator, MCProster, Permitt, Linstruct, Billfold, Lastrun)
 - [ ] 1.0.0 : parité, toutes les fonctionnalités des six apps dans BrambleRS
+
+> Plus compilés depuis le registre, encore sur disque et à supprimer avec l'accord d'Alexandre : `crates/core/src/discover.rs`, `spec.rs`, `run.rs`, `packages.rs` ; les six `modules/*.toml` ; `docs/new-module.md` (contrat des modules externes). Le `README.md` racine décrit encore l'ancienne tour et sera réécrit avec le paquet 0.1.0.
 
 ## Historique — idees de la tour 0.x (remplacees par l'etape 8)
 

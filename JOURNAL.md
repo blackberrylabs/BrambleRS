@@ -3,6 +3,19 @@
 
 ---
 
+## 2026-11-07, six cores internes, registre en processus
+
+- Les six cores (Billfold, Cleanator, Lastrun, Linstruct, MCProster, Permitt) entrent dans le workspace sous `crates/modules/<id>/core`, crates `bramblers-<id>-core`, avec leurs données `hosts/`, `rules/`, `providers/` et `prices/`. Import par `git subtree split` sur `crates/core` puis sur chaque dossier de données : l'historique des cores est conservé. Commits `b133f27` (import) et `7b3c115` (registre).
+- Le registre `bramblers-core::registry` remplace la découverte sur le PATH : six `Provider` statiques (id, nom, verbe, accroche, description, limite de temps, fonction `run`). `runner::report` appelle la fonction du core sur un thread et attend au plus la limite du registre. Plus de `Command::new` pour lancer un module, plus de fiche TOML, plus de sous-processus. L'app et la CLI lisent les rapports enregistrés puis relancent les six modules en processus.
+- L'écran perd « Get it », « Open in <Module> » et l'état « non installé ». Les six cartes sont toujours là ; la ligne de statut dit « 6 modules · N rapport(s) lu(s) ». `xdg-open` reste pour les actions que la personne déclenche (ouvrir un fichier, un lien), jamais pour lancer un module.
+- Le schéma interne devient `bramblers-report/1` (commit `57aedb2`) ; les anciens rapports `bbl-report/1` ne sont plus lus, et l'ancien dossier d'état `blackberrylabs` n'est pas consulté.
+- Deux défauts de lint importés corrigés sans changer le comportement : une assertion tautologique dans un test Permitt, un booléen simplifié dans le compteur Claude de Billfold.
+- Preuves : `cargo test --workspace` passe (202 tests), `cargo fmt --all --check` et `cargo clippy --workspace --all-targets` propres ; `bramblers-cli refresh permitt` sur la machine rend 16 constats en 0,1 s et n'écrit qu'un fichier, `<state>/permitt/report.json`.
+- Restent sur disque, plus compilés et à supprimer avec l'accord d'Alexandre : `crates/core/src/{discover,spec,run,packages}.rs`, les six `modules/*.toml`, `docs/new-module.md`. Le `README.md` racine décrit encore l'ancienne tour.
+- Rien n'a été poussé ni modifié sur GitHub.
+
+---
+
 ## 2026-11-07, BrambleRS : un seul logiciel, un seul dépôt
 
 - Décision d'Alexandre : le logiciel ne s'appelle plus Blackberrylabs (c'est l'org) mais **BrambleRS** ; les six outils deviennent un seul logiciel, un seul dépôt, un seul paquet. MiningControlRS et les projets sans rapport restent séparés.
