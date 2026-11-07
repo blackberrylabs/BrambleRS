@@ -6,7 +6,7 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
-use bbl_report::Report;
+use bramblers_report::Report;
 
 use crate::spec::Spec;
 
@@ -30,7 +30,9 @@ impl std::fmt::Display for RunError {
             RunError::Timeout(s) => write!(f, "no report after {s} s, stopped"),
             RunError::Exit(code, err) if err.is_empty() => write!(f, "exited with {code}"),
             RunError::Exit(code, err) => write!(f, "exited with {code}: {err}"),
-            RunError::NotAReport(errs) => write!(f, "not a bbl-report document: {}", errs.join("; ")),
+            RunError::NotAReport(errs) => {
+                write!(f, "not a bbl-report document: {}", errs.join("; "))
+            }
         }
     }
 }
@@ -86,9 +88,18 @@ pub fn report(spec: &Spec, cli: &Path) -> Result<Run, RunError> {
     if !status.success() {
         // The first meaningful line of stderr is usually the reason (`unrecognized
         // subcommand 'report'` for a module older than the contract, say).
-        let first = stderr.lines().map(str::trim).find(|l| !l.is_empty()).unwrap_or("").to_string();
+        let first = stderr
+            .lines()
+            .map(str::trim)
+            .find(|l| !l.is_empty())
+            .unwrap_or("")
+            .to_string();
         return Err(RunError::Exit(status.code().unwrap_or(-1), first));
     }
-    let report = bbl_report::conformance::check(&stdout).map_err(RunError::NotAReport)?;
-    Ok(Run { report, json: stdout, elapsed: started.elapsed() })
+    let report = bramblers_report::conformance::check(&stdout).map_err(RunError::NotAReport)?;
+    Ok(Run {
+        report,
+        json: stdout,
+        elapsed: started.elapsed(),
+    })
 }

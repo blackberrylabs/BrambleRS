@@ -1,4 +1,4 @@
-//! `bbl-hostrules`: where each AI assistant keeps its files on a machine, and how to read them
+//! `bramblers-hostrules`: where each AI assistant keeps its files on a machine, and how to read them
 //! without writing — with the source of every claim.
 //!
 //! A *host rule* is a TOML file: the host's identity, the locations of its files per
@@ -7,7 +7,7 @@
 //! observed on a real machine; URL, date, quote). A rule whose location has no source is
 //! refused at load time.
 //!
-//! The crate is shared by the Blackberrylabs tools (MCProster, Permitt). Each tool brings
+//! The crate is shared by the BrambleRS modules (MCProster, Permitt). Each tool brings
 //! its own rule files and its own extensions: an [`rules::Extension`] for the fields a
 //! location needs (which key holds the MCP servers) and a [`rules::HostExtension`] for what
 //! the tool knows about the host as a whole (its defaults, the meaning of its permission

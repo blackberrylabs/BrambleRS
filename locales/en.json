@@ -1,5 +1,5 @@
 {
-  "app.title": "Blackberrylabs — your machine, AI side",
+  "app.title": "BrambleRS — your machine, AI side",
   "headline.none": "Your machine, AI side: nothing read yet.",
   "headline.clear": "Your machine, AI side: nothing to act on, nothing to review.",
   "headline.act": "Your machine, AI side: {act} to act on now, {review} to review.",
@@ -61,8 +61,8 @@
   "detail.open_link": "Open link",
   "detail.open_in": "Open in {module}",
   "detail.open_in_missing": "The app {app} is not installed",
-  "detail.note": "Blackberrylabs changes nothing on your machine. Every action here is yours to take.",
-  "about.title": "Blackberrylabs",
+  "detail.note": "BrambleRS changes nothing on your machine. Every action here is yours to take.",
+  "about.title": "BrambleRS",
   "about.subtitle": "A small family of read-only tools for developers who run AI on Linux.",
   "about.body": "Each tool answers one question — what your agents may do, which MCP servers are declared, what the tooling left on the disk — and this screen gathers their findings in one list, most serious first.",
   "about.how": "How to read it",

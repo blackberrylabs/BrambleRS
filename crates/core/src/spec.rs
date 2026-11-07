@@ -55,7 +55,10 @@ impl Spec {
             crate::packages::Kind::Rpm => format!("{}-{v}-1.x86_64.rpm", self.id),
             crate::packages::Kind::AppImage => format!("{}-{v}-x86_64.AppImage", self.name),
         };
-        Some(format!("{}/download/v{v}/{file}", self.releases.trim_end_matches('/')))
+        Some(format!(
+            "{}/download/v{v}/{file}",
+            self.releases.trim_end_matches('/')
+        ))
     }
 }
 
@@ -64,7 +67,7 @@ fn default_timeout() -> u64 {
 }
 
 fn default_schema() -> String {
-    bbl_report::SCHEMA.to_string()
+    bramblers_report::SCHEMA.to_string()
 }
 
 /// The sheets, in family order.
@@ -75,22 +78,43 @@ pub struct Modules {
 
 /// The sheets shipped with this version of the tower.
 pub const EMBEDDED: &[(&str, &str)] = &[
-    ("billfold.toml", include_str!("../../../modules/billfold.toml")),
-    ("cleanator.toml", include_str!("../../../modules/cleanator.toml")),
-    ("lastrun.toml", include_str!("../../../modules/lastrun.toml")),
-    ("linstruct.toml", include_str!("../../../modules/linstruct.toml")),
-    ("mcproster.toml", include_str!("../../../modules/mcproster.toml")),
-    ("permitt.toml", include_str!("../../../modules/permitt.toml")),
+    (
+        "billfold.toml",
+        include_str!("../../../modules/billfold.toml"),
+    ),
+    (
+        "cleanator.toml",
+        include_str!("../../../modules/cleanator.toml"),
+    ),
+    (
+        "lastrun.toml",
+        include_str!("../../../modules/lastrun.toml"),
+    ),
+    (
+        "linstruct.toml",
+        include_str!("../../../modules/linstruct.toml"),
+    ),
+    (
+        "mcproster.toml",
+        include_str!("../../../modules/mcproster.toml"),
+    ),
+    (
+        "permitt.toml",
+        include_str!("../../../modules/permitt.toml"),
+    ),
 ];
 
 impl Modules {
     /// The embedded sheets, validated.
     pub fn embedded() -> Modules {
-        Modules::load(EMBEDDED.iter().map(|(n, t)| (*n, *t))).expect("the embedded sheets are valid")
+        Modules::load(EMBEDDED.iter().map(|(n, t)| (*n, *t)))
+            .expect("the embedded sheets are valid")
     }
 
     /// Parse and validate sheets from `(file name, text)` pairs.
-    pub fn load<'a>(files: impl IntoIterator<Item = (&'a str, &'a str)>) -> Result<Modules, String> {
+    pub fn load<'a>(
+        files: impl IntoIterator<Item = (&'a str, &'a str)>,
+    ) -> Result<Modules, String> {
         let mut specs = Vec::new();
         for (name, text) in files {
             let spec: Spec = toml::from_str(text).map_err(|e| format!("{name}: {e}"))?;
@@ -111,11 +135,20 @@ impl Modules {
 impl Spec {
     fn validate(&self) -> Result<(), String> {
         let slug = !self.id.is_empty()
-            && self.id.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-');
+            && self
+                .id
+                .bytes()
+                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-');
         if !slug {
             return Err(format!("id {:?} is not a slug", self.id));
         }
-        for (field, value) in [("name", &self.name), ("verb", &self.verb), ("tagline", &self.tagline), ("cli", &self.cli), ("home", &self.home)] {
+        for (field, value) in [
+            ("name", &self.name),
+            ("verb", &self.verb),
+            ("tagline", &self.tagline),
+            ("cli", &self.cli),
+            ("home", &self.home),
+        ] {
             if value.trim().is_empty() {
                 return Err(format!("{field}: empty"));
             }
@@ -127,7 +160,10 @@ impl Spec {
             return Err("timeout_s: 0".into());
         }
         if !self.schema.starts_with("bbl-report/") {
-            return Err(format!("schema {:?} is not a bbl-report schema", self.schema));
+            return Err(format!(
+                "schema {:?} is not a bbl-report schema",
+                self.schema
+            ));
         }
         Ok(())
     }
@@ -141,9 +177,22 @@ mod tests {
     fn embedded_sheets_are_valid_and_in_family_order() {
         let m = Modules::embedded();
         let ids: Vec<&str> = m.specs.iter().map(|s| s.id.as_str()).collect();
-        assert_eq!(ids, ["billfold", "cleanator", "lastrun", "linstruct", "mcproster", "permitt"]);
+        assert_eq!(
+            ids,
+            [
+                "billfold",
+                "cleanator",
+                "lastrun",
+                "linstruct",
+                "mcproster",
+                "permitt"
+            ]
+        );
         assert_eq!(m.get("cleanator").unwrap().cli, "cleanator-cli");
-        assert_eq!(m.get("permitt").unwrap().app.as_deref(), Some("permitt-app"));
+        assert_eq!(
+            m.get("permitt").unwrap().app.as_deref(),
+            Some("permitt-app")
+        );
     }
 
     #[test]

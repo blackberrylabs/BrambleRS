@@ -1,16 +1,25 @@
 [workspace]
 resolver = "2"
-members = ["crates/core", "crates/cli", "crates/app"]
+members = [
+    "crates/core",
+    "crates/cli",
+    "crates/app",
+    "crates/bramblers-hostrules",
+    "crates/bramblers-report",
+    "crates/bramblers-ui",
+]
 
 [workspace.package]
-version = "0.4.0"
+version = "0.1.0"
 edition = "2021"
 license = "MIT"
 authors = ["Alexandre Do"]
-repository = "https://github.com/blackberrylabs/blackberrylabs"
+repository = "https://github.com/blackberrylabs/BrambleRS"
 
 [workspace.dependencies]
-bbl-report = { git = "https://github.com/blackberrylabs/bbl-report", tag = "v0.1.0" }
+bramblers-report = { path = "crates/bramblers-report" }
+bramblers-hostrules = { path = "crates/bramblers-hostrules" }
+bramblers-ui = { path = "crates/bramblers-ui" }
 anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

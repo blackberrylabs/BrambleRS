@@ -1,7 +1,7 @@
-//! Blackberrylabs desktop app (iced): one screen — a sentence, the four severities in words,
+//! BrambleRS desktop app (iced): one screen — a sentence, the four severities in words,
 //! the modules, the findings of every module in one list, the detail of the selected one
 //! with where it comes from and what the person could do, and the button that opens the
-//! module there. Reads the same core as `bbl`; writes only its preferences and the saved
+//! module there. Reads the same core as `bramblers`; writes only its preferences and the saved
 //! reports (BRIEF R2).
 #![forbid(unsafe_code)]
 
@@ -14,12 +14,12 @@ use iced::widget::{
 };
 use iced::{Alignment, Background, Border, Color, Element, Length, Task, Theme};
 
-use bbl_core::dashboard::{ReportState, Run, RunError};
-use bbl_core::{Cache, Dashboard, ModuleStatus, Modules};
-use bbl_report::{ActionKind, Finding, Severity, SubjectKind, Tone};
-use bbl_ui::palette::{alert, amber, good, muted};
-use bbl_ui::widgets::{card, inner, small_button, swatch};
-use bbl_ui::{Lang, Prefs, Strings};
+use bramblers_core::dashboard::{ReportState, Run, RunError};
+use bramblers_core::{Cache, Dashboard, ModuleStatus, Modules};
+use bramblers_report::{ActionKind, Finding, Severity, SubjectKind, Tone};
+use bramblers_ui::palette::{alert, amber, good, muted};
+use bramblers_ui::widgets::{card, inner, small_button, swatch};
+use bramblers_ui::{Lang, Prefs, Strings};
 
 const EN: &str = include_str!("../../../locales/en.json");
 const FR: &str = include_str!("../../../locales/fr.json");
@@ -53,7 +53,7 @@ enum Message {
 struct App {
     /// The package this machine takes (`/etc/os-release`, read once); None sends to the
     /// releases page.
-    package: Option<bbl_core::packages::Kind>,
+    package: Option<bramblers_core::packages::Kind>,
     prefs: Prefs<()>,
     lang: Lang,
     strings: Strings,
@@ -79,12 +79,12 @@ impl App {
         let strings = Strings::load(EN, FR, lang);
         let cache = Cache::default_location();
         let modules = Modules::embedded();
-        let dash = Dashboard::from_saved(&modules, &cache, &bbl_core::discover::path_dirs());
+        let dash = Dashboard::from_saved(&modules, &cache, &bramblers_core::discover::path_dirs());
         let mut app = App {
             prefs,
             lang,
             strings,
-            package: bbl_core::packages::detect(),
+            package: bramblers_core::packages::detect(),
             dark,
             cache,
             dash,
@@ -95,16 +95,24 @@ impl App {
             show_info: false,
             selected: None,
         };
-        // `BBL_SELECT=module:finding-id` preselects a finding (documentation screenshots);
-        // `BBL_NO_REFRESH=1` skips the start-up refresh (screenshots of saved reports).
-        if let Ok(v) = std::env::var("BBL_SELECT") {
+        // `BRAMBLERS_SELECT=module:finding-id` preselects a finding (documentation
+        // screenshots); `BRAMBLERS_NO_REFRESH=1` skips the start-up refresh. The old BBL_*
+        // names are still read for the archived screenshots.
+        let select = std::env::var("BRAMBLERS_SELECT").or_else(|_| std::env::var("BBL_SELECT"));
+        if let Ok(v) = select {
             if let Some((m, f)) = v.split_once(':') {
                 app.selected = Some((m.to_string(), f.to_string()));
             }
         }
         // T2: the saved reports are shown at once, every installed module is run again in
         // the background and replaces its report when ready.
-        let task = if std::env::var_os("BBL_NO_REFRESH").is_some() { Task::none() } else { app.refresh_all() };
+        let no_refresh =
+            std::env::var_os("BRAMBLERS_NO_REFRESH").or_else(|| std::env::var_os("BBL_NO_REFRESH"));
+        let task = if no_refresh.is_some() {
+            Task::none()
+        } else {
+            app.refresh_all()
+        };
         (app, task)
     }
 
@@ -149,11 +157,15 @@ impl App {
                 self.running.insert(id.clone());
                 let (tx, rx) = iced::futures::channel::oneshot::channel();
                 std::thread::spawn(move || {
-                    let r = bbl_core::run::report(&spec, &cli).map(Arc::new);
+                    let r = bramblers_core::run::report(&spec, &cli).map(Arc::new);
                     let _ = tx.send(r);
                 });
                 Task::perform(
-                    async move { rx.await.unwrap_or_else(|_| Err(RunError::Spawn("the run thread stopped".into()))) },
+                    async move {
+                        rx.await.unwrap_or_else(|_| {
+                            Err(RunError::Spawn("the run thread stopped".into()))
+                        })
+                    },
                     move |r| Message::Refreshed(id.clone(), r),
                 )
             }
@@ -173,7 +185,12 @@ impl App {
                 self.dash.apply(&id, &r, &self.cache);
                 // The selected finding may have moved or gone.
                 if let Some((m, f)) = &self.selected {
-                    if !self.dash.lines.iter().any(|l| &l.module == m && &l.finding.id == f) {
+                    if !self
+                        .dash
+                        .lines
+                        .iter()
+                        .any(|l| &l.module == m && &l.finding.id == f)
+                    {
                         self.selected = None;
                     }
                 }
@@ -199,7 +216,11 @@ impl App {
                 self.module_filter = m;
             }
             Message::FilterSeverity(s) => {
-                self.severity_filter = if self.severity_filter == Some(s) { None } else { Some(s) };
+                self.severity_filter = if self.severity_filter == Some(s) {
+                    None
+                } else {
+                    Some(s)
+                };
                 if s == Severity::Info && self.severity_filter.is_some() {
                     self.show_info = true;
                 }
@@ -255,7 +276,7 @@ impl App {
     }
 
     /// The lines after the filters, in order.
-    fn visible(&self) -> Vec<&bbl_core::Line> {
+    fn visible(&self) -> Vec<&bramblers_core::Line> {
         let q = self.search.trim().to_lowercase();
         self.dash
             .lines
@@ -275,9 +296,12 @@ impl App {
             .collect()
     }
 
-    fn selected_line(&self) -> Option<&bbl_core::Line> {
+    fn selected_line(&self) -> Option<&bramblers_core::Line> {
         let (m, f) = self.selected.as_ref()?;
-        self.dash.lines.iter().find(|l| &l.module == m && &l.finding.id == f)
+        self.dash
+            .lines
+            .iter()
+            .find(|l| &l.module == m && &l.finding.id == f)
     }
 
     // ------------------------------------------------------------------ view
@@ -286,18 +310,39 @@ impl App {
         let s = &self.strings;
         let installed = self.dash.modules.iter().filter(|m| m.installed).count();
         let absent = self.dash.modules.len() - installed;
-        let reports = self.dash.modules.iter().filter(|m| m.report.is_some()).count();
+        let reports = self
+            .dash
+            .modules
+            .iter()
+            .filter(|m| m.report.is_some())
+            .count();
         let status = s.t(
             "status.summary",
-            &[("installed", &installed.to_string()), ("absent", &absent.to_string()), ("reports", &reports.to_string())],
+            &[
+                ("installed", &installed.to_string()),
+                ("absent", &absent.to_string()),
+                ("reports", &reports.to_string()),
+            ],
         );
-        let theme_label = if self.dark { self.t("theme.light") } else { self.t("theme.dark") };
-        let footer = bbl_ui::widgets::footer(status, self.lang, Message::SetLang, theme_label, Message::ToggleTheme);
+        let theme_label = if self.dark {
+            self.t("theme.light")
+        } else {
+            self.t("theme.dark")
+        };
+        let footer = bramblers_ui::widgets::footer(
+            status,
+            self.lang,
+            Message::SetLang,
+            theme_label,
+            Message::ToggleTheme,
+        );
         column![
             self.view_headline(),
             self.view_severities(),
             self.view_modules(),
-            row![self.view_list(), self.view_detail()].spacing(12).height(Length::Fill),
+            row![self.view_list(), self.view_detail()]
+                .spacing(12)
+                .height(Length::Fill),
             footer,
         ]
         .spacing(12)
@@ -309,16 +354,27 @@ impl App {
         let s = &self.strings;
         let counts = self.dash.counts();
         let (act, review) = (counts[0].1, counts[1].1);
-        let things = |n: usize| if n == 1 { s.t("headline.things_one", &[]) } else { s.t("headline.things", &[("n", &n.to_string())]) };
+        let things = |n: usize| {
+            if n == 1 {
+                s.t("headline.things_one", &[])
+            } else {
+                s.t("headline.things", &[("n", &n.to_string())])
+            }
+        };
         let sentence: Element<'_, Message> = if !self.has_reports() {
             text(s.t("headline.none", &[])).size(20).into()
         } else if act == 0 && review == 0 {
             text(s.t("headline.clear", &[])).size(20).into()
         } else if act == 0 {
-            text(s.t("headline.review", &[("review", &review.to_string())])).size(20).into()
+            text(s.t("headline.review", &[("review", &review.to_string())]))
+                .size(20)
+                .into()
         } else {
             // The "act now" part in the alert colour: split the sentence around it.
-            let full = s.t("headline.act", &[("act", &things(act)), ("review", &review.to_string())]);
+            let full = s.t(
+                "headline.act",
+                &[("act", &things(act)), ("review", &review.to_string())],
+            );
             let marker = things(act);
             match full.find(&marker) {
                 Some(i) => {
@@ -358,14 +414,24 @@ impl App {
             }
         };
         let refresh: Element<'_, Message> = if self.running.is_empty() {
-            button(text(s.t("refresh.all", &[])).size(12)).style(button::primary).on_press(Message::RefreshAll).into()
+            button(text(s.t("refresh.all", &[])).size(12))
+                .style(button::primary)
+                .on_press(Message::RefreshAll)
+                .into()
         } else {
-            button(text(s.t("refresh.running", &[])).size(12)).style(button::secondary).into()
+            button(text(s.t("refresh.running", &[])).size(12))
+                .style(button::secondary)
+                .into()
         };
-        row![sentence, horizontal_space(), text(when).size(12).style(text::secondary), refresh]
-            .spacing(10)
-            .align_y(Alignment::Center)
-            .into()
+        row![
+            sentence,
+            horizontal_space(),
+            text(when).size(12).style(text::secondary),
+            refresh
+        ]
+        .spacing(10)
+        .align_y(Alignment::Center)
+        .into()
     }
 
     fn view_severities(&self) -> Element<'_, Message> {
@@ -374,7 +440,11 @@ impl App {
         let mut r = row![].spacing(12);
         for (sev, n) in counts {
             let k = sev.number().to_string();
-            let value = if self.has_reports() { n.to_string() } else { "—".to_string() };
+            let value = if self.has_reports() {
+                n.to_string()
+            } else {
+                "—".to_string()
+            };
             let on = self.severity_filter == Some(sev);
             let color = self.sev_color(sev);
             let number: Element<'_, Message> = if sev <= Severity::Review && n > 0 {
@@ -384,9 +454,13 @@ impl App {
             };
             let tile = card(
                 column![
-                    row![swatch(color, 9), number].spacing(6).align_y(Alignment::Center),
+                    row![swatch(color, 9), number]
+                        .spacing(6)
+                        .align_y(Alignment::Center),
                     text(s.t(&format!("sev.{k}"), &[])).size(13),
-                    text(s.t(&format!("sev.{k}.desc"), &[])).size(11).style(text::secondary),
+                    text(s.t(&format!("sev.{k}.desc"), &[]))
+                        .size(11)
+                        .style(text::secondary),
                 ]
                 .spacing(2)
                 .into(),
@@ -400,7 +474,11 @@ impl App {
                     border: Border {
                         radius: 10.0.into(),
                         width: if on { 2.0 } else { 1.0 },
-                        color: if on { p.primary.base.color } else { p.background.strong.color },
+                        color: if on {
+                            p.primary.base.color
+                        } else {
+                            p.background.strong.color
+                        },
                     },
                     ..Default::default()
                 }
@@ -423,22 +501,44 @@ impl App {
         let running = self.running.contains(&m.spec.id);
         // No "open" on the card: the card is a filter (T6); the module's own app opens from
         // the pane only, by an explicit "Open in …" button.
-        let head = row![text(m.spec.name.clone()).size(14), horizontal_space()].align_y(Alignment::Center).spacing(8);
+        let head = row![text(m.spec.name.clone()).size(14), horizontal_space()]
+            .align_y(Alignment::Center)
+            .spacing(8);
         if !m.installed {
             // The showcase: what the module does, and where to take it from.
-            let what = if m.spec.description.is_empty() { m.spec.tagline.clone() } else { m.spec.description.clone() };
-            let mut col = column![head, text(what).size(12).style(text::secondary).height(Length::Fill)].spacing(3);
+            let what = if m.spec.description.is_empty() {
+                m.spec.tagline.clone()
+            } else {
+                m.spec.description.clone()
+            };
+            let mut col = column![
+                head,
+                text(what)
+                    .size(12)
+                    .style(text::secondary)
+                    .height(Length::Fill)
+            ]
+            .spacing(3);
             col = col.push(
                 row![
-                    text(s.t("module.not_installed", &[])).size(12).style(text::secondary),
+                    text(s.t("module.not_installed", &[]))
+                        .size(12)
+                        .style(text::secondary),
                     horizontal_space(),
                     self.get_button(m),
                 ]
                 .align_y(Alignment::Center),
             );
-            return self.module_card(m, card(col.into()).height(Length::Fixed(140.0)).style(dashed));
+            return self.module_card(
+                m,
+                card(col.into()).height(Length::Fixed(140.0)).style(dashed),
+            );
         }
-        let mut col = column![head, text(m.spec.tagline.clone()).size(12).style(text::secondary)].spacing(3);
+        let mut col = column![
+            head,
+            text(m.spec.tagline.clone()).size(12).style(text::secondary)
+        ]
+        .spacing(3);
         // Figures, with the module's tones.
         if let Some(r) = &m.report {
             // The module's figures, two per line, with the module's tones.
@@ -462,52 +562,99 @@ impl App {
             col = col.push(grid);
         } else if let ReportState::Failed { .. } = m.state {
         } else {
-            col = col.push(text(s.t("module.installed", &[("version", "")])).size(12).color(good(self.dark)));
+            col = col.push(
+                text(s.t("module.installed", &[("version", "")]))
+                    .size(12)
+                    .color(good(self.dark)),
+            );
         }
-        let version = m.report.as_ref().map(|r| r.module.version.clone()).unwrap_or_default();
+        let version = m
+            .report
+            .as_ref()
+            .map(|r| r.module.version.clone())
+            .unwrap_or_default();
         let state = if running {
             match &m.state {
-                ReportState::Saved { age_s } => s.t("module.running", &[("age", &self.age(*age_s))]),
+                ReportState::Saved { age_s } => {
+                    s.t("module.running", &[("age", &self.age(*age_s))])
+                }
                 _ => s.t("module.running_first", &[]),
             }
         } else {
             match &m.state {
                 ReportState::Fresh { .. } => s.t("module.fresh", &[("version", &version)]),
-                ReportState::Saved { age_s } => s.t("module.report_age", &[("age", &self.age(*age_s)), ("version", &version)]),
+                ReportState::Saved { age_s } => s.t(
+                    "module.report_age",
+                    &[("age", &self.age(*age_s)), ("version", &version)],
+                ),
                 ReportState::NoReport => s.t("module.no_report", &[]),
                 ReportState::NotInstalled => s.t("module.not_installed", &[]),
-                ReportState::Failed { error } => s.t("module.failed", &[("error", &shorten(error, 70))]),
+                ReportState::Failed { error } => {
+                    s.t("module.failed", &[("error", &shorten(error, 70))])
+                }
             }
         };
         let state_text = match &m.state {
-            ReportState::Failed { .. } if !running => text(state).size(12).color(alert(self.dark)).width(Length::Fill),
-            _ => text(state).size(12).style(text::secondary).width(Length::Fill),
+            ReportState::Failed { .. } if !running => text(state)
+                .size(12)
+                .color(alert(self.dark))
+                .width(Length::Fill),
+            _ => text(state)
+                .size(12)
+                .style(text::secondary)
+                .width(Length::Fill),
         };
         let action: Element<'_, Message> = if m.cli.is_none() {
-            text(s.t("module.no_cli", &[("cli", &m.spec.cli)])).size(11).style(text::secondary).into()
+            text(s.t("module.no_cli", &[("cli", &m.spec.cli)]))
+                .size(11)
+                .style(text::secondary)
+                .into()
         } else if running {
-            text(s.t("refresh.running", &[])).size(11).style(text::secondary).into()
+            text(s.t("refresh.running", &[]))
+                .size(11)
+                .style(text::secondary)
+                .into()
         } else {
             small_button(s.t("refresh.one", &[]), Message::Refresh(m.spec.id.clone()))
         };
-        col = col.push(row![state_text, action].spacing(8).align_y(Alignment::Center));
+        col = col.push(
+            row![state_text, action]
+                .spacing(8)
+                .align_y(Alignment::Center),
+        );
         self.module_card(m, card(col.into()).height(Length::Fixed(140.0)))
     }
 
     fn releases_of(&self, m: &ModuleStatus) -> String {
-        if m.spec.releases.is_empty() { m.spec.home.clone() } else { m.spec.releases.clone() }
+        if m.spec.releases.is_empty() {
+            m.spec.home.clone()
+        } else {
+            m.spec.releases.clone()
+        }
     }
 
     /// "Get it": the exact package for this machine when the sheet knows the latest version
     /// (the browser downloads it; the tower itself never fetches), else the releases page.
     fn get_button(&self, m: &ModuleStatus) -> Element<'_, Message> {
         let s = &self.strings;
-        match self.package.and_then(|k| m.spec.package_url(k).map(|u| (k, u))) {
+        match self
+            .package
+            .and_then(|k| m.spec.package_url(k).map(|u| (k, u)))
+        {
             Some((k, url)) => small_button(
-                s.t("module.get_package", &[("kind", &k.to_string()), ("version", m.spec.latest.as_deref().unwrap_or(""))]),
+                s.t(
+                    "module.get_package",
+                    &[
+                        ("kind", &k.to_string()),
+                        ("version", m.spec.latest.as_deref().unwrap_or("")),
+                    ],
+                ),
                 Message::OpenUrl(url),
             ),
-            None => small_button(s.t("module.get", &[]), Message::OpenUrl(self.releases_of(m))),
+            None => small_button(
+                s.t("module.get", &[]),
+                Message::OpenUrl(self.releases_of(m)),
+            ),
         }
     }
 
@@ -554,14 +701,29 @@ impl App {
                 b.style(button::secondary).on_press(msg).into()
             }
         };
-        chips = chips.push(chip(s.t("list.all", &[]), self.module_filter.is_none(), Message::FilterModule(None)));
+        chips = chips.push(chip(
+            s.t("list.all", &[]),
+            self.module_filter.is_none(),
+            Message::FilterModule(None),
+        ));
         for m in self.dash.modules.iter().filter(|m| m.report.is_some()) {
-            chips = chips.push(chip(m.spec.name.clone(), self.module_filter.as_deref() == Some(&m.spec.id), Message::FilterModule(Some(m.spec.id.clone()))));
+            chips = chips.push(chip(
+                m.spec.name.clone(),
+                self.module_filter.as_deref() == Some(&m.spec.id),
+                Message::FilterModule(Some(m.spec.id.clone())),
+            ));
         }
         let filters = row![
-            text_input(&s.t("list.search", &[]), &self.search).on_input(Message::Search).size(12).padding(5).width(Length::FillPortion(2)),
+            text_input(&s.t("list.search", &[]), &self.search)
+                .on_input(Message::Search)
+                .size(12)
+                .padding(5)
+                .width(Length::FillPortion(2)),
             chips,
-            checkbox(s.t("list.show_info", &[]), self.show_info).on_toggle(Message::ToggleInfo).size(14).text_size(12),
+            checkbox(s.t("list.show_info", &[]), self.show_info)
+                .on_toggle(Message::ToggleInfo)
+                .size(14)
+                .text_size(12),
         ]
         .spacing(10)
         .align_y(Alignment::Center);
@@ -574,9 +736,19 @@ impl App {
             } else {
                 (s.t("list.empty_filter", &[]), String::new())
             };
-            let mut c = column![text(title).size(15), text(sub).size(13).style(text::secondary)].spacing(6).align_x(Alignment::Center).max_width(460);
+            let mut c = column![
+                text(title).size(15),
+                text(sub).size(13).style(text::secondary)
+            ]
+            .spacing(6)
+            .align_x(Alignment::Center)
+            .max_width(460);
             if !self.has_reports() && self.running.is_empty() {
-                c = c.push(button(text(s.t("refresh.all", &[])).size(12)).style(button::primary).on_press(Message::RefreshAll));
+                c = c.push(
+                    button(text(s.t("refresh.all", &[])).size(12))
+                        .style(button::primary)
+                        .on_press(Message::RefreshAll),
+                );
             }
             container(c).center(Length::Fill).into()
         } else {
@@ -588,23 +760,43 @@ impl App {
                     current = Some(sev);
                     let n = lines.iter().filter(|x| x.finding.severity == sev).count();
                     rows = rows.push(
-                        text(s.t("list.group", &[("sev", &s.t(&format!("sev.{}", sev.number()), &[]).to_uppercase()), ("n", &n.to_string())]))
-                            .size(11)
-                            .style(text::secondary),
+                        text(s.t(
+                            "list.group",
+                            &[
+                                (
+                                    "sev",
+                                    &s.t(&format!("sev.{}", sev.number()), &[]).to_uppercase(),
+                                ),
+                                ("n", &n.to_string()),
+                            ],
+                        ))
+                        .size(11)
+                        .style(text::secondary),
                     );
                 }
                 rows = rows.push(self.view_row(l));
             }
             if hidden_info > 0 {
-                rows = rows.push(text(s.t("list.more_hidden", &[("n", &hidden_info.to_string())])).size(12).style(text::secondary));
+                rows = rows.push(
+                    text(s.t("list.more_hidden", &[("n", &hidden_info.to_string())]))
+                        .size(12)
+                        .style(text::secondary),
+                );
             }
-            scrollable(rows.padding(iced::Padding { right: 14.0, ..Default::default() })).height(Length::Fill).into()
+            scrollable(rows.padding(iced::Padding {
+                right: 14.0,
+                ..Default::default()
+            }))
+            .height(Length::Fill)
+            .into()
         };
 
         card(
             column![
                 text(s.t("list.title", &[])).size(15),
-                text(s.t("list.subtitle", &[])).size(12).style(text::secondary),
+                text(s.t("list.subtitle", &[]))
+                    .size(12)
+                    .style(text::secondary),
                 filters,
                 body,
             ]
@@ -616,13 +808,21 @@ impl App {
         .into()
     }
 
-    fn view_row(&self, l: &bbl_core::Line) -> Element<'_, Message> {
-        let selected = self.selected.as_ref().is_some_and(|(m, f)| m == &l.module && f == &l.finding.id);
+    fn view_row(&self, l: &bramblers_core::Line) -> Element<'_, Message> {
+        let selected = self
+            .selected
+            .as_ref()
+            .is_some_and(|(m, f)| m == &l.module && f == &l.finding.id);
         let color = self.sev_color(l.finding.severity);
         let module_label = if selected {
-            text(l.module_name.clone()).size(11).width(Length::Fixed(88.0))
+            text(l.module_name.clone())
+                .size(11)
+                .width(Length::Fixed(88.0))
         } else {
-            text(l.module_name.clone()).size(11).style(text::secondary).width(Length::Fixed(88.0))
+            text(l.module_name.clone())
+                .size(11)
+                .style(text::secondary)
+                .width(Length::Fixed(88.0))
         };
         let r = row![
             swatch(color, 9),
@@ -633,15 +833,27 @@ impl App {
         ]
         .spacing(10)
         .align_y(Alignment::Center);
-        let cell = container(r).padding([6, 8]).width(Length::Fill).style(move |theme: &Theme| {
-            let p = theme.extended_palette();
-            container::Style {
-                background: if selected { Some(Background::Color(p.primary.weak.color)) } else { None },
-                border: Border { radius: 6.0.into(), ..Default::default() },
-                ..Default::default()
-            }
-        });
-        mouse_area(cell).on_press(Message::Select(l.module.clone(), l.finding.id.clone())).into()
+        let cell = container(r)
+            .padding([6, 8])
+            .width(Length::Fill)
+            .style(move |theme: &Theme| {
+                let p = theme.extended_palette();
+                container::Style {
+                    background: if selected {
+                        Some(Background::Color(p.primary.weak.color))
+                    } else {
+                        None
+                    },
+                    border: Border {
+                        radius: 6.0.into(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }
+            });
+        mouse_area(cell)
+            .on_press(Message::Select(l.module.clone(), l.finding.id.clone()))
+            .into()
     }
 
     fn view_detail(&self) -> Element<'_, Message> {
@@ -653,25 +865,46 @@ impl App {
             },
             (None, None) => self.view_about(),
         };
-        card(scrollable(container(content).padding(iced::Padding { right: 14.0, ..Default::default() })).height(Length::Fill).into())
-            .width(Length::FillPortion(4))
+        card(
+            scrollable(container(content).padding(iced::Padding {
+                right: 14.0,
+                ..Default::default()
+            }))
             .height(Length::Fill)
-            .into()
+            .into(),
+        )
+        .width(Length::FillPortion(4))
+        .height(Length::Fill)
+        .into()
     }
 
-    fn view_finding(&self, l: &bbl_core::Line, f: &Finding) -> Element<'_, Message> {
+    fn view_finding(&self, l: &bramblers_core::Line, f: &Finding) -> Element<'_, Message> {
         let s = &self.strings;
         let sev = f.severity;
         let kind = s.t(&format!("subject.{}", subject_slug(f.subject.kind)), &[]);
         let mut col = column![
-            bbl_ui::widgets::pill(s.t(&format!("sev.{}", sev.number()), &[]).to_uppercase(), self.sev_color(sev)),
+            bramblers_ui::widgets::pill(
+                s.t(&format!("sev.{}", sev.number()), &[]).to_uppercase(),
+                self.sev_color(sev)
+            ),
             text(f.title.clone()).size(16),
-            text(s.t("detail.found_by", &[("module", &l.module_name), ("kind", &kind), ("label", &f.subject.label)]))
-                .size(12)
-                .style(text::secondary),
+            text(s.t(
+                "detail.found_by",
+                &[
+                    ("module", &l.module_name),
+                    ("kind", &kind),
+                    ("label", &f.subject.label)
+                ]
+            ))
+            .size(12)
+            .style(text::secondary),
         ]
         .spacing(4);
-        let heading = |k: &str| text(s.t(k, &[]).to_uppercase()).size(11).style(text::secondary);
+        let heading = |k: &str| {
+            text(s.t(k, &[]).to_uppercase())
+                .size(11)
+                .style(text::secondary)
+        };
         if !f.detail.is_empty() {
             col = col.push(Space::with_height(8));
             col = col.push(heading("detail.means"));
@@ -681,11 +914,15 @@ impl App {
             col = col.push(Space::with_height(8));
             col = col.push(heading("detail.where"));
             for e in &f.evidence {
-                let mut block = column![text(e.label.clone()).size(12).font(iced::Font::MONOSPACE)].spacing(4);
+                let mut block =
+                    column![text(e.label.clone()).size(12).font(iced::Font::MONOSPACE)].spacing(4);
                 if let Some(p) = &e.path {
                     block = block.push(
                         row![
-                            small_button(s.t("detail.open_file", &[]), Message::OpenFile(p.clone())),
+                            small_button(
+                                s.t("detail.open_file", &[]),
+                                Message::OpenFile(p.clone())
+                            ),
                             small_button(s.t("detail.copy_path", &[]), Message::Copy(p.clone())),
                         ]
                         .spacing(6),
@@ -702,20 +939,29 @@ impl App {
                     (ActionKind::Hint, _) | (_, None) => text(a.label.clone()).size(13).into(),
                     (ActionKind::Command, Some(t)) => column![
                         text(a.label.clone()).size(13),
-                        row![text(t.clone()).size(12).font(iced::Font::MONOSPACE), small_button(s.t("detail.copy_command", &[]), Message::Copy(t.clone()))]
-                            .spacing(8)
-                            .align_y(Alignment::Center),
+                        row![
+                            text(t.clone()).size(12).font(iced::Font::MONOSPACE),
+                            small_button(s.t("detail.copy_command", &[]), Message::Copy(t.clone()))
+                        ]
+                        .spacing(8)
+                        .align_y(Alignment::Center),
                     ]
                     .spacing(3)
                     .into(),
-                    (ActionKind::OpenFile, Some(t)) => row![text(a.label.clone()).size(13), small_button(s.t("detail.open_file", &[]), Message::OpenFile(t.clone()))]
-                        .spacing(8)
-                        .align_y(Alignment::Center)
-                        .into(),
-                    (ActionKind::OpenUrl, Some(t)) => row![text(a.label.clone()).size(13), small_button(s.t("detail.open_link", &[]), Message::OpenUrl(t.clone()))]
-                        .spacing(8)
-                        .align_y(Alignment::Center)
-                        .into(),
+                    (ActionKind::OpenFile, Some(t)) => row![
+                        text(a.label.clone()).size(13),
+                        small_button(s.t("detail.open_file", &[]), Message::OpenFile(t.clone()))
+                    ]
+                    .spacing(8)
+                    .align_y(Alignment::Center)
+                    .into(),
+                    (ActionKind::OpenUrl, Some(t)) => row![
+                        text(a.label.clone()).size(13),
+                        small_button(s.t("detail.open_link", &[]), Message::OpenUrl(t.clone()))
+                    ]
+                    .spacing(8)
+                    .align_y(Alignment::Center)
+                    .into(),
                 };
                 col = col.push(row![text("→").size(13).style(text::secondary), line].spacing(8));
             }
@@ -731,12 +977,24 @@ impl App {
                         .on_press(Message::OpenModule(o.app.clone(), o.args.clone()))
                         .into()
                 } else {
-                    text(s.t("detail.open_in_missing", &[("app", &o.app)])).size(12).style(text::secondary).into()
+                    text(s.t("detail.open_in_missing", &[("app", &o.app)]))
+                        .size(12)
+                        .style(text::secondary)
+                        .into()
                 }
             }
             None => Space::with_width(0).into(),
         };
-        col = col.push(row![open, text(s.t("detail.note", &[])).size(12).style(text::secondary)].spacing(10).align_y(Alignment::Center));
+        col = col.push(
+            row![
+                open,
+                text(s.t("detail.note", &[]))
+                    .size(12)
+                    .style(text::secondary)
+            ]
+            .spacing(10)
+            .align_y(Alignment::Center),
+        );
         col.into()
     }
 
@@ -841,7 +1099,10 @@ impl App {
             }
         } else {
             actions = actions.push(self.get_button(m));
-            actions = actions.push(small_button(s.t("module.all_versions", &[]), Message::OpenUrl(self.releases_of(m))));
+            actions = actions.push(small_button(
+                s.t("module.all_versions", &[]),
+                Message::OpenUrl(self.releases_of(m)),
+            ));
         }
         actions = actions.push(small_button(
             s.t("module.home", &[]),
@@ -856,11 +1117,15 @@ impl App {
         let s = &self.strings;
         let mut col = column![
             text(s.t("about.title", &[])).size(15),
-            text(s.t("about.subtitle", &[])).size(12).style(text::secondary),
+            text(s.t("about.subtitle", &[]))
+                .size(12)
+                .style(text::secondary),
             Space::with_height(4),
             text(s.t("about.body", &[])).size(13),
             Space::with_height(8),
-            text(s.t("about.how", &[]).to_uppercase()).size(11).style(text::secondary),
+            text(s.t("about.how", &[]).to_uppercase())
+                .size(11)
+                .style(text::secondary),
         ]
         .spacing(4);
         for sev in Severity::ALL {
@@ -869,7 +1134,9 @@ impl App {
                 row![
                     swatch(self.sev_color(sev), 9),
                     text(s.t(&format!("sev.{k}"), &[])).size(13),
-                    text(format!("— {}", s.t(&format!("sev.{k}.desc"), &[]))).size(13).style(text::secondary),
+                    text(format!("— {}", s.t(&format!("sev.{k}.desc"), &[])))
+                        .size(13)
+                        .style(text::secondary),
                 ]
                 .spacing(6)
                 .align_y(Alignment::Center),
@@ -918,7 +1185,11 @@ fn dashed(theme: &Theme) -> container::Style {
     let p = theme.extended_palette();
     container::Style {
         background: Some(Background::Color(p.background.base.color)),
-        border: Border { radius: 10.0.into(), width: 1.0, color: p.background.strong.color },
+        border: Border {
+            radius: 10.0.into(),
+            width: 1.0,
+            color: p.background.strong.color,
+        },
         ..Default::default()
     }
 }
@@ -929,7 +1200,7 @@ mod tests {
 
     #[test]
     fn locales_have_the_same_keys() {
-        bbl_ui::i18n::same_keys(EN, FR).unwrap();
+        bramblers_ui::i18n::same_keys(EN, FR).unwrap();
     }
 
     #[test]

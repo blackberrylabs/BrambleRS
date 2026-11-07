@@ -1,12 +1,12 @@
 [package]
-name = "bbl-report"
-version = "0.1.0"
+name = "bramblers-report"
+version.workspace = true
 edition = "2021"
 rust-version = "1.80"
 license = "MIT"
 authors = ["Alexandre Do"]
-repository = "https://github.com/blackberrylabs/bbl-report"
-description = "The report contract between the Blackberrylabs control tower and its modules: types, validation, severity scale, conformance check"
+repository = "https://github.com/blackberrylabs/BrambleRS"
+description = "The internal report contract of BrambleRS: types, validation, severity scale, conformance check"
 keywords = ["report", "schema", "desktop", "read-only"]
 categories = ["data-structures"]
 

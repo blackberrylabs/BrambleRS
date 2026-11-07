@@ -1,6 +1,6 @@
 [package]
-name = "blackberrylabs"
-description = "Blackberrylabs — everything your AI agents do to your machine, on one screen. Read-only, like the tools behind it."
+name = "bramblers"
+description = "BrambleRS — everything your AI agents do to your machine, on one screen. Read-only, like the tools behind it."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -8,136 +8,68 @@ authors.workspace = true
 repository.workspace = true
 
 [[bin]]
-name = "bbl-app"
+name = "bramblers"
 path = "src/main.rs"
 
 [dependencies]
-bbl-core = { path = "../core" }
-bbl-report.workspace = true
+bramblers-core = { path = "../core" }
+bramblers-report.workspace = true
 iced = { version = "=0.13.1", features = ["tokio"] }
-bbl-ui = { git = "https://github.com/blackberrylabs/bbl-ui", tag = "v0.1.0" }
+bramblers-ui.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 
 # ---------------------------------------------------------------- packaging
 # `packaging/build.sh` builds the workspace once, then runs `cargo deb --no-build` and
-# `cargo generate-rpm` from here, so one package ships both binaries.
+# `cargo generate-rpm` from here, so one package ships the app and the CLI.
 
 [package.metadata.deb]
-name = "blackberrylabs"
+name = "bramblers"
 maintainer = "Alexandre Do <alexandre@blackberrylabs.dev>"
 copyright = "2026, Alexandre Do"
 license-file = ["../../LICENSE", "0"]
 extended-description = """\
-Blackberrylabs is the control tower of a small family of read-only tools for developers \
-who run AI on Linux: Cleanator (what AI tooling left on the disk), MCProster (every MCP \
-server declared on the machine) and Permitt (what each AI assistant may do without asking). \
-It launches the installed modules, reads their reports and shows their findings in one \
-list, most serious first, with what the person could do and the button that opens the \
-module there. It changes nothing on the machine. Ships the desktop app (bbl-app) and the \
-command line (bbl)."""
+BrambleRS is one read-only screen for everything AI coding agents do to a Linux machine: \
+permissions, MCP servers, instruction files, disk left behind, AI spend, and what the agents \
+actually ran, most serious first. The six modules run in-process; nothing is launched from \
+the PATH. It changes nothing on the machine."""
 section = "devel"
 priority = "optional"
 depends = "$auto, libxkbcommon0, libwayland-client0 | libx11-6"
-recommends = "libvulkan1, mesa-vulkan-drivers, cleanator, mcproster, permitt"
-assets = [
-    ["target/release/bbl-app", "usr/bin/", "755"],
-    ["target/release/bbl", "usr/bin/", "755"],
-    ["../../assets/blackberrylabs.desktop", "usr/share/applications/", "644"],
-    ["../../assets/icon.svg", "usr/share/icons/hicolor/scalable/apps/blackberrylabs.svg", "644"],
-    ["../../assets/icon-16.png", "usr/share/icons/hicolor/16x16/apps/blackberrylabs.png", "644"],
-    ["../../assets/icon-32.png", "usr/share/icons/hicolor/32x32/apps/blackberrylabs.png", "644"],
-    ["../../assets/icon-48.png", "usr/share/icons/hicolor/48x48/apps/blackberrylabs.png", "644"],
-    ["../../assets/icon-64.png", "usr/share/icons/hicolor/64x64/apps/blackberrylabs.png", "644"],
-    ["../../assets/icon-128.png", "usr/share/icons/hicolor/128x128/apps/blackberrylabs.png", "644"],
-    ["../../assets/icon-256.png", "usr/share/icons/hicolor/256x256/apps/blackberrylabs.png", "644"],
-    ["../../assets/icon-512.png", "usr/share/icons/hicolor/512x512/apps/blackberrylabs.png", "644"],
-    ["../../README.md", "usr/share/doc/blackberrylabs/README.md", "644"],
-]
-
-# The full package: the tower and every module of the family, the modules' released
-# binaries taken from their own packages by `packaging/bundle.sh` (one install for someone
-# who wants several tools). Built with `cargo deb --variant full`.
-[package.metadata.deb.variants.full]
-name = "blackberrylabs-full"
-provides = "blackberrylabs, permitt, mcproster, cleanator, linstruct, billfold, lastrun"
-conflicts = "blackberrylabs, permitt, mcproster, cleanator, linstruct, billfold, lastrun"
-replaces = "blackberrylabs, permitt, mcproster, cleanator, linstruct, billfold, lastrun"
 recommends = "libvulkan1, mesa-vulkan-drivers"
 assets = [
-    ["target/release/bbl-app", "usr/bin/", "755"],
-    ["target/release/bbl", "usr/bin/", "755"],
-    ["../../assets/blackberrylabs.desktop", "usr/share/applications/", "644"],
-    ["../../assets/icon.svg", "usr/share/icons/hicolor/scalable/apps/blackberrylabs.svg", "644"],
-    ["../../assets/icon-16.png", "usr/share/icons/hicolor/16x16/apps/blackberrylabs.png", "644"],
-    ["../../assets/icon-32.png", "usr/share/icons/hicolor/32x32/apps/blackberrylabs.png", "644"],
-    ["../../assets/icon-48.png", "usr/share/icons/hicolor/48x48/apps/blackberrylabs.png", "644"],
-    ["../../assets/icon-64.png", "usr/share/icons/hicolor/64x64/apps/blackberrylabs.png", "644"],
-    ["../../assets/icon-128.png", "usr/share/icons/hicolor/128x128/apps/blackberrylabs.png", "644"],
-    ["../../assets/icon-256.png", "usr/share/icons/hicolor/256x256/apps/blackberrylabs.png", "644"],
-    ["../../assets/icon-512.png", "usr/share/icons/hicolor/512x512/apps/blackberrylabs.png", "644"],
-    ["../../README.md", "usr/share/doc/blackberrylabs/README.md", "644"],
-    ["../../packaging/.bundle/root/usr/bin/*", "usr/bin/", "755"],
-    ["../../packaging/.bundle/root/usr/share/applications/*", "usr/share/applications/", "644"],
-    ["../../packaging/.bundle/root/usr/share/icons/hicolor/16x16/apps/*", "usr/share/icons/hicolor/16x16/apps/", "644"],
-    ["../../packaging/.bundle/root/usr/share/icons/hicolor/32x32/apps/*", "usr/share/icons/hicolor/32x32/apps/", "644"],
-    ["../../packaging/.bundle/root/usr/share/icons/hicolor/48x48/apps/*", "usr/share/icons/hicolor/48x48/apps/", "644"],
-    ["../../packaging/.bundle/root/usr/share/icons/hicolor/64x64/apps/*", "usr/share/icons/hicolor/64x64/apps/", "644"],
-    ["../../packaging/.bundle/root/usr/share/icons/hicolor/128x128/apps/*", "usr/share/icons/hicolor/128x128/apps/", "644"],
-    ["../../packaging/.bundle/root/usr/share/icons/hicolor/256x256/apps/*", "usr/share/icons/hicolor/256x256/apps/", "644"],
-    ["../../packaging/.bundle/root/usr/share/icons/hicolor/512x512/apps/*", "usr/share/icons/hicolor/512x512/apps/", "644"],
-    ["../../packaging/.bundle/root/usr/share/icons/hicolor/scalable/apps/*", "usr/share/icons/hicolor/scalable/apps/", "644"],
+    ["target/release/bramblers", "usr/bin/", "755"],
+    ["target/release/bramblers-cli", "usr/bin/", "755"],
+    ["../../assets/bramblers.desktop", "usr/share/applications/", "644"],
+    ["../../assets/icon.svg", "usr/share/icons/hicolor/scalable/apps/bramblers.svg", "644"],
+    ["../../assets/icon-16.png", "usr/share/icons/hicolor/16x16/apps/bramblers.png", "644"],
+    ["../../assets/icon-32.png", "usr/share/icons/hicolor/32x32/apps/bramblers.png", "644"],
+    ["../../assets/icon-48.png", "usr/share/icons/hicolor/48x48/apps/bramblers.png", "644"],
+    ["../../assets/icon-64.png", "usr/share/icons/hicolor/64x64/apps/bramblers.png", "644"],
+    ["../../assets/icon-128.png", "usr/share/icons/hicolor/128x128/apps/bramblers.png", "644"],
+    ["../../assets/icon-256.png", "usr/share/icons/hicolor/256x256/apps/bramblers.png", "644"],
+    ["../../assets/icon-512.png", "usr/share/icons/hicolor/512x512/apps/bramblers.png", "644"],
+    ["../../README.md", "usr/share/doc/bramblers/README.md", "644"],
 ]
 
 [package.metadata.generate-rpm]
-name = "blackberrylabs"
+name = "bramblers"
 summary = "Everything your AI agents do to your machine, on one screen"
 license = "MIT"
-url = "https://github.com/blackberrylabs/blackberrylabs"
+url = "https://github.com/blackberrylabs/BrambleRS"
 requires = { libxkbcommon = "*" }
 assets = [
-    { source = "target/release/bbl-app", dest = "/usr/bin/bbl-app", mode = "755" },
-    { source = "target/release/bbl", dest = "/usr/bin/bbl", mode = "755" },
-    { source = "assets/blackberrylabs.desktop", dest = "/usr/share/applications/blackberrylabs.desktop", mode = "644" },
-    { source = "assets/icon.svg", dest = "/usr/share/icons/hicolor/scalable/apps/blackberrylabs.svg", mode = "644" },
-    { source = "assets/icon-16.png", dest = "/usr/share/icons/hicolor/16x16/apps/blackberrylabs.png", mode = "644" },
-    { source = "assets/icon-32.png", dest = "/usr/share/icons/hicolor/32x32/apps/blackberrylabs.png", mode = "644" },
-    { source = "assets/icon-48.png", dest = "/usr/share/icons/hicolor/48x48/apps/blackberrylabs.png", mode = "644" },
-    { source = "assets/icon-64.png", dest = "/usr/share/icons/hicolor/64x64/apps/blackberrylabs.png", mode = "644" },
-    { source = "assets/icon-128.png", dest = "/usr/share/icons/hicolor/128x128/apps/blackberrylabs.png", mode = "644" },
-    { source = "assets/icon-256.png", dest = "/usr/share/icons/hicolor/256x256/apps/blackberrylabs.png", mode = "644" },
-    { source = "assets/icon-512.png", dest = "/usr/share/icons/hicolor/512x512/apps/blackberrylabs.png", mode = "644" },
-    { source = "README.md", dest = "/usr/share/doc/blackberrylabs/README.md", mode = "644", doc = true },
-    { source = "LICENSE", dest = "/usr/share/licenses/blackberrylabs/LICENSE", mode = "644", doc = true },
-]
-
-[package.metadata.generate-rpm.variants.full]
-name = "blackberrylabs-full"
-summary = "Everything your AI agents do to your machine, on one screen — with every module"
-provides = { blackberrylabs = "*", permitt = "*", mcproster = "*", cleanator = "*", linstruct = "*", billfold = "*", lastrun = "*" }
-conflicts = { blackberrylabs = "*", permitt = "*", mcproster = "*", cleanator = "*", linstruct = "*", billfold = "*", lastrun = "*" }
-assets = [
-    { source = "target/release/bbl-app", dest = "/usr/bin/bbl-app", mode = "755" },
-    { source = "target/release/bbl", dest = "/usr/bin/bbl", mode = "755" },
-    { source = "assets/blackberrylabs.desktop", dest = "/usr/share/applications/blackberrylabs.desktop", mode = "644" },
-    { source = "assets/icon.svg", dest = "/usr/share/icons/hicolor/scalable/apps/blackberrylabs.svg", mode = "644" },
-    { source = "assets/icon-16.png", dest = "/usr/share/icons/hicolor/16x16/apps/blackberrylabs.png", mode = "644" },
-    { source = "assets/icon-32.png", dest = "/usr/share/icons/hicolor/32x32/apps/blackberrylabs.png", mode = "644" },
-    { source = "assets/icon-48.png", dest = "/usr/share/icons/hicolor/48x48/apps/blackberrylabs.png", mode = "644" },
-    { source = "assets/icon-64.png", dest = "/usr/share/icons/hicolor/64x64/apps/blackberrylabs.png", mode = "644" },
-    { source = "assets/icon-128.png", dest = "/usr/share/icons/hicolor/128x128/apps/blackberrylabs.png", mode = "644" },
-    { source = "assets/icon-256.png", dest = "/usr/share/icons/hicolor/256x256/apps/blackberrylabs.png", mode = "644" },
-    { source = "assets/icon-512.png", dest = "/usr/share/icons/hicolor/512x512/apps/blackberrylabs.png", mode = "644" },
-    { source = "README.md", dest = "/usr/share/doc/blackberrylabs/README.md", mode = "644", doc = true },
-    { source = "LICENSE", dest = "/usr/share/licenses/blackberrylabs/LICENSE", mode = "644", doc = true },
-    { source = "packaging/.bundle/root/usr/bin/*", dest = "/usr/bin/", mode = "755" },
-    { source = "packaging/.bundle/root/usr/share/applications/*", dest = "/usr/share/applications/", mode = "644" },
-    { source = "packaging/.bundle/root/usr/share/icons/hicolor/16x16/apps/*", dest = "/usr/share/icons/hicolor/16x16/apps/", mode = "644" },
-    { source = "packaging/.bundle/root/usr/share/icons/hicolor/32x32/apps/*", dest = "/usr/share/icons/hicolor/32x32/apps/", mode = "644" },
-    { source = "packaging/.bundle/root/usr/share/icons/hicolor/48x48/apps/*", dest = "/usr/share/icons/hicolor/48x48/apps/", mode = "644" },
-    { source = "packaging/.bundle/root/usr/share/icons/hicolor/64x64/apps/*", dest = "/usr/share/icons/hicolor/64x64/apps/", mode = "644" },
-    { source = "packaging/.bundle/root/usr/share/icons/hicolor/128x128/apps/*", dest = "/usr/share/icons/hicolor/128x128/apps/", mode = "644" },
-    { source = "packaging/.bundle/root/usr/share/icons/hicolor/256x256/apps/*", dest = "/usr/share/icons/hicolor/256x256/apps/", mode = "644" },
-    { source = "packaging/.bundle/root/usr/share/icons/hicolor/512x512/apps/*", dest = "/usr/share/icons/hicolor/512x512/apps/", mode = "644" },
-    { source = "packaging/.bundle/root/usr/share/icons/hicolor/scalable/apps/*", dest = "/usr/share/icons/hicolor/scalable/apps/", mode = "644" },
+    { source = "target/release/bramblers", dest = "/usr/bin/bramblers", mode = "755" },
+    { source = "target/release/bramblers-cli", dest = "/usr/bin/bramblers-cli", mode = "755" },
+    { source = "assets/bramblers.desktop", dest = "/usr/share/applications/bramblers.desktop", mode = "644" },
+    { source = "assets/icon.svg", dest = "/usr/share/icons/hicolor/scalable/apps/bramblers.svg", mode = "644" },
+    { source = "assets/icon-16.png", dest = "/usr/share/icons/hicolor/16x16/apps/bramblers.png", mode = "644" },
+    { source = "assets/icon-32.png", dest = "/usr/share/icons/hicolor/32x32/apps/bramblers.png", mode = "644" },
+    { source = "assets/icon-48.png", dest = "/usr/share/icons/hicolor/48x48/apps/bramblers.png", mode = "644" },
+    { source = "assets/icon-64.png", dest = "/usr/share/icons/hicolor/64x64/apps/bramblers.png", mode = "644" },
+    { source = "assets/icon-128.png", dest = "/usr/share/icons/hicolor/128x128/apps/bramblers.png", mode = "644" },
+    { source = "assets/icon-256.png", dest = "/usr/share/icons/hicolor/256x256/apps/bramblers.png", mode = "644" },
+    { source = "assets/icon-512.png", dest = "/usr/share/icons/hicolor/512x512/apps/bramblers.png", mode = "644" },
+    { source = "README.md", dest = "/usr/share/doc/bramblers/README.md", mode = "644", doc = true },
+    { source = "LICENSE", dest = "/usr/share/licenses/bramblers/LICENSE", mode = "644", doc = true },
 ]

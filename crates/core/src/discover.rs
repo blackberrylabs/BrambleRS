@@ -1,5 +1,5 @@
 //! Is a module installed? Its binaries are looked up next to the tower's own executable
-//! first (the full package ships the modules beside `bbl-app`; inside an AppImage that
+//! first (the full package ships the modules beside `bramblers`; inside an AppImage that
 //! directory is not on `PATH`), then on `PATH`. Nothing else is read.
 
 use std::path::{Path, PathBuf};

@@ -1,8 +1,8 @@
 //! What the crate promises: round trip, forward compatibility, every validation rule fires
 //! once, and no file or network access anywhere in the code.
 
-use bbl_report::conformance::{check, example};
-use bbl_report::*;
+use bramblers_report::conformance::{check, example};
+use bramblers_report::*;
 
 #[test]
 fn round_trip() {
@@ -56,7 +56,10 @@ fn expect_error(mutate: impl FnOnce(&mut Report), needle: &str) {
     let mut r = example();
     mutate(&mut r);
     let errors = r.validate().expect_err(needle);
-    assert!(errors.iter().any(|e| e.contains(needle)), "expected {needle:?} in {errors:?}");
+    assert!(
+        errors.iter().any(|e| e.contains(needle)),
+        "expected {needle:?} in {errors:?}"
+    );
 }
 
 #[test]
@@ -68,10 +71,19 @@ fn every_rule_fires() {
     expect_error(|r| r.module.verb = "".into(), "module.verb");
     expect_error(|r| r.module.app = Some("".into()), "module.app");
     expect_error(|r| r.module.cli = Some("".into()), "module.cli");
-    expect_error(|r| r.generated_at = "2026-10-16 21:03".into(), "generated_at");
+    expect_error(
+        |r| r.generated_at = "2026-10-16 21:03".into(),
+        "generated_at",
+    );
     expect_error(|r| r.summary.clear(), "summary: 1 to 4");
-    expect_error(|r| r.summary = vec![r.summary[0].clone(); 5], "summary: 1 to 4");
-    expect_error(|r| r.summary = vec![r.summary[0].clone(), r.summary[0].clone()], "appears twice");
+    expect_error(
+        |r| r.summary = vec![r.summary[0].clone(); 5],
+        "summary: 1 to 4",
+    );
+    expect_error(
+        |r| r.summary = vec![r.summary[0].clone(), r.summary[0].clone()],
+        "appears twice",
+    );
     expect_error(|r| r.summary[0].key = "".into(), "summary[0].key");
     expect_error(|r| r.summary[0].label = "".into(), "summary[0].label");
     expect_error(|r| r.findings[0].id = "".into(), "findings[0].id");
@@ -79,7 +91,10 @@ fn every_rule_fires() {
     expect_error(|r| r.findings[0].kind = "".into(), "findings[0].kind");
     expect_error(|r| r.findings[0].title = "".into(), "findings[0].title");
     expect_error(|r| r.findings[0].subject.label = "".into(), "subject.label");
-    expect_error(|r| r.findings[0].evidence[0].label = "".into(), "evidence[0].label");
+    expect_error(
+        |r| r.findings[0].evidence[0].label = "".into(),
+        "evidence[0].label",
+    );
     expect_error(
         |r| {
             r.findings[0].evidence[0].path = None;
@@ -87,9 +102,23 @@ fn every_rule_fires() {
         },
         "a line without a path",
     );
-    expect_error(|r| r.findings[0].actions[0].label = "".into(), "actions[0].label");
-    expect_error(|r| r.findings[0].actions[1].target = None, "without a target");
-    expect_error(|r| r.findings[0].open = Some(Open { app: "".into(), args: vec![] }), "open.app");
+    expect_error(
+        |r| r.findings[0].actions[0].label = "".into(),
+        "actions[0].label",
+    );
+    expect_error(
+        |r| r.findings[0].actions[1].target = None,
+        "without a target",
+    );
+    expect_error(
+        |r| {
+            r.findings[0].open = Some(Open {
+                app: "".into(),
+                args: vec![],
+            })
+        },
+        "open.app",
+    );
 }
 
 #[test]
@@ -118,7 +147,12 @@ fn new_report_is_stamped_and_valid_once_summarised() {
     let mut r = Report::new(example().module);
     assert_eq!(r.schema, SCHEMA);
     assert!(r.validate().is_err(), "no summary yet");
-    r.summary.push(Summary { key: "n".into(), label: "N".into(), value: "1".into(), tone: Tone::Good });
+    r.summary.push(Summary {
+        key: "n".into(),
+        label: "N".into(),
+        value: "1".into(),
+        tone: Tone::Good,
+    });
     assert_eq!(r.validate(), Ok(()));
 }
 
@@ -130,11 +164,24 @@ fn no_io_in_the_crate() {
     for entry in std::fs::read_dir(root).unwrap() {
         let path = entry.unwrap().path();
         let text = std::fs::read_to_string(&path).unwrap();
-        for forbidden in ["std::fs", "std::net", "std::process", "fs::", "File::", "Command::", "TcpStream"] {
-            assert!(!text.contains(forbidden), "{} mentions {forbidden}", path.display());
+        for forbidden in [
+            "std::fs",
+            "std::net",
+            "std::process",
+            "fs::",
+            "File::",
+            "Command::",
+            "TcpStream",
+        ] {
+            assert!(
+                !text.contains(forbidden),
+                "{} mentions {forbidden}",
+                path.display()
+            );
         }
     }
-    let manifest = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml")).unwrap();
+    let manifest =
+        std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml")).unwrap();
     let deps: Vec<&str> = manifest
         .lines()
         .skip_while(|l| !l.starts_with("[dependencies]"))

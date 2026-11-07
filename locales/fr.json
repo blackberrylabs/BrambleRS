@@ -1,5 +1,5 @@
 {
-  "app.title": "Blackberrylabs — votre machine, côté IA",
+  "app.title": "BrambleRS — votre machine, côté IA",
   "headline.none": "Votre machine, côté IA : rien de lu pour l'instant.",
   "headline.clear": "Votre machine, côté IA : rien à traiter, rien à regarder.",
   "headline.act": "Votre machine, côté IA : {act} à traiter maintenant, {review} à regarder.",
@@ -61,8 +61,8 @@
   "detail.open_link": "Ouvrir le lien",
   "detail.open_in": "Ouvrir dans {module}",
   "detail.open_in_missing": "L'app {app} n'est pas installée",
-  "detail.note": "Blackberrylabs ne modifie rien sur votre machine. Chaque action ici vous revient.",
-  "about.title": "Blackberrylabs",
+  "detail.note": "BrambleRS ne modifie rien sur votre machine. Chaque action ici vous revient.",
+  "about.title": "BrambleRS",
   "about.subtitle": "Une petite famille d'outils en lecture seule pour les développeurs qui font tourner de l'IA sous Linux.",
   "about.body": "Chaque outil répond à une question — ce que vos agents peuvent faire, quels serveurs MCP sont déclarés, ce que l'outillage a laissé sur le disque — et cet écran rassemble leurs constats en une liste, le plus grave en premier.",
   "about.how": "Comment lire",

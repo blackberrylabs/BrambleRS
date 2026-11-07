@@ -1,7 +1,7 @@
-//! The report contract between the Blackberrylabs control tower and its modules.
+//! The report contract between the internal contract of BrambleRS.
 //!
 //! A module (Cleanator, MCProster, Permitt, …) answers `<module> report --json` with one
-//! `bbl-report/1` document on stdout. The tower reads those documents, merges them into one
+//! `bbl-report/1` document on stdout. BrambleRS reads those documents, merges them into one
 //! sorted list of findings and opens the module at the right place. This crate is the only
 //! thing the two sides share: the types of that document, their JSON form, a validation that
 //! lists every defect, the four-level severity scale in words, and a conformance check every
@@ -94,7 +94,7 @@ pub struct Summary {
     pub tone: Tone,
 }
 
-/// Colour hint for a figure; the names of the `bbl-ui` palette.
+/// Colour hint for a figure; the names of the `bramblers-ui` palette.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Tone {
@@ -126,7 +126,12 @@ pub enum Severity {
 
 impl Severity {
     /// All four, strongest first.
-    pub const ALL: [Severity; 4] = [Severity::ActNow, Severity::Review, Severity::GoodToKnow, Severity::Info];
+    pub const ALL: [Severity; 4] = [
+        Severity::ActNow,
+        Severity::Review,
+        Severity::GoodToKnow,
+        Severity::Info,
+    ];
 
     /// The number on the wire: 1 to 4.
     pub fn number(self) -> u8 {
@@ -146,9 +151,15 @@ impl Severity {
     /// The scale in words, as agreed between the tower and the modules.
     pub fn meaning(self) -> &'static str {
         match self {
-            Severity::ActNow => "act now: data loss possible, a secret in clear, a bypass in a shell file",
-            Severity::Review => "review: acts without asking, broad access, a large recoverable volume",
-            Severity::GoodToKnow => "good to know: a duplicate, a version that differs, a deny list alone",
+            Severity::ActNow => {
+                "act now: data loss possible, a secret in clear, a bypass in a shell file"
+            }
+            Severity::Review => {
+                "review: acts without asking, broad access, a large recoverable volume"
+            }
+            Severity::GoodToKnow => {
+                "good to know: a duplicate, a version that differs, a deny list alone"
+            }
             Severity::Info => "information: disabled, not cached, not readable",
         }
     }
@@ -314,10 +325,16 @@ impl Report {
     pub fn validate(&self) -> Result<(), Vec<String>> {
         let mut errors = Vec::new();
         if self.schema != SCHEMA {
-            errors.push(format!("schema: expected {SCHEMA:?}, got {:?}", self.schema));
+            errors.push(format!(
+                "schema: expected {SCHEMA:?}, got {:?}",
+                self.schema
+            ));
         }
         if !is_slug(&self.module.id) {
-            errors.push(format!("module.id: {:?} is not a slug (lowercase letters, digits, '-')", self.module.id));
+            errors.push(format!(
+                "module.id: {:?} is not a slug (lowercase letters, digits, '-')",
+                self.module.id
+            ));
         }
         for (field, value) in [
             ("module.name", &self.module.name),
@@ -339,10 +356,16 @@ impl Report {
             }
         }
         if !is_rfc3339_utc(&self.generated_at) {
-            errors.push(format!("generated_at: {:?} is not RFC 3339 UTC (YYYY-MM-DDTHH:MM:SSZ)", self.generated_at));
+            errors.push(format!(
+                "generated_at: {:?} is not RFC 3339 UTC (YYYY-MM-DDTHH:MM:SSZ)",
+                self.generated_at
+            ));
         }
         if self.summary.is_empty() || self.summary.len() > 4 {
-            errors.push(format!("summary: 1 to 4 figures expected, got {}", self.summary.len()));
+            errors.push(format!(
+                "summary: 1 to 4 figures expected, got {}",
+                self.summary.len()
+            ));
         }
         let mut keys = std::collections::HashSet::new();
         for (i, s) in self.summary.iter().enumerate() {
@@ -376,7 +399,9 @@ impl Report {
                     errors.push(format!("findings[{i}].evidence[{j}].label: empty"));
                 }
                 if e.line.is_some() && e.path.is_none() {
-                    errors.push(format!("findings[{i}].evidence[{j}]: a line without a path"));
+                    errors.push(format!(
+                        "findings[{i}].evidence[{j}]: a line without a path"
+                    ));
                 }
             }
             for (j, a) in f.actions.iter().enumerate() {
@@ -385,7 +410,10 @@ impl Report {
                 }
                 let needs_target = !matches!(a.kind, ActionKind::Hint);
                 if needs_target && a.target.as_deref().map_or(true, |t| t.trim().is_empty()) {
-                    errors.push(format!("findings[{i}].actions[{j}]: {:?} action without a target", a.kind));
+                    errors.push(format!(
+                        "findings[{i}].actions[{j}]: {:?} action without a target",
+                        a.kind
+                    ));
                 }
             }
             if let Some(open) = &f.open {
@@ -411,7 +439,8 @@ pub fn peek_schema(json: &str) -> Option<String> {
 
 fn is_slug(s: &str) -> bool {
     !s.is_empty()
-        && s.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+        && s.bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
         && !s.starts_with('-')
         && !s.ends_with('-')
 }
@@ -419,13 +448,25 @@ fn is_slug(s: &str) -> bool {
 /// `YYYY-MM-DDTHH:MM:SSZ`, digits in the right places and fields in range.
 fn is_rfc3339_utc(s: &str) -> bool {
     let b = s.as_bytes();
-    if b.len() != 20 || b[4] != b'-' || b[7] != b'-' || b[10] != b'T' || b[13] != b':' || b[16] != b':' || b[19] != b'Z' {
+    if b.len() != 20
+        || b[4] != b'-'
+        || b[7] != b'-'
+        || b[10] != b'T'
+        || b[13] != b':'
+        || b[16] != b':'
+        || b[19] != b'Z'
+    {
         return false;
     }
     let num = |from: usize, to: usize| -> Option<u32> { s.get(from..to)?.parse().ok() };
-    let (Some(_y), Some(mo), Some(d), Some(h), Some(mi), Some(se)) =
-        (num(0, 4), num(5, 7), num(8, 10), num(11, 13), num(14, 16), num(17, 19))
-    else {
+    let (Some(_y), Some(mo), Some(d), Some(h), Some(mi), Some(se)) = (
+        num(0, 4),
+        num(5, 7),
+        num(8, 10),
+        num(11, 13),
+        num(14, 16),
+        num(17, 19),
+    ) else {
         return false;
     };
     (1..=12).contains(&mo) && (1..=31).contains(&d) && h < 24 && mi < 60 && se < 60
@@ -491,7 +532,10 @@ mod tests {
     #[test]
     fn severity_on_the_wire() {
         assert_eq!(serde_json::to_string(&Severity::Review).unwrap(), "2");
-        assert_eq!(serde_json::from_str::<Severity>("4").unwrap(), Severity::Info);
+        assert_eq!(
+            serde_json::from_str::<Severity>("4").unwrap(),
+            Severity::Info
+        );
         assert!(serde_json::from_str::<Severity>("0").is_err());
         assert!(serde_json::from_str::<Severity>("5").is_err());
         assert!(Severity::ActNow < Severity::Info);

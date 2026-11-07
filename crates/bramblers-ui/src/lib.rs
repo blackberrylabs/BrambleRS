@@ -1,4 +1,4 @@
-//! `bbl-ui`: the shared face of the Blackberrylabs desktop tools (Cleanator, MCProster,
+//! `bramblers-ui`: the shared face of the BrambleRS desktop tools (Cleanator, MCProster,
 //! Permitt, the control tower). What the three first apps carried as three copies now lives
 //! here, and nothing else:
 //!

@@ -1,4 +1,4 @@
-//! The building blocks every Blackberrylabs window is made of, generic over the app's
+//! The building blocks every BrambleRS window is made of, generic over the app's
 //! message type. Paddings and radii are Cleanator's.
 
 use iced::widget::{button, container, row, text, Space};

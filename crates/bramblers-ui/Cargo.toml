@@ -1,12 +1,12 @@
 [package]
-name = "bbl-ui"
-version = "0.1.0"
+name = "bramblers-ui"
+version.workspace = true
 edition = "2021"
 rust-version = "1.80"
 license = "MIT"
 authors = ["Alexandre Do"]
-repository = "https://github.com/blackberrylabs/bbl-ui"
-description = "The shared face of the Blackberrylabs desktop tools: palette, iced building blocks, interface preferences, translated strings"
+repository = "https://github.com/blackberrylabs/BrambleRS"
+description = "The shared face of BrambleRS: palette, iced building blocks, interface preferences, translated strings"
 keywords = ["iced", "ui", "desktop"]
 categories = ["gui"]
 

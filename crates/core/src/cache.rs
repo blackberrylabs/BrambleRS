@@ -5,7 +5,7 @@
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
-use bbl_report::Report;
+use bramblers_report::Report;
 
 /// Where the saved reports live.
 #[derive(Debug, Clone)]
@@ -28,13 +28,21 @@ impl Cache {
     /// `~/.local/state/blackberrylabs`.
     pub fn default_location() -> Cache {
         if let Some(d) = std::env::var_os("BBL_STATE_DIR") {
-            return Cache { dir: PathBuf::from(d) };
+            return Cache {
+                dir: PathBuf::from(d),
+            };
         }
         if let Some(d) = std::env::var_os("XDG_STATE_HOME").filter(|d| !d.is_empty()) {
-            return Cache { dir: PathBuf::from(d).join("blackberrylabs") };
+            return Cache {
+                dir: PathBuf::from(d).join("blackberrylabs"),
+            };
         }
-        let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_else(|| PathBuf::from("/"));
-        Cache { dir: home.join(".local/state/blackberrylabs") }
+        let home = std::env::var_os("HOME")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from("/"));
+        Cache {
+            dir: home.join(".local/state/blackberrylabs"),
+        }
     }
 
     pub fn at(dir: impl Into<PathBuf>) -> Cache {
@@ -60,8 +68,13 @@ impl Cache {
             .ok()
             .and_then(|t| SystemTime::now().duration_since(t).ok())
             .unwrap_or_default();
-        match bbl_report::conformance::check(&json) {
-            Ok(report) => Some(Ok(Saved { report, json, age, path })),
+        match bramblers_report::conformance::check(&json) {
+            Ok(report) => Some(Ok(Saved {
+                report,
+                json,
+                age,
+                path,
+            })),
             Err(errs) => Some(Err(format!("{}: {}", path.display(), errs.join("; ")))),
         }
     }
@@ -127,6 +140,9 @@ mod tests {
     #[test]
     fn location_follows_the_environment() {
         let c = Cache::at("/tmp/x");
-        assert_eq!(c.path("permitt"), PathBuf::from("/tmp/x/permitt/report.json"));
+        assert_eq!(
+            c.path("permitt"),
+            PathBuf::from("/tmp/x/permitt/report.json")
+        );
     }
 }

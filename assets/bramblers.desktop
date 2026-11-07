@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=BrambleRS
+GenericName=AI tooling control panel
+GenericName[fr]=Tableau de bord de l'outillage IA
+Comment=Everything your AI agents do to your machine, on one screen: permissions, MCP servers, instruction files, disk, spend, what they ran. Read-only.
+Comment[fr]=Tout ce que vos agents IA font à votre machine, sur un écran : permissions, serveurs MCP, fichiers d'instructions, disque, dépenses, exécutions. Lecture seule.
+Exec=bramblers
+Icon=bramblers
+Terminal=false
+Categories=Development;Utility;System;
+Keywords=ai agents;mcp;permissions;disk;spend;sessions;claude code;cursor;codex;opencode;control panel;
+StartupWMClass=bramblers

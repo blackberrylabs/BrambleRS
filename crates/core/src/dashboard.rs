@@ -4,14 +4,14 @@
 use std::path::PathBuf;
 use std::time::Duration;
 
-use bbl_report::{Finding, Report, Severity, Summary};
+use bramblers_report::{Finding, Report, Severity, Summary};
 use serde::Serialize;
 
 use crate::cache::Cache;
 use crate::discover::which;
 use crate::run;
-use crate::spec::{Modules, Spec};
 pub use crate::run::{Run, RunError};
+use crate::spec::{Modules, Spec};
 
 /// Where a module's report comes from, or why there is none.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -67,12 +67,24 @@ impl Dashboard {
                 let app = spec.app.as_deref().and_then(|a| which(a, path_dirs));
                 let installed = cli.is_some() || app.is_some();
                 let (state, report) = match cache.read(&spec.id) {
-                    Some(Ok(saved)) => (ReportState::Saved { age_s: saved.age.as_secs() }, Some(saved.report)),
+                    Some(Ok(saved)) => (
+                        ReportState::Saved {
+                            age_s: saved.age.as_secs(),
+                        },
+                        Some(saved.report),
+                    ),
                     Some(Err(e)) => (ReportState::Failed { error: e }, None),
                     None if installed => (ReportState::NoReport, None),
                     None => (ReportState::NotInstalled, None),
                 };
-                ModuleStatus { spec: spec.clone(), cli, app, installed, state, report }
+                ModuleStatus {
+                    spec: spec.clone(),
+                    cli,
+                    app,
+                    installed,
+                    state,
+                    report,
+                }
             })
             .collect();
         Dashboard::assemble(statuses)
@@ -99,7 +111,10 @@ impl Dashboard {
             Some(cli) => Ok((m.spec.clone(), cli)),
             None => {
                 m.state = ReportState::NotInstalled;
-                Err(RunError::Spawn(format!("{} is not installed ({} not on PATH)", m.spec.name, m.spec.cli)))
+                Err(RunError::Spawn(format!(
+                    "{} is not installed ({} not on PATH)",
+                    m.spec.name, m.spec.cli
+                )))
             }
         }
     }
@@ -110,13 +125,19 @@ impl Dashboard {
             match result {
                 Ok(run) => {
                     m.state = match cache.write(id, &run.json) {
-                        Ok(_) => ReportState::Fresh { elapsed_ms: run.elapsed.as_millis() as u64 },
+                        Ok(_) => ReportState::Fresh {
+                            elapsed_ms: run.elapsed.as_millis() as u64,
+                        },
                         Err(e) => ReportState::Failed { error: e },
                     };
                     m.report = Some(run.report.clone());
                 }
                 Err(_) if m.state == ReportState::NotInstalled => {}
-                Err(e) => m.state = ReportState::Failed { error: e.to_string() },
+                Err(e) => {
+                    m.state = ReportState::Failed {
+                        error: e.to_string(),
+                    }
+                }
             }
         }
         let statuses = std::mem::take(&mut self.modules);
@@ -125,7 +146,12 @@ impl Dashboard {
 
     /// Run every installed module, in family order.
     pub fn refresh_all(&mut self, cache: &Cache) -> Vec<(String, Result<Duration, RunError>)> {
-        let ids: Vec<String> = self.modules.iter().filter(|m| m.cli.is_some()).map(|m| m.spec.id.clone()).collect();
+        let ids: Vec<String> = self
+            .modules
+            .iter()
+            .filter(|m| m.cli.is_some())
+            .map(|m| m.spec.id.clone())
+            .collect();
         ids.into_iter()
             .map(|id| {
                 let r = self.refresh(&id, cache).map(|run| run.elapsed);
@@ -139,7 +165,14 @@ impl Dashboard {
         for (order, m) in modules.iter().enumerate() {
             if let Some(r) = &m.report {
                 for f in &r.findings {
-                    lines.push((order, Line { module: m.spec.id.clone(), module_name: m.spec.name.clone(), finding: f.clone() }));
+                    lines.push((
+                        order,
+                        Line {
+                            module: m.spec.id.clone(),
+                            module_name: m.spec.name.clone(),
+                            finding: f.clone(),
+                        },
+                    ));
                 }
             }
         }
@@ -150,17 +183,35 @@ impl Dashboard {
                 .then(oa.cmp(ob))
                 .then_with(|| a.finding.title.cmp(&b.finding.title))
         });
-        Dashboard { modules, lines: lines.into_iter().map(|(_, l)| l).collect() }
+        Dashboard {
+            modules,
+            lines: lines.into_iter().map(|(_, l)| l).collect(),
+        }
     }
 
     /// How many findings at each severity, strongest first.
     pub fn counts(&self) -> [(Severity, usize); 4] {
-        Severity::ALL.map(|s| (s, self.lines.iter().filter(|l| l.finding.severity == s).count()))
+        Severity::ALL.map(|s| {
+            (
+                s,
+                self.lines
+                    .iter()
+                    .filter(|l| l.finding.severity == s)
+                    .count(),
+            )
+        })
     }
 
     /// The figures of every module that has a report, in family order.
     pub fn summaries(&self) -> Vec<(&ModuleStatus, &Summary)> {
-        self.modules.iter().flat_map(|m| m.report.iter().flat_map(move |r| r.summary.iter().map(move |s| (m, s)))).collect()
+        self.modules
+            .iter()
+            .flat_map(|m| {
+                m.report
+                    .iter()
+                    .flat_map(move |r| r.summary.iter().map(move |s| (m, s)))
+            })
+            .collect()
     }
 
     /// The lines at or above a severity (1 = act now only … 4 = everything).

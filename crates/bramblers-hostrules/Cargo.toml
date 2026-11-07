@@ -1,11 +1,11 @@
 [package]
-name = "bbl-hostrules"
-version = "0.5.0"
+name = "bramblers-hostrules"
+version.workspace = true
 edition = "2021"
 rust-version = "1.80"
 license = "MIT"
 authors = ["Alexandre Do"]
-repository = "https://github.com/blackberrylabs/bbl-hostrules"
+repository = "https://github.com/blackberrylabs/BrambleRS"
 description = "Where each AI assistant keeps its files on a machine, and how to read them without writing — with the source of every claim"
 keywords = ["mcp", "config", "read-only", "ai-assistants"]
 categories = ["config", "filesystem"]

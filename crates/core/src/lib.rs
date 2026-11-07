@@ -1,7 +1,7 @@
-//! The Blackberrylabs control tower, core.
+//! The BrambleRS control tower, core.
 //!
 //! One screen that says what is wrong on a machine on the AI side — most serious first —
-//! and opens the Blackberrylabs module that deals with it. The tower computes nothing: it
+//! and opens the BrambleRS module that deals with it. The tower computes nothing: it
 //! launches the installed modules, reads their `bbl-report/1` documents, assembles them into
 //! one list of findings sorted by severity, and knows how to open a module at a finding.
 //!

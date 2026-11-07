@@ -1,6 +1,6 @@
 [package]
-name = "bbl-core"
-description = "The Blackberrylabs control tower: launches the modules, reads their reports, sorts the findings — never acts"
+name = "bramblers-core"
+description = "The BrambleRS core: runs the six modules, reads their reports, sorts the findings — never acts"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -8,7 +8,7 @@ authors.workspace = true
 repository.workspace = true
 
 [dependencies]
-bbl-report.workspace = true
+bramblers-report.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 toml.workspace = true
