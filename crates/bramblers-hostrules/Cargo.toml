@@ -1,0 +1,23 @@
+[package]
+name = "bbl-hostrules"
+version = "0.5.0"
+edition = "2021"
+rust-version = "1.80"
+license = "MIT"
+authors = ["Alexandre Do"]
+repository = "https://github.com/blackberrylabs/bbl-hostrules"
+description = "Where each AI assistant keeps its files on a machine, and how to read them without writing — with the source of every claim"
+keywords = ["mcp", "config", "read-only", "ai-assistants"]
+categories = ["config", "filesystem"]
+
+[dependencies]
+thiserror = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+serde_yaml_ng = "0.10"
+glob = "0.3"
+regex = "1.10"
+
+[dev-dependencies]
+tempfile = "3"
