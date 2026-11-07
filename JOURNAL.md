@@ -3,6 +3,15 @@
 
 ---
 
+## 2026-11-07, audit de sécurité : F10 et F11 corrigés
+
+- F10, paquet AppImage : `build.sh` épingle `appimagetool` 1.9.1 et vérifie son SHA256 publié avant de l'exécuter ; un outil déjà présent dans `packaging/.tools/` est vérifié aussi et remplacé s'il ne correspond pas. Les sommes des quatre architectures sont dans le script. Commit `7c5d843`. `build.sh` n'a pas été lancé (accord requis) ; `bash -n` passe et la somme du fichier 1.9.1 téléchargé correspond.
+- F11, écritures : les rapports, `probes.json`, les réglages et `cleanup.sh` passent par un fichier temporaire créé en `create_new` et renommé, en 0600. Un lien symbolique posé à la place du fichier final est remplacé, pas suivi. Tests de lien symbolique et de mode dans `cache` et `probe`. Commit `492a22c`.
+- Preuves : `cargo test --workspace` passe 245 tests, `cargo clippy --workspace --all-targets` et `cargo fmt --check` propres, `cargo check -p bramblers` compile l'app.
+- Restent les constats F12 à F15 du rapport.
+
+---
+
 ## 2026-11-07, audit de sécurité : F8 et F9 corrigés
 
 - F8, lectures bornées : Billfold et Lastrun refusent un journal de plus de 256 Mio et une décompression zstd de plus de 256 Mio (le fichier est lu par `File::take`, jamais par `fs::read` entier) ; Cleanator plafonne stdout et stderr de chaque sonde externe à 16 Mio. Commit `d4a8299`.
