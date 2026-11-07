@@ -3,6 +3,18 @@
 
 ---
 
+## 2026-11-07, interface à rail gauche
+
+- Demande d'Alexandre : la même structure que MiningControlRS, avec les modules en onglet à gauche. L'écran passe d'une pile de cartes à un en-tête, un rail de 210 px et un contenu à droite.
+- Le rail porte « All findings » puis les six modules, avec le nombre de constats et un point à la gravité la plus forte. L'onglet actif est une pastille discrète. Le pied du rail garde la langue, le thème et le nombre de rapports lus.
+- En haut : le nom BrambleRS, la version, l'état des rapports, le bouton de rafraîchissement. Dans le contenu : les quatre chiffres de gravité, la liste des constats et le détail. Sur un onglet de module, les chiffres, la liste et le détail sont limités à ce module ; le détail montre ses chiffres, ses constats par gravité, l'âge du rapport et « Refresh ».
+- Disparaissent : les six cartes de modules, les puces de filtre et le pied de page global. `BRAMBLERS_MODULE=<id>` ouvre directement un onglet (captures) ; `BRAMBLERS_SELECT` et `BRAMBLERS_NO_REFRESH` restent.
+- La palette noire et violette de MiningControlRS n'a pas été copiée : BrambleRS garde ses couleurs de gravité et les thèmes iced clair/sombre. La structure est la même, l'identité visuelle reste la sienne.
+- Preuves : captures de l'aperçu en sombre et en clair, et de l'onglet Permitt ; `cargo test --workspace` passe (207 tests), fmt et clippy propres. Les paquets seront reconstruits après ce changement.
+- Rien n'a été poussé.
+
+---
+
 ## 2026-11-07, README, shim, suppressions, paquet installé
 
 - `README.md` réécrit pour BrambleRS : six modules, read-only, installation, commandes, architecture du workspace. `CHANGELOG.md` remplacé par l'entrée 0.1.0, avec la limite explicite : les vues détaillées des six anciennes apps arrivent en 0.x. Contrôle de style : aucun tiret cadratin, aucun mot de la liste noire.

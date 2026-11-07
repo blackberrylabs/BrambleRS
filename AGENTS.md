@@ -16,6 +16,7 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 - Reste : GitHub (renommer le dépôt, archiver les dix anciens, release 0.1.0), dossier local `BrambleRS`.
 - La 0.1.0 garde l'écran actuel. Les six apps détaillées ne sont pas dans la 0.1.0 ; leurs fonctionnalités reviennent en 0.x, une vue par une. La 1.0 est la parité.
 - L'ancien code de l'ancienne tour et les fichiers importés redondants ont été supprimés le 2026-11-07. `packaging/github_meta.sh` reste à retirer ou réécrire avec l'étape GitHub.
+- Interface du 2026-11-07 : en-tête, rail gauche de 210 px avec « All findings » et les six modules en onglets, quatre chiffres de gravité et liste/détail à droite. Les couleurs de gravité et les thèmes iced sont conservés ; la palette noire et violette de MiningControlRS n'a pas été reprise.
 
 ## Promesses
 

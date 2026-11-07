@@ -102,6 +102,7 @@ module non plus.
 - [x] AppImage lancée 8 s et extraite : `AppRun`, `bramblers.desktop`, icône — 2026-11-07
 - [x] Shim : les réglages de l'ancienne app `blackberrylabs` sont lus une fois vers `bramblers` ; les anciens rapports `bbl-report/1` sont ignorés — 2026-11-07
 - [x] `README.md` et `CHANGELOG.md` réécrits pour BrambleRS 0.1.0 ; fichiers morts supprimés : 4 sources de l'ancienne tour, 6 fiches `modules/*.toml`, `docs/new-module.md`, `packaging/bundle.sh`, 27 fichiers de pilotage importés, `dist/` et `packaging/.bundle/` — 2026-11-07
+- [x] Interface à rail gauche, sur le modèle de MiningControlRS : en-tête, rail de 210 px avec « All findings » et les six modules en onglets, chiffres de gravité et liste/détail à droite ; les cartes de modules et les puces de filtre disparaissent — 2026-11-07
 - [ ] `.rpm` installé sur une machine RPM (rpm n'est pas installé ici ; le paquet est construit)
 - [ ] GitHub : renommer le dépôt en `BrambleRS`, archiver les dix anciens dépôts (pas supprimer), profil d'org, release 0.1.0, tag `bramblers-v0.1.0`
 - [ ] Nettoyage local : dossier `BrambleRS`, AGENTS/CLAUDE/PLAN/JOURNAL
