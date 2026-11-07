@@ -37,7 +37,6 @@ fn copy_fixture(home: &Path) {
 fn result(tokens_per_tool: &[u64]) -> ProbeResult {
     ProbeResult {
         at: "2026-10-16T12:00:00Z".into(),
-        command: String::new(),
         ok: true,
         error: None,
         server_name: Some("x".into()),
@@ -55,7 +54,6 @@ fn result(tokens_per_tool: &[u64]) -> ProbeResult {
         schema_bytes: tokens_per_tool.iter().sum::<u64>() * 4,
         estimated_tokens: tokens_per_tool.iter().sum(),
         duration_ms: 5,
-        stderr: vec![],
     }
 }
 

@@ -3,7 +3,9 @@
 //! the whole exchange. Remote servers (HTTP, SSE) are not probed: no network (BRIEF R2).
 //!
 //! The clear environment values the server needs are passed to the child process and
-//! are not kept: the result holds names and versions only.
+//! are not kept: a result holds the server's name and version, its tool names and sizes,
+//! and a masked error. It never holds the command line or the server's stderr, which can
+//! both contain secrets after reference expansion.
 
 use std::collections::BTreeMap;
 use std::io::{BufRead, BufReader, Write};
@@ -14,6 +16,8 @@ use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+
+use bramblers_hostrules::secrets;
 
 pub const PROTOCOL_VERSION: &str = "2025-06-18";
 pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -39,7 +43,6 @@ pub fn estimate_tokens(json_chars: usize) -> u64 {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProbeResult {
     pub at: String,
-    pub command: String,
     pub ok: bool,
     pub error: Option<String>,
     pub server_name: Option<String>,
@@ -53,8 +56,6 @@ pub struct ProbeResult {
     #[serde(default)]
     pub estimated_tokens: u64,
     pub duration_ms: u128,
-    /// First lines the server wrote on stderr, if it failed (often the reason).
-    pub stderr: Vec<String>,
 }
 
 /// Expand the references a host would expand before launching: `${VAR}`, `${VAR:-default}`,
@@ -97,14 +98,11 @@ pub fn probe_stdio(
 ) -> ProbeResult {
     let started = Instant::now();
     let at = chrono::Local::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
+    let command_raw = command.to_string();
     let command = expand_refs(command, vars);
     let args: Vec<String> = args.iter().map(|a| expand_refs(a, vars)).collect();
-    let shown = format!("{command} {}", args.join(" "))
-        .trim_end()
-        .to_string();
     let mut result = ProbeResult {
         at,
-        command: shown,
         ok: false,
         error: None,
         server_name: None,
@@ -114,14 +112,13 @@ pub fn probe_stdio(
         schema_bytes: 0,
         estimated_tokens: 0,
         duration_ms: 0,
-        stderr: Vec::new(),
     };
 
     let mut cmd = Command::new(&command);
     cmd.args(&args)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
+        .stderr(Stdio::null());
     for (k, v) in env {
         cmd.env(k, expand_refs(v, vars));
     }
@@ -131,29 +128,21 @@ pub fn probe_stdio(
     let mut child = match cmd.spawn() {
         Ok(c) => c,
         Err(e) => {
-            result.error = Some(format!("cannot start `{command}`: {e}"));
+            let shown = secrets::scrub_text(&command_raw).shown;
+            result.error = Some(secrets::scrub_text(&format!("cannot start `{shown}`: {e}")).shown);
             result.duration_ms = started.elapsed().as_millis();
             return result;
         }
     };
 
-    // Reader threads: stdout lines and stderr lines, each through a channel.
+    // A reader thread for stdout lines. Stderr is discarded: a server can print its
+    // environment there, and nothing in the result needs it.
     let (tx, rx) = mpsc::channel::<String>();
     if let Some(out) = child.stdout.take() {
         let tx = tx.clone();
         std::thread::spawn(move || {
             for line in BufReader::new(out).lines().map_while(Result::ok) {
                 if tx.send(line).is_err() {
-                    break;
-                }
-            }
-        });
-    }
-    let (etx, erx) = mpsc::channel::<String>();
-    if let Some(err) = child.stderr.take() {
-        std::thread::spawn(move || {
-            for line in BufReader::new(err).lines().map_while(Result::ok).take(20) {
-                if etx.send(line).is_err() {
                     break;
                 }
             }
@@ -236,11 +225,10 @@ pub fn probe_stdio(
 
     let _ = child.kill();
     let _ = child.wait();
-    result.stderr = erx.try_iter().collect();
     result.duration_ms = started.elapsed().as_millis();
     match outcome {
         Ok(()) => result.ok = true,
-        Err(e) => result.error = Some(e),
+        Err(e) => result.error = Some(secrets::scrub_text(&e).shown),
     }
     result
 }
@@ -295,8 +283,9 @@ pub fn load_results(home: &Path) -> BTreeMap<String, ProbeResult> {
     load_results_at(&results_file(home))
 }
 
-/// Save results. The file holds names, versions, tool names and errors — never a value
-/// from a configuration file.
+/// Save results. The file holds dates, names, versions, tool names, sizes and masked
+/// errors. It never holds the command line, the server's stderr, or a clear secret: the
+/// command line can contain a value expanded from the process environment.
 pub fn save_results(home: &Path, results: &BTreeMap<String, ProbeResult>) -> std::io::Result<()> {
     save_results_at(&results_file(home), results)
 }

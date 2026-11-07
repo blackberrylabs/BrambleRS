@@ -364,7 +364,6 @@ impl View {
                 identity.clone(),
                 Arc::new(ProbeResult {
                     at: String::new(),
-                    command: String::new(),
                     ok: false,
                     error: Some("probe thread stopped".into()),
                     server_name: None,
@@ -374,7 +373,6 @@ impl View {
                     schema_bytes: 0,
                     estimated_tokens: 0,
                     duration_ms: 0,
-                    stderr: vec![],
                 }),
             ),
         })

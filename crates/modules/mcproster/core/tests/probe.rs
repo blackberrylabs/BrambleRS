@@ -90,6 +90,42 @@ fn env_references_are_expanded_for_the_child_only() {
 }
 
 #[test]
+fn a_secret_expanded_into_an_argument_is_never_saved() {
+    // The fake server ignores its extra argument; this checks that reference expansion
+    // still happens for the child, while the saved result keeps no trace of the value.
+    let mut vars = BTreeMap::new();
+    vars.insert("MY_TOKEN".to_string(), "secret-value".to_string());
+    let r = probe_stdio(
+        "python3",
+        &[server(), "${MY_TOKEN}".to_string()],
+        &BTreeMap::new(),
+        None,
+        &vars,
+        Duration::from_secs(10),
+    );
+    assert!(r.ok, "{r:#?}");
+    assert!(!serde_json::to_string(&r).unwrap().contains("secret-value"));
+}
+
+#[test]
+fn a_failed_probe_does_not_echo_an_expanded_command() {
+    let mut vars = BTreeMap::new();
+    vars.insert("MY_TOKEN".to_string(), "secret-value".to_string());
+    let r = probe_stdio(
+        "/nonexistent/${MY_TOKEN}",
+        &[],
+        &BTreeMap::new(),
+        None,
+        &vars,
+        Duration::from_secs(2),
+    );
+    assert!(!r.ok);
+    let error = r.error.as_deref().unwrap_or_default();
+    assert!(error.contains("${MY_TOKEN}"), "{error}");
+    assert!(!error.contains("secret-value"), "{error}");
+}
+
+#[test]
 fn an_empty_version_is_absent_not_empty() {
     let mut env = BTreeMap::new();
     env.insert("FAKE_VERSION".to_string(), "".to_string());
