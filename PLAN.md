@@ -123,6 +123,8 @@ module non plus.
 - [ ] 0.1.6 : Lastrun — sessions, actions, suppressions, paquets, refus, diffs. Vue portée, branchée, testée et capturée le 2026-11-07 (commit `0c46011` ; capture `docs/screenshots/lastrun.png` ; 233 tests) ; version du workspace passée à 0.1.6. Le checkout a été supprimé le 2026-11-07 ; restent la vérification par Alexandre et les paquets (accord requis).
 - [ ] 1.0.0 : parité, aucune fonctionnalité des six apps ne manque
 
+> Au 2026-11-07, les six vues sont portées, testées, capturées et leurs anciens checkouts sont supprimés. La 1.0 reste à constater : vérification écran par écran par Alexandre, puis parité.
+
 Une vue est finie quand :
 
 - son dossier `crates/modules/<id>/view` existe et l'app l'affiche dans son onglet ;

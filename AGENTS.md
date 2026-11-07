@@ -11,7 +11,7 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 
 ## État au 2026-11-07
 
-- `main` : restructuration fusionnée et poussée jusqu'au commit `df050c3`. Dernier tag publié : `bramblers-v0.1.0`, avec `.deb`, `.rpm`, AppImage et `SHA256SUMS`.
+- `main` : restructuration fusionnée et poussée jusqu'au commit `75a4b75`. Dernier tag publié : `bramblers-v0.1.0`, avec `.deb`, `.rpm`, AppImage et `SHA256SUMS`.
 - Le dépôt GitHub s'appelle `blackberrylabs/BrambleRS` ; le dossier local est `Logiciels/BrambleRS`. Les dix anciens dépôts (trois fondations, six modules, template) et leurs releases ont été supprimés le 2026-11-07. Le profil de l'organisation présente BrambleRS.
 - Arborescence du 2026-11-07 : `crates/bramblers` (app), `crates/bramblers-core`, `crates/bramblers-cli`, les trois fondations, et `crates/modules/<id>/core` et `view` pour les six modules.
 - Paquet `bramblers` 0.1.0 construit et `.deb` installé ; l'AppImage a été lancée. Le workspace est en 0.1.6, sans paquet ni release. `cargo test --workspace` passe (233 tests au 2026-11-07), fmt et clippy propres.
@@ -40,7 +40,7 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 
 ## Commandes (sur le PC d'Alexandre, depuis la racine du dépôt)
 
-- Tester : `cargo test --workspace` ; un crate : `cargo test -p bramblers-core`.
+- Tester : `cargo test --workspace` ; un crate : `cargo test -p bramblers-core`. `target/` a été supprimé le 2026-11-07 : le premier build reconstruit tout, compte plusieurs minutes.
 - Avant un commit de code : `cargo fmt --check` puis `cargo clippy --all-targets`.
 - App : `cargo run -p bramblers --bin bramblers`. CLI : `cargo run -p bramblers -- report --json` (ou `report <module> --json`, `list`, `refresh`).
 - `packaging/build.sh` construit le paquet unique (`bramblers`, `.desktop` et icônes `bramblers`, un seul binaire) et a produit les trois paquets 0.1.0. Il efface `target/appimage/bramblers.AppDir` et réécrit `dist/SHA256SUMS` : son lancement demande l'accord d'Alexandre.

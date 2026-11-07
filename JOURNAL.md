@@ -3,6 +3,16 @@
 
 ---
 
+## 2026-11-07, passation
+
+- État : workspace 0.1.6, six vues portées (Permitt, MCProster, Linstruct, Cleanator, Billfold, Lastrun), 233 tests, fmt et clippy propres. Dépôt unique de 60 Mo, `target/` et `dist/` supprimés.
+- Publié : seulement la 0.1.0 (`bramblers-v0.1.0`). Les versions 0.1.1 à 0.1.6 ne sont ni packagées ni taguées. Les six captures sont dans `docs/screenshots/`.
+- GitHub : `blackberrylabs/BrambleRS` et `blackberrylabs/.github` ; `MiningControlRS` est un projet privé sans rapport. Les dix anciens dépôts et les cinq releases de la tour ont été supprimés (D8).
+- Prochaine session : vérifier les six vues à l'écran, constater la parité 1.0, puis construire les paquets, le tag et la release. Le premier build sera long, `target/` ayant été supprimé.
+- Réglages manuels restants : épingler BrambleRS sur le profil, choisir l'aperçu social. Restes techniques : `.rpm` sur une machine RPM, anciennes captures de `docs/screenshots/`, `assets/blackberrylabs.desktop`.
+
+---
+
 ## 2026-11-07, dépôt unique : anciens dépôts et checkouts supprimés
 
 - Décision d'Alexandre, mots écrits : « le repo local et github doivent être remis au propre sans archive ». D8 remplace D4 : les dix anciens dépôts, leurs releases et les cinq tags de la tour sont supprimés, pas archivés. L'historique du code reste dans BrambleRS, les sources des apps restent dans `00_cadrage/references/`.
@@ -10,7 +20,7 @@
 - GitHub : les dix dépôts archivés (`bbl-hostrules`, `bbl-report`, `bbl-ui`, `cleanator`, `mcproster`, `permitt`, `linstruct`, `billfold`, `lastrun`, `template`) supprimés avec `gh repo delete`. Les cinq releases `Blackberrylabs 0.1.0` à `0.4.0` et leurs tags `v0.1.0` à `v0.4.0` supprimés de BrambleRS. Restent `BrambleRS`, `.github` et `MiningControlRS`.
 - Textes corrigés avec leur date : BRIEF (D4 remplacée par D8, sections 5, 6, 9), PLAN (étape 8, notes des six vues), AGENTS, README, CHANGELOG, profil de l'organisation. Le `delete_repo` du jeton GitHub a été autorisé par Alexandre.
 - Preuves : `gh repo list blackberrylabs` ne rend plus que `BrambleRS`, `MiningControlRS` et `.github` ; `gh release list -R blackberrylabs/BrambleRS` ne rend que `BrambleRS 0.1.0` ; `git ls-remote --tags origin` ne rend que `bramblers-v0.1.0` ; `ls /home/nushoko/Bureau/Logiciels` ne rend que `Blackberrylabs_github`, `BrambleRS` et `Eliot` ; le dépôt local fait 60 Mo.
-- Rien n'a été poussé pour ces corrections de textes au moment de l'entrée.
+- Rien n'a été poussé pour ces corrections de textes au moment de l'entrée. Elles ont ensuite été poussées dans BrambleRS (`75a4b75`) et dans `.github` (`51e3fcc`).
 
 ---
 
