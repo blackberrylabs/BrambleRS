@@ -367,6 +367,43 @@ fn extract(
 }
 
 #[allow(clippy::too_many_arguments)]
+/// Mask a command line for display: a token after a flag is classified with the flag as
+/// its key, so `--api-key VALUE` is masked even when VALUE has no known shape.
+fn masked_command(command: &str) -> String {
+    let mut out = String::new();
+    let mut prev: Option<&str> = None;
+    for token in command.split_whitespace() {
+        let m = match prev {
+            Some(flag) if flag.starts_with('-') && token != "-" => {
+                secrets::classify(flag.trim_start_matches('-'), token)
+            }
+            _ => secrets::scrub_text(token),
+        };
+        if !out.is_empty() {
+            out.push(' ');
+        }
+        out.push_str(&m.shown);
+        prev = Some(token);
+    }
+    out
+}
+
+/// The same rule for an argv list: `args[i]` is a value when `args[i - 1]` is a flag.
+fn masked_args(args: &[String]) -> Vec<Masked> {
+    let mut out = Vec::with_capacity(args.len());
+    for (i, arg) in args.iter().enumerate() {
+        let m = match i.checked_sub(1).map(|j| args[j].as_str()) {
+            Some(flag) if flag.starts_with('-') && arg != "-" => {
+                secrets::classify(flag.trim_start_matches('-'), arg)
+            }
+            _ => secrets::scrub_text(arg),
+        };
+        out.push(m);
+    }
+    out
+}
+
+#[allow(clippy::too_many_arguments)] // one argument per field read from the location rule
 fn declaration(
     host: &HostRule,
     loc: &Location,
@@ -460,8 +497,8 @@ fn declaration(
         project,
         name: name.to_string(),
         transport,
-        command,
-        args: args.iter().map(|a| secrets::scrub_text(a)).collect(),
+        command: command.as_deref().map(masked_command),
+        args: masked_args(&args),
         url: url_raw.as_deref().map(secrets::scrub_text),
         env: env_pairs,
         headers: header_pairs,

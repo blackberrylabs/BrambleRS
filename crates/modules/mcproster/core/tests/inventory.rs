@@ -139,6 +139,27 @@ fn secrets_are_found_masked_and_never_shown() {
 }
 
 #[test]
+fn a_flag_value_without_a_known_shape_is_masked_in_args_and_in_the_command() {
+    let tmp = tempfile::tempdir().unwrap();
+    copy_fixture(tmp.path());
+    let token = "AbCdEfGhIjKlMnOpQrStUvWxYz012345";
+    let config = format!(
+        r#"{{"mcpServers":{{"flag-test":{{"command":"tool --token {token}","args":["--api-key","{token}"]}}}}}}"#
+    );
+    std::fs::write(
+        tmp.path().join(".config/Claude/claude_desktop_config.json"),
+        config,
+    )
+    .unwrap();
+    let env = Env::fixture(tmp.path(), Os::Linux);
+    let inv = inventory::run(&hosts::embedded(), &env);
+    let text = inv.all_text();
+    assert!(!text.contains(token), "{text}");
+    assert!(text.contains("--api-key"), "{text}");
+    assert!(text.contains("--token"), "{text}");
+}
+
+#[test]
 fn other_findings() {
     let (_tmp, inv) = run();
     let msgs = |k| -> Vec<String> {
