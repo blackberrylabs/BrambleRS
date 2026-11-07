@@ -3,6 +3,17 @@
 
 ---
 
+## 2026-11-07, dépôt unique : anciens dépôts et checkouts supprimés
+
+- Décision d'Alexandre, mots écrits : « le repo local et github doivent être remis au propre sans archive ». D8 remplace D4 : les dix anciens dépôts, leurs releases et les cinq tags de la tour sont supprimés, pas archivés. L'historique du code reste dans BrambleRS, les sources des apps restent dans `00_cadrage/references/`.
+- Local, 71 Go libérés : les dix checkouts (`Bbl_hostrules`, `Bbl_report`, `Bbl_ui`, `Cleanator`, `Mcproster`, `Permitt`, `Linstruct`, `Billfold`, `Lastrun`, `Template`, tous propres), le dossier vide `Hostrules`, `target/` (46 Go), `dist/` (22 Mo), la branche `bramble-rs` (fusionnée) et les tags locaux `v0.1.0` à `v0.4.0`. Gardés : `BrambleRS`, `Blackberrylabs_github` (profil `.github`), `Eliot`, `00_cadrage/`.
+- GitHub : les dix dépôts archivés (`bbl-hostrules`, `bbl-report`, `bbl-ui`, `cleanator`, `mcproster`, `permitt`, `linstruct`, `billfold`, `lastrun`, `template`) supprimés avec `gh repo delete`. Les cinq releases `Blackberrylabs 0.1.0` à `0.4.0` et leurs tags `v0.1.0` à `v0.4.0` supprimés de BrambleRS. Restent `BrambleRS`, `.github` et `MiningControlRS`.
+- Textes corrigés avec leur date : BRIEF (D4 remplacée par D8, sections 5, 6, 9), PLAN (étape 8, notes des six vues), AGENTS, README, CHANGELOG, profil de l'organisation. Le `delete_repo` du jeton GitHub a été autorisé par Alexandre.
+- Preuves : `gh repo list blackberrylabs` ne rend plus que `BrambleRS`, `MiningControlRS` et `.github` ; `gh release list -R blackberrylabs/BrambleRS` ne rend que `BrambleRS 0.1.0` ; `git ls-remote --tags origin` ne rend que `bramblers-v0.1.0` ; `ls /home/nushoko/Bureau/Logiciels` ne rend que `Blackberrylabs_github`, `BrambleRS` et `Eliot` ; le dépôt local fait 60 Mo.
+- Rien n'a été poussé pour ces corrections de textes au moment de l'entrée.
+
+---
+
 ## 2026-11-07, la vue Lastrun portée dans son onglet
 
 - La crate `crates/modules/lastrun/view` (`bramblers-lastrun-view`) reprend l'ancienne app (2 086 lignes) sans fenêtre : `View::new`, `update`, `view`, `set_lang`, `set_dark`, `refresh`. Quatre onglets à gauche (Sessions, Supprimés, Paquets, Refusés), les constats au milieu, le constat ou la session choisi à droite avec sa chronologie, ses filtres, le diff d'une édition à la demande.

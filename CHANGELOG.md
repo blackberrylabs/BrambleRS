@@ -23,6 +23,8 @@ screens of the six old applications.
 
 - The six module tabs have their own screens. The 1.0 release is the state where no feature
   of the six old applications is missing.
+- The ten old repositories, their releases and the five tower tags were removed on
+  2026-11-07. Only BrambleRS remains.
 
 ### Promises
 
@@ -200,8 +202,8 @@ Blackberrylabs tower and puts the six tools inside it.
   Lastrun. They run in the same process as the screen. Nothing is looked up on `PATH`, and no
   module is started as a subprocess.
 - One workspace, one version, one `.deb`, one `.rpm`, one AppImage. The package replaces
-  `blackberrylabs`, `blackberrylabs-full` and the six module packages. Their releases stay
-  downloadable.
+  `blackberrylabs`, `blackberrylabs-full` and the six module packages. Their releases stayed
+  downloadable until 2026-11-07, when the old repositories were removed.
 
 ### The screen
 
@@ -243,6 +245,6 @@ Blackberrylabs tower and puts the six tools inside it.
 
 ## Older releases
 
-The releases before 0.1.0 were the Blackberrylabs tower and the six separate tools. Their
-notes are on the archived repositories under
-[github.com/blackberrylabs](https://github.com/blackberrylabs).
+The releases before 0.1.0 were the Blackberrylabs tower and the six separate tools. The old
+repositories and their releases were removed on 2026-11-07. BrambleRS 0.1.0 is the first
+release kept.

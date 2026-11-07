@@ -33,8 +33,9 @@ and `~/.local/state/bramblers/<module>/report.json` for the saved reports.
 
 The releases page has the `.deb`, `.rpm` and AppImage for x86_64 Linux:
 [github.com/blackberrylabs/BrambleRS/releases](https://github.com/blackberrylabs/BrambleRS/releases).
-The package replaces the old `blackberrylabs` package and the six separate module packages;
-their releases stay downloadable.
+The package replaces the old `blackberrylabs` package and the six separate module packages.
+Those repositories and their releases were removed on 2026-11-07; BrambleRS is the only
+source and the only download.
 
 From source:
 

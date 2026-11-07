@@ -11,12 +11,12 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 
 ## État au 2026-11-07
 
-- `main` : restructuration fusionnée et poussée jusqu'au commit `ec9deb3`. La vue Lastrun est en local, pas poussée. Dernier tag publié : `bramblers-v0.1.0`, avec `.deb`, `.rpm`, AppImage et `SHA256SUMS`.
-- Le dépôt GitHub s'appelle `blackberrylabs/BrambleRS` ; le dossier local est `Logiciels/BrambleRS`. Les dix anciens dépôts (trois fondations, six modules, template) portent un bandeau et sont archivés, pas supprimés. Le profil de l'organisation présente BrambleRS.
+- `main` : restructuration fusionnée et poussée jusqu'au commit `df050c3`. Dernier tag publié : `bramblers-v0.1.0`, avec `.deb`, `.rpm`, AppImage et `SHA256SUMS`.
+- Le dépôt GitHub s'appelle `blackberrylabs/BrambleRS` ; le dossier local est `Logiciels/BrambleRS`. Les dix anciens dépôts (trois fondations, six modules, template) et leurs releases ont été supprimés le 2026-11-07. Le profil de l'organisation présente BrambleRS.
 - Arborescence du 2026-11-07 : `crates/bramblers` (app), `crates/bramblers-core`, `crates/bramblers-cli`, les trois fondations, et `crates/modules/<id>/core` et `view` pour les six modules.
 - Paquet `bramblers` 0.1.0 construit et `.deb` installé ; l'AppImage a été lancée. Le workspace est en 0.1.6, sans paquet ni release. `cargo test --workspace` passe (233 tests au 2026-11-07), fmt et clippy propres.
-- **Les six vues détaillées sont portées.** Permitt, MCProster, Linstruct, Cleanator, Billfold et Lastrun ont leur `view/`, leurs textes, leurs tests et une capture (`docs/screenshots/{permitt,mcproster,linstruct,cleanator,billfold,lastrun}.png`, 0.1.6 non publiée). Il reste la vérification écran par écran par Alexandre, la suppression des anciens checkouts, puis la 1.0 quand aucune fonctionnalité ne manque.
-- Reste : la vérification des six vues par Alexandre, la suppression des six checkouts (accord requis), la parité 1.0, test du `.rpm` sur une machine RPM, épinglage et aperçu social de BrambleRS (réglages GitHub manuels), nettoyage des anciennes captures et de `assets/blackberrylabs.desktop`.
+- **Les six vues détaillées sont portées.** Permitt, MCProster, Linstruct, Cleanator, Billfold et Lastrun ont leur `view/`, leurs textes, leurs tests et une capture (`docs/screenshots/{permitt,mcproster,linstruct,cleanator,billfold,lastrun}.png`, 0.1.6 non publiée). Les six anciens checkouts ont été supprimés le 2026-11-07. Il reste la vérification écran par écran par Alexandre, puis la 1.0 quand aucune fonctionnalité ne manque.
+- Reste : la vérification des six vues par Alexandre, la parité 1.0, test du `.rpm` sur une machine RPM, épinglage et aperçu social de BrambleRS (réglages GitHub manuels), nettoyage des anciennes captures et de `assets/blackberrylabs.desktop`.
 - La 0.1.0 garde l'écran de la tour, réorganisé avec les modules en onglet à gauche. La 1.0 est la parité.
 - Interface du 2026-11-07 : en-tête, rail gauche de 210 px avec « All findings » et les six modules en onglets, quatre chiffres de gravité et liste/détail à droite. Les couleurs de gravité et les thèmes iced sont conservés ; la palette noire et violette de MiningControlRS n'a pas été reprise.
 
@@ -45,7 +45,7 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 - App : `cargo run -p bramblers --bin bramblers`. CLI : `cargo run -p bramblers -- report --json` (ou `report <module> --json`, `list`, `refresh`).
 - `packaging/build.sh` construit le paquet unique (`bramblers`, `.desktop` et icônes `bramblers`, un seul binaire) et a produit les trois paquets 0.1.0. Il efface `target/appimage/bramblers.AppDir` et réécrit `dist/SHA256SUMS` : son lancement demande l'accord d'Alexandre.
 
-<!-- BLOC COMMUN v1, 2026-10-26, conservé comme historique. La série est archivée depuis le 2026-11-07 ; BrambleRS la remplace. Les règles d'accord, de méthode et de style ci-dessous restent en vigueur. -->
+<!-- BLOC COMMUN v1, 2026-10-26, conservé comme historique. La série a été supprimée le 2026-11-07 ; BrambleRS la remplace. Les règles d'accord, de méthode et de style ci-dessous restent en vigueur. -->
 
 ## Pour qui tu travailles
 
@@ -112,7 +112,7 @@ Restent libres : lire, chercher, calculer par script, écrire dans le dépôt, `
 
 ## La série en un coup d'œil
 
-> **Série archivée le 2026-11-07.** Les dépôts ci-dessous sont en lecture seule et leurs releases restent téléchargeables. Le tableau reste comme historique ; le produit est BrambleRS.
+> **Série supprimée le 2026-11-07.** Les dépôts ci-dessous ont été supprimés avec leurs releases ; leur historique vit dans BrambleRS. Le tableau reste comme historique ; le produit est BrambleRS.
 
 Dépôts frères dans `/home/nushoko/Bureau/Logiciels/`, publics sous `github.com/blackberrylabs`. Rust, iced 0.13.1, licence MIT. Un outil, un verbe : un nouveau constat va dans l'outil existant, un nouveau verbe fait un nouvel outil. La tour rassemble sans absorber : elle lance les modules, lit leurs rapports `bbl-report/1`, assemble, trie, ouvre. Chaque module reste complet et installable seul.
 

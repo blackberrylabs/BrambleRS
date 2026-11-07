@@ -16,10 +16,11 @@ Accroche : *BrambleRS — everything your AI coding agents do to your machine, o
 - **D1 2026-11-07** : le logiciel s'appelle **BrambleRS**. Le suffixe RS distingue la version Rust, comme MiningControlRS. Blackberrylabs reste l'organisation. Décidé par Alexandre.
 - **D2 2026-11-07** : un seul logiciel, un seul dépôt, un seul paquet. Les six outils deviennent des modules internes, plus six logiciels séparés. Décidé par Alexandre.
 - **D3 2026-11-07** : la 0.1.0 reprend l'écran actuel de la tour (liste de constats, résumés, détail). Les six apps détaillées ne sont pas reprises en 0.1.0 ; la cible 0.x est de reprendre toutes leurs fonctionnalités (D7). Décidé par Alexandre.
-- **D4 2026-11-07** : les anciens dépôts sont archivés, pas supprimés. Les releases restent téléchargeables. Proposition de l'agent, validée avec la rev. 2.
+- **D4 2026-11-07** : les anciens dépôts sont archivés, pas supprimés. Les releases restent téléchargeables. Proposition de l'agent, validée avec la rev. 2. **Remplacée par D8.**
 - **D5 2026-11-07** : les projets sans rapport avec BrambleRS restent des dépôts séparés de l'org. Décidé par Alexandre.
 - **D6 2026-11-07** : une seule app iced, un binaire `bramblers`, un paquet `bramblers`, des crates internes `bramblers-*`. Proposition de l'agent, validée avec la rev. 2.
 - **D7 2026-11-07** : la cible 0.x est de reprendre **toutes les fonctionnalités des six apps** dans BrambleRS, vue par vue, jusqu'à ce qu'aucune app séparée n'ait de raison d'exister. La 0.1.0 n'attend pas ce portage. La 1.0 est le jalon de parité. Décidé par Alexandre.
+- **D8 2026-11-07** : les dix anciens dépôts et leurs releases sont supprimés, sans archive. Les checkouts locaux et les anciens tags de la tour le sont aussi. L'historique du code reste dans BrambleRS ; les sources des apps restent dans `00_cadrage/references/`. Décidé par Alexandre (« sans archive »).
 
 ## 3. Ce que BrambleRS 0.1.0 fait
 
@@ -63,7 +64,7 @@ La cible n'est pas un tableau de bord qui laisse six apps à côté. Chaque fonc
 - **Billfold** : les comptes, le câblage, les clés, le compteur, les constats.
 - **Lastrun** : les sessions, les suppressions, les paquets, les refus, les diffs, les constats.
 
-Le portage se fait vue par vue, en 0.x, sans bloquer la 0.1.0. Une vue est terminée quand l'app correspondante n'a plus de fonctionnalité que BrambleRS n'a pas. Les six apps restent archivées comme référence, jamais comme produit parallèle. La 1.0 est atteinte quand cette liste est vide côté apps.
+Le portage se fait vue par vue, en 0.x, sans bloquer la 0.1.0. Une vue est terminée quand l'app correspondante n'a plus de fonctionnalité que BrambleRS n'a pas. Les six apps ont été supprimées le 2026-11-07 (D8) ; leurs sources restent comme référence dans `00_cadrage/references/`, jamais comme produit parallèle. La 1.0 est atteinte quand cette liste est vide côté apps.
 
 ## 6. Ce qui disparaît
 
@@ -71,7 +72,7 @@ Le portage se fait vue par vue, en 0.x, sans bloquer la 0.1.0. Une vue est termi
 - Le `report --json` par module, le bouton « Get it », le bouton « Open in <Module> ».
 - Les six apps séparées et leurs écrans détaillés en 0.1.0 ; leurs fonctionnalités reviennent en 0.x (section 5).
 - Le contrat externe `bbl-report/1` ; il devient le schéma interne `bramblers-report/1`. Les champs de distribution (`app`, `cli`, `home`, `open`) ne sont plus lus.
-- Les six dépôts actifs et leurs releases séparées. Ils sont archivés après la 0.1.0.
+- Les six dépôts actifs et leurs releases séparées. Ils ont été supprimés avec leurs releases le 2026-11-07 (D8).
 
 ## 7. Règles
 
@@ -93,7 +94,7 @@ Les tags de la nouvelle ligne sont `bramblers-v0.1.0`, `bramblers-v0.2.0`, etc. 
 
 ## 9. Migration
 
-Le détail est dans `00_cadrage/2026-11-07_plan_restructuration.md`. Ordre : nom et BRIEF validés, monodépôt avec les six cores, registre interne (plus de PATH ni de sous-processus), app actuelle renommée BrambleRS, paquet unique, archivage GitHub, release 0.1.0. Chaque étape est livrable et testée ; aucune suppression de dépôt.
+Le détail est dans `00_cadrage/2026-11-07_plan_restructuration.md`. Ordre : nom et BRIEF validés, monodépôt avec les six cores, registre interne (plus de PATH ni de sous-processus), app actuelle renommée BrambleRS, paquet unique, archivage GitHub puis suppression des anciens dépôts (D8), release 0.1.0. Chaque étape est livrable et testée.
 
 ## 10. Hors périmètre (0.1.0)
 
