@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.1.6] - 2026-11-07
+
+BrambleRS 0.1.6 brings Lastrun's screen into its tab. The six tabs now carry the detailed
+screens of the six old applications.
+
+### Lastrun
+
+- Four tabs on the left: Sessions (per host, project, permission modes, pruning date),
+  Deleted (path, by a tool or by a command, outside the project, whether it exists again),
+  Packages (manager and names) and Refused (what was denied, with the approval in three
+  states).
+- The middle list keeps the four severities and the host chips. The right panel shows the
+  selected finding, or the selected session with its chronology: every command, file, MCP
+  call and web access in order, with its status and approval, filters by kind, a search over
+  commands and paths, and the diff of an edit read on demand.
+- The 30 or 90 day window is saved in `~/.config/bramblers/lastrun/settings.json`; the old
+  `~/.config/lastrun/settings.json` is read once.
+- Prompts, replies and command output are never read. Only the actions are.
+
+### Parity
+
+- The six module tabs have their own screens. The 1.0 release is the state where no feature
+  of the six old applications is missing.
+
+### Promises
+
+- Read-only: nothing on the machine is modified. Every corrective action is displayed, never
+  executed.
+- The only writes are the settings files, the probe results, the cleanup script and the saved
+  reports.
+- `#![forbid(unsafe_code)]` across the workspace.
+
 ## [0.1.5] - 2026-11-07
 
 BrambleRS 0.1.5 brings Billfold's screen into its tab.

@@ -3,6 +3,17 @@
 
 ---
 
+## 2026-11-07, la vue Lastrun portée dans son onglet
+
+- La crate `crates/modules/lastrun/view` (`bramblers-lastrun-view`) reprend l'ancienne app (2 086 lignes) sans fenêtre : `View::new`, `update`, `view`, `set_lang`, `set_dark`, `refresh`. Quatre onglets à gauche (Sessions, Supprimés, Paquets, Refusés), les constats au milieu, le constat ou la session choisi à droite avec sa chronologie, ses filtres, le diff d'une édition à la demande.
+- La préparation du scan reste dans le fil de lecture : quels fichiers supprimés existent de nouveau, quelles actions sortent du projet, quelle commande a produit une suppression déduite, quels constats destructifs par session. La vue ne touche pas au disque à chaque image.
+- Agencement adapté au rail : en-tête sur deux lignes (phrase, puis 30/90 jours et « Relire »), puces d'hôtes en défilement horizontal, boutons d'action sur deux colonnes. À 1 280 px, chaque colonne perd environ 120 px par rapport à l'ancienne fenêtre.
+- La fenêtre de 30 ou 90 jours va dans `~/.config/bramblers/lastrun/settings.json` ; l'ancien `~/.config/lastrun/settings.json` est lu une fois. Les invites, les réponses et la sortie des commandes ne sont jamais lues ; seules les actions le sont.
+- Preuves : `cargo test --workspace` passe (233 tests, dont 3 dans la vue), fmt et clippy propres ; capture `docs/screenshots/lastrun.png` (1280x820) sur le HOME factice, avec une session `claude-jsonl` contenant deux commandes, une édition refusée et un paquet npm ; `BRAMBLERS_MODULE=lastrun` lancé sans panique.
+- Version du workspace passée à 0.1.6. Commit `0c46011` pour la vue. Rien n'a été poussé.
+
+---
+
 ## 2026-11-07, la vue Billfold portée dans son onglet
 
 - La crate `crates/modules/billfold/view` (`bramblers-billfold-view`) reprend l'ancienne app (1 542 lignes) sans fenêtre : `View::new`, `update`, `view`, `set_lang`, `set_dark`, `refresh`. Trois onglets : Branchement (hôtes, comptes, crédit, quotas, expiration), Clés (masquées, fichier, état git, hôtes qui les lisent) et Compteur (jetons par hôte, modèle, projet ou jour, dollars équivalent API, part du cache, journaux à venir).
