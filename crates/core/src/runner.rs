@@ -27,6 +27,8 @@ impl std::fmt::Display for RunError {
     }
 }
 
+impl std::error::Error for RunError {}
+
 /// A report obtained from a module, and how long it took.
 #[derive(Debug, Clone)]
 pub struct Run {

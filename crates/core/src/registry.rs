@@ -61,7 +61,9 @@ pub const PROVIDERS: &[Provider] = &[
         verb: "replay",
         tagline: "What your AI agents actually did on this machine — commands, files, packages — session by session",
         description: "For each AI host that records its actions, the sessions of the last 30 days and what they did — commands run, files created, edited and deleted, packages installed, MCP calls, refusals — read back from the transcripts the hosts already write, never their text. Twenty-one hosts, every rule sourced.",
-        timeout_s: 120,
+        // 128 s in a debug build on 201 MB of transcripts; the release build reads the same
+        // machine in 8 s. 300 s leaves room for a slow disk without hiding a real hang.
+        timeout_s: 300,
         run: bramblers_lastrun_core::run::report,
     },
     Provider {

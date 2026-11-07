@@ -13,6 +13,7 @@ path = "src/main.rs"
 
 [dependencies]
 bramblers-core = { path = "../core" }
+bramblers-cli = { path = "../cli" }
 bramblers-report.workspace = true
 iced = { version = "=0.13.1", features = ["tokio"] }
 bramblers-ui.workspace = true
@@ -39,7 +40,6 @@ depends = "$auto, libxkbcommon0, libwayland-client0 | libx11-6"
 recommends = "libvulkan1, mesa-vulkan-drivers"
 assets = [
     ["target/release/bramblers", "usr/bin/", "755"],
-    ["target/release/bramblers-cli", "usr/bin/", "755"],
     ["../../assets/bramblers.desktop", "usr/share/applications/", "644"],
     ["../../assets/icon.svg", "usr/share/icons/hicolor/scalable/apps/bramblers.svg", "644"],
     ["../../assets/icon-16.png", "usr/share/icons/hicolor/16x16/apps/bramblers.png", "644"],
@@ -60,7 +60,6 @@ url = "https://github.com/blackberrylabs/BrambleRS"
 requires = { libxkbcommon = "*" }
 assets = [
     { source = "target/release/bramblers", dest = "/usr/bin/bramblers", mode = "755" },
-    { source = "target/release/bramblers-cli", dest = "/usr/bin/bramblers-cli", mode = "755" },
     { source = "assets/bramblers.desktop", dest = "/usr/share/applications/bramblers.desktop", mode = "644" },
     { source = "assets/icon.svg", dest = "/usr/share/icons/hicolor/scalable/apps/bramblers.svg", mode = "644" },
     { source = "assets/icon-16.png", dest = "/usr/share/icons/hicolor/16x16/apps/bramblers.png", mode = "644" },

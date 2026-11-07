@@ -417,6 +417,7 @@ dependencies = [
 name = "bramblers"
 version = "0.1.0"
 dependencies = [
+ "bramblers-cli",
  "bramblers-core",
  "bramblers-report",
  "bramblers-ui",

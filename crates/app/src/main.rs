@@ -1,8 +1,8 @@
 //! BrambleRS desktop app (iced): one screen — a sentence, the four severities in words,
-//! the modules, the findings of every module in one list, the detail of the selected one
-//! with where it comes from and what the person could do, and the button that opens the
-//! module there. Reads the same core as `bramblers`; writes only its preferences and the saved
-//! reports (BRIEF R2).
+//! the six modules, the findings of every module in one list, and the detail of the selected
+//! one with where it comes from and what the person could do. The same binary is the command
+//! line when given arguments (`bramblers report --json`); it writes only its preferences and
+//! the saved reports (BRIEF R2).
 #![forbid(unsafe_code)]
 
 use std::collections::BTreeSet;
@@ -24,7 +24,22 @@ use bramblers_ui::{Lang, Prefs, Strings};
 const EN: &str = include_str!("../../../locales/en.json");
 const FR: &str = include_str!("../../../locales/fr.json");
 
-fn main() -> iced::Result {
+fn main() {
+    // One binary: arguments mean the command line, no arguments means the app.
+    if std::env::args_os().len() > 1 {
+        if let Err(e) = bramblers_cli::run(std::env::args()) {
+            eprintln!("{e:#}");
+            std::process::exit(1);
+        }
+        return;
+    }
+    if let Err(e) = run_app() {
+        eprintln!("{e}");
+        std::process::exit(1);
+    }
+}
+
+fn run_app() -> iced::Result {
     iced::application(App::title, App::update, App::view)
         .theme(App::theme)
         .window_size((1280.0, 820.0))
