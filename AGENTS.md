@@ -1,43 +1,44 @@
-# AGENTS.md (Blackberrylabs, la tour de contrôle)
+# AGENTS.md (BrambleRS, ex-Blackberrylabs)
 <!-- Règles de travail pour tout agent IA (OpenCode, Claude Code, autre). Source unique : CLAUDE.md n'est qu'un pointeur. Français : pilotage. Anglais : code, docs, commits, README. -->
 
-Blackberrylabs : un écran qui dit ce qui cloche sur la machine côté IA, le plus grave en premier, et ouvre le module qui va bien. Binaire `bbl`. Bâtie sur `bbl-report` (le contrat) et `bbl-ui` (le visage). Elle ne dépend pas de `bbl-hostrules` : la tour ne lit aucun fichier d'hôte.
+BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à la machine, le plus grave en premier. Un dépôt, une app, un paquet, six modules internes. Blackberrylabs reste le nom de l'organisation. Binaire `bramblers`. La restructuration est en cours : `BRIEF.md` rev. 2 et `PLAN.md` étape 8 font foi. Les faits de série du bloc commun (tableau des dépôts, dépendances `bbl-*`) sont antérieurs à la restructuration ; ils restent à mettre à jour partout ou nulle part.
 
 ## Au démarrage de chaque session
 
-1. Avec ton outil de lecture, lis `PLAN.md` et les cinq premières entrées de `JOURNAL.md`. Lis `BRIEF.md` si ton travail touche au périmètre.
-2. Lance `git status -sb` et `git log --oneline -5` : sache où en est le dépôt avant d'y toucher.
-3. Lis la dernière section du `CHANGELOG.md` si tu changes un comportement visible.
+1. Lis `PLAN.md` (étape 8), `BRIEF.md` et les cinq premières entrées de `JOURNAL.md`.
+2. `git status -sb` et `git log --oneline -8` : la migration se fait sur la branche locale `bramble-rs`, pas sur `main`.
+3. Le plan détaillé est dans `00_cadrage/2026-11-07_plan_restructuration.md`, hors git.
 
-## Promesses de la tour
+## État au 2026-11-07
 
-- Elle ne calcule rien : elle lance les modules, lit leurs rapports, assemble, trie, ouvre. Aucun code propre à un module en dehors de sa fiche déclarative `modules/<id>.toml` (règle R5).
-- Rien d'écrit hors `~/.config/blackberrylabs/` et `~/.local/state/blackberrylabs/<module>/` (R2). Aucune sortie réseau.
-- Actions affichées, jamais exécutées. « Get it » ouvre dans le navigateur le paquet exact de la machine (`/etc/os-release`, `latest` de la fiche) ; le navigateur télécharge, la tour ne télécharge ni n'installe jamais.
-- Un clic sur un module filtre la tour. Son application ne s'ouvre que par le bouton explicite « Open in <Module> ».
+- `main` : décision validée (BRIEF rev. 2, PLAN étape 8). Un commit, pas poussé.
+- Branche `bramble-rs` : trois fondations importées et renommées `bramblers-hostrules`, `bramblers-report`, `bramblers-ui` ; tour renommée `bramblers-core`, `bramblers-cli`, app `bramblers` ; `cargo test --workspace` passe (63 tests). Commit `8190546`.
+- Reste : importer les six cores, remplacer la découverte PATH par un registre interne, un seul CLI, paquet `bramblers`, archivage GitHub, dossier local `BrambleRS`.
+- La 0.1.0 garde l'écran actuel. Les six apps détaillées ne sont pas dans la 0.1.0 ; leurs fonctionnalités reviennent en 0.x, une vue par une. La 1.0 est la parité.
+
+## Promesses
+
+- Read-only : rien n'est modifié ; actions affichées, jamais exécutées ; aucune sortie réseau.
+- Un seul logiciel : les six modules sont des crates internes, pas six binaires découverts sur le PATH (cible).
+- Rien d'écrit hors `~/.config/bramblers/` et `~/.local/state/bramblers/` (cible ; aujourd'hui encore les anciens chemins `blackberrylabs`, le shim viendra avec le paquet).
+- Anglais par défaut, français en option.
 
 ## Repères
 
-- `crates/core/src/` : `spec.rs` (fiches embarquées), `discover.rs` (modules sur le PATH), `run.rs` (lancement avec limite de temps), `cache.rs` (rapports enregistrés), `dashboard.rs` (assemblage et tri), `packages.rs` (paquet à ouvrir).
-- `modules/*.toml` : une fiche par module (billfold, cleanator, lastrun, linstruct, mcproster, permitt), avec le champ `latest` à mettre à jour à chaque release d'un module.
-- Tests : `crates/core/tests/tower.rs` et `crates/core/tests/fixtures/reports/` (un vrai rapport par module, chemins `/home/me`). Ajouter un module change les comptes de modules dans ces tests.
-- CLI `bbl` (liste, `refresh`, `modules`, `--json`, `--min-severity`, `--module`). App `bbl-app`. Paquets : `blackberrylabs` (la tour seule) et `blackberrylabs-full` (la tour et les binaires publiés des modules, via `packaging/bundle.sh`).
-- `docs/new-module.md` : la marche à suivre pour intégrer un module.
-- `packaging/github_meta.sh` est la source de vérité des descriptions, topics et pages d'accueil des dépôts GitHub de l'organisation. Le lancer modifie GitHub : accord d'Alexandre.
+- `crates/bramblers-core/src/` : `cache.rs`, `dashboard.rs`, `spec.rs`, `discover.rs`, `run.rs`, `packages.rs` (l'ancienne tour, encore en place). Le registre interne remplacera `discover`, `run`, `spec` et `packages`.
+- `crates/bramblers-report`, `crates/bramblers-hostrules`, `crates/bramblers-ui` : les trois fondations importées.
+- `crates/app/` : l'app iced, paquet `bramblers`, binaire `bramblers`. `crates/cli/` : binaire `bramblers-cli`, à fusionner dans le binaire unique.
+- `modules/*.toml` : encore les fiches de découverte des six binaires externes ; elles disparaissent avec le registre.
+- Tests : `cargo test --workspace`. L'ancienne tour : `crates/core/tests/tower.rs` et `fixtures/reports/`.
+- `00_cadrage/2026-11-07_plan_restructuration.md` : le plan détaillé, hors git.
+- Les imports ont apporté les fichiers de pilotage des fondations dans `crates/bramblers-*` ; ils sont redondants et attendent l'accord d'Alexandre pour être retirés.
 
 ## Commandes (sur le PC d'Alexandre, depuis la racine du dépôt)
 
-- Tester le cœur : `cargo test -p bbl-core` ; un fichier de tests : `cargo test -p bbl-core --test tower`.
+- Tester : `cargo test --workspace` ; un crate : `cargo test -p bramblers-core`.
 - Avant un commit de code : `cargo fmt --check` puis `cargo clippy --all-targets`.
-- CLI : `cargo run -p bbl-cli -- <sous-commande>`. App : `cargo run -p blackberrylabs --bin bbl-app --release`.
-
-## Avant une release
-
-1. Le module concerné est publié avant la tour quand le contrat bouge.
-2. Passage réel de `bbl refresh` sur le poste d'Alexandre, sortie collée dans la conversation.
-3. `./packaging/build.sh` puis `./packaging/bundle.sh` (avec accord) ; paquets retéléchargés, sommes et version vérifiées.
-4. `packaging/github_meta.sh` relancé si une description ou des topics changent (avec accord).
-5. Tag, push et release : avec son accord, un par un.
+- App : `cargo run -p bramblers --bin bramblers`. CLI : `cargo run -p bramblers-cli -- ...`.
+- `packaging/build.sh` n'est pas encore réécrit pour le paquet unique ; ne pas lancer de release avant l'étape 8.
 
 <!-- BLOC COMMUN v1, 2026-10-26. Identique dans les douze dépôts de la série. Le modifier partout ou nulle part (Logiciels/PASSATION.md, section « Maintenir »). -->
 
