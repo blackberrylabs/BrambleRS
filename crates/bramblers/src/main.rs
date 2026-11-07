@@ -358,27 +358,28 @@ impl App {
     // ------------------------------------------------------------------ view
 
     fn view(&self) -> Element<'_, Message> {
-        if self.module_filter.as_deref() == Some("permitt") {
-            if let Some(v) = &self.permitt {
-                return column![self.view_page_head(), v.view().map(Message::Permitt),]
+        let content: Element<'_, Message> =
+            if let (Some("permitt"), Some(v)) = (self.module_filter.as_deref(), &self.permitt) {
+                column![self.view_page_head(), v.view().map(Message::Permitt),]
                     .spacing(12)
                     .padding(14)
                     .width(Length::Fill)
                     .height(Length::Fill)
-                    .into();
-            }
-        }
-        let content = column![
-            self.view_page_head(),
-            self.view_severities(),
-            row![self.view_list(), self.view_detail()]
+                    .into()
+            } else {
+                column![
+                    self.view_page_head(),
+                    self.view_severities(),
+                    row![self.view_list(), self.view_detail()]
+                        .spacing(12)
+                        .height(Length::Fill),
+                ]
                 .spacing(12)
-                .height(Length::Fill),
-        ]
-        .spacing(12)
-        .padding(14)
-        .width(Length::Fill)
-        .height(Length::Fill);
+                .padding(14)
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .into()
+            };
         column![
             self.view_header(),
             row![self.view_sidebar(), content]
