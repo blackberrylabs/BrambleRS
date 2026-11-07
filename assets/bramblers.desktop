@@ -8,6 +8,6 @@ Comment[fr]=Tout ce que vos agents IA font à votre machine, sur un écran : per
 Exec=bramblers
 Icon=bramblers
 Terminal=false
-Categories=Development;Utility;System;
+Categories=Utility;
 Keywords=ai agents;mcp;permissions;disk;spend;sessions;claude code;cursor;codex;opencode;control panel;
 StartupWMClass=bramblers
