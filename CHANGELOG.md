@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.1.4] - 2026-11-07
+
+BrambleRS 0.1.4 brings Cleanator's screen into its tab.
+
+### Cleanator
+
+- The Explorer draws the folder as a squarified treemap. A click on a tile opens the folder,
+  "Up" goes back, and the legend names the rule categories behind the colours.
+- Recommendations are grouped by rule when a rule has many items, with the size, the path,
+  the why, and, on demand, the command, the last use, the cost and the rule's documentation.
+  Safe and review items are separated; "Select safe", "Clear", copy and save the script.
+- Three tabs: Explorer, AI assistants (configuration, history, caches per assistant) and
+  Projects (regenerable weight, last touch, dormant or active, one checkbox per project).
+- The saved script goes to `~/.local/state/bramblers/cleanator/cleanup.sh`; the old app wrote
+  it to the home directory.
+- The scan runs on the home directory, on a thread. The header refreshes it.
+- A subtraction in the Docker probe no longer overflows when shared layers are larger than the
+  image size.
+
+### Still to come
+
+- The two other module tabs still show the shared finding list. Their detailed screens come in
+  0.1.5 and 0.1.6.
+- No website, no telemetry, no network request.
+
+### Promises
+
+- Read-only: nothing on the machine is modified. Every corrective action is displayed, never
+  executed.
+- The only writes are the settings files, the probe results, the cleanup script and the saved
+  reports.
+- `#![forbid(unsafe_code)]` across the workspace.
+
 ## [0.1.3] - 2026-11-07
 
 BrambleRS 0.1.3 brings Linstruct's screen into its tab.

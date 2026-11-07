@@ -3,6 +3,18 @@
 
 ---
 
+## 2026-11-07, la vue Cleanator portée dans son onglet
+
+- La crate `crates/modules/cleanator/view` (`bramblers-cleanator-view`) reprend l'ancienne app (1 858 lignes en deux fichiers) sans fenêtre : `View::new`, `update`, `view`, `set_lang`, `set_dark`, `refresh`, plus `subscription` pour le compteur de la fenêtre de lecture. L'explorateur est un treemap squarifié en canvas (Bruls, Huizing et van Wijk), avec la légende des catégories ; le panneau garde les recommandations sûres et à vérifier, les groupes de règles, la case par projet, le script copié ou enregistré.
+- Les onglets Explorateur, Assistants IA et Projets sont repris tels quels. La coquille gagne un abonnement (`App::subscription`) qui transmet celui de la vue Cleanator quand son onglet est ouvert : sans lui, les compteurs de lecture resteraient figés pendant le scan.
+- Le script enregistré va dans `~/.local/state/bramblers/cleanator/cleanup.sh`, pas dans le dossier personnel comme l'ancienne app : la promesse « rien hors de `~/.config/bramblers/` et `~/.local/state/bramblers/` » tient. Le chemin est affiché dans la ligne d'état.
+- Écarté : `--select` et le dossier passé en argument (le choix d'onglet revient à `BRAMBLERS_MODULE`), `app.title` et `theme.toggle` (portés par la coquille). Le scan porte sur le dossier personnel.
+- Bug corrigé dans le core : la sonde Docker soustrayait `unique_size` de `size` sans garde ; sur une machine où les couches partagées dépassent la taille de l'image, le scan paniquait (`probes.rs:425`). `saturating_sub` remplace la soustraction.
+- Preuves : `cargo test --workspace` passe (227 tests, dont 3 dans la vue et 2 dans le treemap), fmt et clippy propres ; capture `docs/screenshots/cleanator.png` (1280x820) sur le HOME factice, avec `node_modules`, `target`, `.venv` et `.cache/pip` ; `BRAMBLERS_MODULE=cleanator` lancé sans panique.
+- Version du workspace passée à 0.1.4. Commit `a5a34f6` pour la vue. Rien n'a été poussé.
+
+---
+
 ## 2026-11-07, la vue Linstruct portée dans son onglet
 
 - La crate `crates/modules/linstruct/view` (`bramblers-linstruct-view`) reprend l'écran de l'ancienne app (1 423 lignes) sans fenêtre : `View::new`, `update`, `view`, `set_lang`, `set_dark`, `refresh`. Trois colonnes : les cartes d'hôtes (fichiers dans l'ordre de l'hôte, jauge de budget, tailles, états `loaded`, `on demand`, `cut`, `skipped`, `shadowed`, `ignored`, section « et si » pour les hôtes absents), la liste des constats (gravités, puces d'hôtes, recherche, informations) et le détail (sens, chemin, commande de vérification de l'hôte, source).

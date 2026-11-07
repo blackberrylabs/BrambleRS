@@ -11,12 +11,12 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 
 ## État au 2026-11-07
 
-- `main` : restructuration fusionnée et poussée jusqu'au commit `27247c4`. La vue Linstruct est en local, pas poussée. Dernier tag publié : `bramblers-v0.1.0`, avec `.deb`, `.rpm`, AppImage et `SHA256SUMS`.
+- `main` : restructuration fusionnée et poussée jusqu'au commit `be69bc6`. La vue Cleanator est en local, pas poussée. Dernier tag publié : `bramblers-v0.1.0`, avec `.deb`, `.rpm`, AppImage et `SHA256SUMS`.
 - Le dépôt GitHub s'appelle `blackberrylabs/BrambleRS` ; le dossier local est `Logiciels/BrambleRS`. Les dix anciens dépôts (trois fondations, six modules, template) portent un bandeau et sont archivés, pas supprimés. Le profil de l'organisation présente BrambleRS.
-- Arborescence du 2026-11-07 : `crates/bramblers` (app), `crates/bramblers-core`, `crates/bramblers-cli`, les trois fondations, et `crates/modules/<id>/core` pour les six modules. `crates/modules/{permitt,mcproster,linstruct}/view` existent ; un `view/` par module est la cible de l'étape 9.
-- Paquet `bramblers` 0.1.0 construit et `.deb` installé ; l'AppImage a été lancée. Le workspace est en 0.1.3, sans paquet ni release. `cargo test --workspace` passe (222 tests au 2026-11-07), fmt et clippy propres.
-- **Les six vues détaillées ne sont pas portées.** Les onglets montrent les constats et les chiffres de chaque module, pas les tableaux, sessions, arborescences ou matrices des anciennes apps. Les vues Permitt, MCProster et Linstruct sont portées, branchées, testées et capturées (`docs/screenshots/permitt.png`, `mcproster.png`, `linstruct.png`, 0.1.3 non publiée) ; il reste leur vérification par Alexandre. Les trois autres vues restent à faire, dans l'ordre Cleanator, Billfold, Lastrun.
-- Reste : les trois vues restantes (étape 9), la vérification des trois vues par Alexandre, test du `.rpm` sur une machine RPM, épinglage et aperçu social de BrambleRS (réglages GitHub manuels), nettoyage des anciennes captures et de `assets/blackberrylabs.desktop`.
+- Arborescence du 2026-11-07 : `crates/bramblers` (app), `crates/bramblers-core`, `crates/bramblers-cli`, les trois fondations, et `crates/modules/<id>/core` pour les six modules. `crates/modules/{permitt,mcproster,linstruct,cleanator}/view` existent ; un `view/` par module est la cible de l'étape 9.
+- Paquet `bramblers` 0.1.0 construit et `.deb` installé ; l'AppImage a été lancée. Le workspace est en 0.1.4, sans paquet ni release. `cargo test --workspace` passe (227 tests au 2026-11-07), fmt et clippy propres.
+- **Les six vues détaillées ne sont pas portées.** Les onglets montrent les constats et les chiffres de chaque module, pas les tableaux, sessions, arborescences ou matrices des anciennes apps. Les vues Permitt, MCProster, Linstruct et Cleanator sont portées, branchées, testées et capturées (`docs/screenshots/{permitt,mcproster,linstruct,cleanator}.png`, 0.1.4 non publiée) ; il reste leur vérification par Alexandre. Les deux autres vues restent à faire, dans l'ordre Billfold, Lastrun.
+- Reste : les deux vues restantes (étape 9), la vérification des quatre vues par Alexandre, test du `.rpm` sur une machine RPM, épinglage et aperçu social de BrambleRS (réglages GitHub manuels), nettoyage des anciennes captures et de `assets/blackberrylabs.desktop`.
 - La 0.1.0 garde l'écran de la tour, réorganisé avec les modules en onglet à gauche. La 1.0 est la parité.
 - Interface du 2026-11-07 : en-tête, rail gauche de 210 px avec « All findings » et les six modules en onglets, quatre chiffres de gravité et liste/détail à droite. Les couleurs de gravité et les thèmes iced sont conservés ; la palette noire et violette de MiningControlRS n'a pas été reprise.
 
@@ -36,7 +36,7 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 - `crates/bramblers/` : l'app iced, paquet `bramblers`, binaire `bramblers` : en-tête, rail, routeur, langue et thème. `crates/bramblers-cli/` : `bramblers-cli`, une bibliothèque liée dans ce même binaire.
 - Tests : `cargo test --workspace`. Le registre et les rapports : `crates/bramblers-core/tests/tower.rs` et `fixtures/reports/`.
 - `00_cadrage/2026-11-07_plan_vues_modules.md` : l'inventaire des six vues, hors git. `00_cadrage/references/<id>/` : les sources des anciennes apps, hors git.
-- `README.md` décrit l'architecture, sans numéro de version ; `CHANGELOG.md` est à jour pour la 0.1.3. Le BRIEF, le PLAN et ce fichier restent en français.
+- `README.md` décrit l'architecture, sans numéro de version ; `CHANGELOG.md` est à jour pour la 0.1.4. Le BRIEF, le PLAN et ce fichier restent en français.
 
 ## Commandes (sur le PC d'Alexandre, depuis la racine du dépôt)
 
