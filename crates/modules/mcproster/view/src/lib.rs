@@ -1029,6 +1029,9 @@ impl View {
                 text(s.t("probe.confirm_outro", &[]))
                     .size(12)
                     .style(text::secondary),
+                text(s.t("probe.confirm_warning", &[]))
+                    .size(12)
+                    .color(alert(self.dark)),
                 checkbox(s.t("probe.confirm_ask", &[]), self.dont_ask)
                     .on_toggle(Message::ProbeAskToggle)
                     .size(16)

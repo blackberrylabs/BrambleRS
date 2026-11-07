@@ -70,6 +70,7 @@
   "probe.confirm_all_title": "Before testing {n} servers",
   "probe.confirm_intro": "MCProster will start each server exactly as its host would ({hosts}):",
   "probe.confirm_outro": "Each gets initialize and tools/list, at most 10 seconds, then is stopped. No tool is called. Results (names, versions, tool names and sizes) are kept in ~/.config/bramblers/mcproster/probes.json.",
+  "probe.confirm_warning": "A server can do anything on this machine when it starts, including reading files and using the network. Probe only configurations you trust.",
   "probe.test_all": "Test all",
   "cost.title": "Context cost per host (~tokens of tool definitions, probed servers)",
   "cost.unprobed": "at least — {n} not probed",

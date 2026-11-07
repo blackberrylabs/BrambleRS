@@ -8,11 +8,14 @@
 //! both contain secrets after reference expansion.
 
 use std::collections::BTreeMap;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
+
+#[cfg(unix)]
+use std::os::unix::process::CommandExt;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -21,6 +24,24 @@ use bramblers_hostrules::secrets;
 
 pub const PROTOCOL_VERSION: &str = "2025-06-18";
 pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(10);
+
+/// At most this many bytes of stdout are read from a server. A malicious or broken server
+/// can otherwise send a line of several gigabytes and take the application down.
+const MAX_STDOUT: u64 = 32 * 1024 * 1024;
+
+/// The variables a server may need to start, copied from the parent. Everything else is
+/// dropped: a server declared in a project file must not see the desktop's secrets.
+const KEEP_ENV: &[&str] = &[
+    "PATH",
+    "HOME",
+    "TMPDIR",
+    "LANG",
+    "LC_ALL",
+    "LC_CTYPE",
+    "USER",
+    "LOGNAME",
+    "XDG_RUNTIME_DIR",
+];
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ToolInfo {
@@ -119,12 +140,20 @@ pub fn probe_stdio(
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::null());
+    cmd.env_clear();
+    for key in KEEP_ENV {
+        if let Some(value) = vars.get(*key) {
+            cmd.env(key, value);
+        }
+    }
     for (k, v) in env {
         cmd.env(k, expand_refs(v, vars));
     }
     if let Some(dir) = cwd.filter(|d| d.is_dir()) {
         cmd.current_dir(dir);
     }
+    #[cfg(unix)]
+    cmd.process_group(0);
     let mut child = match cmd.spawn() {
         Ok(c) => c,
         Err(e) => {
@@ -135,12 +164,13 @@ pub fn probe_stdio(
         }
     };
 
-    // A reader thread for stdout lines. Stderr is discarded: a server can print its
-    // environment there, and nothing in the result needs it.
+    // A reader thread for stdout lines, capped in total size. Stderr is discarded: a
+    // server can print its environment there, and nothing in the result needs it.
     let (tx, rx) = mpsc::channel::<String>();
     if let Some(out) = child.stdout.take() {
         let tx = tx.clone();
         std::thread::spawn(move || {
+            let out = out.take(MAX_STDOUT);
             for line in BufReader::new(out).lines().map_while(Result::ok) {
                 if tx.send(line).is_err() {
                     break;
@@ -223,14 +253,28 @@ pub fn probe_stdio(
         Ok(())
     })();
 
-    let _ = child.kill();
-    let _ = child.wait();
+    stop(&mut child);
     result.duration_ms = started.elapsed().as_millis();
     match outcome {
         Ok(()) => result.ok = true,
         Err(e) => result.error = Some(secrets::scrub_text(&e).shown),
     }
     result
+}
+
+/// Stop the server and everything it started. The child is its own process group leader,
+/// so a group kill also stops `npx`, `uvx` or a wrapper shell. `kill` is used instead of
+/// libc so the crate keeps `#![forbid(unsafe_code)]`.
+fn stop(child: &mut std::process::Child) {
+    #[cfg(unix)]
+    {
+        let pid = child.id();
+        let _ = Command::new("kill")
+            .args(["-KILL", "--", &format!("-{pid}")])
+            .status();
+    }
+    let _ = child.kill();
+    let _ = child.wait();
 }
 
 fn send(stdin: &mut std::process::ChildStdin, msg: &Value) -> Result<(), String> {

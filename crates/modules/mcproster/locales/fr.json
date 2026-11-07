@@ -70,6 +70,7 @@
   "probe.confirm_all_title": "Avant de tester {n} serveurs",
   "probe.confirm_intro": "MCProster va lancer chaque serveur exactement comme son hôte le ferait ({hosts}) :",
   "probe.confirm_outro": "Chacun reçoit initialize et tools/list, au plus 10 secondes, puis est arrêté. Aucun outil n'est appelé. Les résultats (noms, versions, noms et tailles d'outils) sont gardés dans ~/.config/bramblers/mcproster/probes.json.",
+  "probe.confirm_warning": "Un serveur peut tout faire sur cette machine au démarrage, y compris lire des fichiers et utiliser le réseau. Ne sondez que des configurations fiables.",
   "probe.test_all": "Tester tout",
   "cost.title": "Coût en contexte par hôte (~tokens de définitions d'outils, serveurs sondés)",
   "cost.unprobed": "au moins — {n} non sondé(s)",
