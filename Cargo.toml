@@ -11,6 +11,7 @@ members = [
     "crates/modules/cleanator/core",
     "crates/modules/lastrun/core",
     "crates/modules/linstruct/core",
+    "crates/modules/linstruct/view",
     "crates/modules/mcproster/core",
     "crates/modules/mcproster/view",
     "crates/modules/permitt/core",
@@ -18,7 +19,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 license = "MIT"
 authors = ["Alexandre Do"]
@@ -32,6 +33,7 @@ bramblers-billfold-core = { path = "crates/modules/billfold/core" }
 bramblers-cleanator-core = { path = "crates/modules/cleanator/core" }
 bramblers-lastrun-core = { path = "crates/modules/lastrun/core" }
 bramblers-linstruct-core = { path = "crates/modules/linstruct/core" }
+bramblers-linstruct-view = { path = "crates/modules/linstruct/view" }
 bramblers-mcproster-core = { path = "crates/modules/mcproster/core" }
 bramblers-mcproster-view = { path = "crates/modules/mcproster/view" }
 bramblers-permitt-core = { path = "crates/modules/permitt/core" }

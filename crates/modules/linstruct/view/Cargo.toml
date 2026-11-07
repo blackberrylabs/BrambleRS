@@ -1,0 +1,16 @@
+[package]
+name = "bramblers-linstruct-view"
+description = "Linstruct's screen in BrambleRS: what each AI host loads, its budget, the findings and their source"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+bramblers-hostrules.workspace = true
+bramblers-linstruct-core.workspace = true
+bramblers-report.workspace = true
+bramblers-ui.workspace = true
+iced = "=0.13.1"
+serde.workspace = true

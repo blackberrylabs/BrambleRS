@@ -16,6 +16,7 @@ use iced::{Alignment, Background, Border, Color, Element, Length, Task, Theme};
 
 use bramblers_core::dashboard::ReportState;
 use bramblers_core::{Cache, Dashboard, ModuleStatus, Run, RunError};
+use bramblers_linstruct_view as linstruct_view;
 use bramblers_mcproster_view as mcproster_view;
 use bramblers_permitt_view as permitt_view;
 use bramblers_report::{ActionKind, Finding, Severity, SubjectKind, Tone};
@@ -67,6 +68,7 @@ enum Message {
     /// A message from a module's detailed view.
     Permitt(permitt_view::Message),
     Mcproster(mcproster_view::Message),
+    Linstruct(linstruct_view::Message),
 }
 
 struct App {
@@ -89,6 +91,8 @@ struct App {
     permitt: Option<permitt_view::View>,
     /// Same for MCProster.
     mcproster: Option<mcproster_view::View>,
+    /// Same for Linstruct.
+    linstruct: Option<linstruct_view::View>,
 }
 
 impl App {
@@ -114,6 +118,7 @@ impl App {
             selected: None,
             permitt: None,
             mcproster: None,
+            linstruct: None,
         };
         // `BRAMBLERS_MODULE=permitt` opens on a module tab (documentation screenshots);
         // `BRAMBLERS_SELECT=module:finding-id` preselects a finding; `BRAMBLERS_NO_REFRESH=1`
@@ -163,6 +168,13 @@ impl App {
                 view.set_dark(self.dark);
                 self.mcproster = Some(view);
                 Some(task.map(Message::Mcproster))
+            }
+            "linstruct" if self.linstruct.is_none() => {
+                let (mut view, task) = linstruct_view::View::new();
+                view.set_lang(self.lang);
+                view.set_dark(self.dark);
+                self.linstruct = Some(view);
+                Some(task.map(Message::Linstruct))
             }
             _ => None,
         }
@@ -256,6 +268,11 @@ impl App {
                             tasks.push(v.refresh().map(Message::Mcproster));
                         }
                     }
+                    Some("linstruct") => {
+                        if let Some(v) = &mut self.linstruct {
+                            tasks.push(v.refresh().map(Message::Linstruct));
+                        }
+                    }
                     _ => {}
                 }
                 return Task::batch(tasks);
@@ -270,6 +287,9 @@ impl App {
                 if let Some(v) = &mut self.mcproster {
                     v.set_lang(l);
                 }
+                if let Some(v) = &mut self.linstruct {
+                    v.set_lang(l);
+                }
                 self.remember();
             }
             Message::ToggleTheme => {
@@ -278,6 +298,9 @@ impl App {
                     v.set_dark(self.dark);
                 }
                 if let Some(v) = &mut self.mcproster {
+                    v.set_dark(self.dark);
+                }
+                if let Some(v) = &mut self.linstruct {
                     v.set_dark(self.dark);
                 }
                 self.remember();
@@ -312,6 +335,11 @@ impl App {
             Message::Mcproster(m) => {
                 if let Some(v) = &mut self.mcproster {
                     return v.update(m).map(Message::Mcproster);
+                }
+            }
+            Message::Linstruct(m) => {
+                if let Some(v) = &mut self.linstruct {
+                    return v.update(m).map(Message::Linstruct);
                 }
             }
             Message::OpenFile(p) | Message::OpenUrl(p) => {
@@ -398,6 +426,10 @@ impl App {
             },
             Some("mcproster") => match &self.mcproster {
                 Some(v) => self.view_module(v.view().map(Message::Mcproster)),
+                None => self.view_overview(),
+            },
+            Some("linstruct") => match &self.linstruct {
+                Some(v) => self.view_module(v.view().map(Message::Linstruct)),
                 None => self.view_overview(),
             },
             _ => self.view_overview(),

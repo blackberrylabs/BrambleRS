@@ -103,8 +103,14 @@ pub fn projects_in(dirs: &[PathBuf], home: &Path, sheets: &Sheets) -> Vec<PathBu
 /// The default project roots: the remembered folders' projects, plus the projects Claude
 /// Code knows. Only directories that exist, sorted, without duplicates.
 pub fn default_roots(env: &Env, sheets: &Sheets) -> Vec<PathBuf> {
+    roots_from_dirs(&saved_project_dirs(env), env, sheets)
+}
+
+/// The same, with the folders given in memory instead of read from the old settings file.
+/// BrambleRS keeps its settings under `~/.config/bramblers/` and passes them here.
+pub fn roots_from_dirs(dirs: &[PathBuf], env: &Env, sheets: &Sheets) -> Vec<PathBuf> {
     let mut roots: BTreeSet<PathBuf> = project_roots(env).into_iter().collect();
-    roots.extend(projects_in(&saved_project_dirs(env), &env.home, sheets));
+    roots.extend(projects_in(dirs, &env.home, sheets));
     roots.into_iter().filter(|r| r.is_dir()).collect()
 }
 
