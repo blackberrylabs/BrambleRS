@@ -415,7 +415,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bramblers-cli",
  "bramblers-core",
@@ -429,7 +429,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-billfold-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "base64",
  "bramblers-hostrules",
@@ -451,7 +451,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-cleanator-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "bramblers-report",
@@ -467,7 +467,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "bramblers-core",
@@ -478,7 +478,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bramblers-billfold-core",
  "bramblers-cleanator-core",
@@ -494,7 +494,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-hostrules"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "glob",
  "regex",
@@ -508,7 +508,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-lastrun-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bramblers-hostrules",
  "bramblers-report",
@@ -525,7 +525,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-linstruct-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bramblers-hostrules",
  "bramblers-report",
@@ -538,7 +538,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-mcproster-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "bramblers-hostrules",
@@ -556,7 +556,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-permitt-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bramblers-hostrules",
  "bramblers-report",
@@ -570,7 +570,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-permitt-view"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bramblers-hostrules",
  "bramblers-permitt-core",
@@ -581,7 +581,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-report"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -589,7 +589,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-ui"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "iced",
  "serde",

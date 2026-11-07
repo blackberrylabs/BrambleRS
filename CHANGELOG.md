@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.1.1] - 2026-11-07
+
+BrambleRS 0.1.1 brings the first detailed module screen, Permitt, inside its tab. The rest of
+the screen is unchanged.
+
+### Permitt
+
+- The tab shows Permitt's own screen: the sheet of hosts and capabilities, four figures, the
+  filters, the evidence behind each state and the findings. The left rail and the other tabs
+  stay in place.
+- One row per assistant and one state per capability (commands, files, network, MCP). A click
+  on a cell opens its precedence, the settings that set it, the settings written but not
+  honoured, the shell start-up hits and the action to take.
+- Filters: host name, user level or one project, installed only, findings only, and whether
+  the shell start-up files are read. Rescan reads every settings file again on a thread.
+- Permitt's own preference moves to `~/.config/bramblers/permitt/settings.json`. The old
+  `~/.config/permitt/settings.json` is read once.
+
+### Still to come
+
+- The five other module tabs still show the shared finding list. Their detailed screens come
+  in 0.2.0 to 0.6.0.
+- No website, no telemetry, no network request.
+
+### Promises
+
+- Read-only: nothing on the machine is modified. Every corrective action is displayed, never
+  executed.
+- The only writes are the settings files and the saved reports.
+- `#![forbid(unsafe_code)]` across the workspace.
+
 ## [0.1.0] - 2026-11-07
 
 BrambleRS 0.1.0 is the first release of the single software. It keeps the screen of the old
