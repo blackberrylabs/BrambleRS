@@ -21,7 +21,7 @@ the screen is unchanged.
 ### Still to come
 
 - The five other module tabs still show the shared finding list. Their detailed screens come
-  in 0.2.0 to 0.6.0.
+  in 0.1.2 to 0.1.6.
 - No website, no telemetry, no network request.
 
 ### Promises
