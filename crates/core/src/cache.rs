@@ -1,6 +1,6 @@
-//! The saved reports: `~/.local/state/blackberrylabs/<module>/report.json`, written by the
-//! tower and by nobody else (rule R2). The modules keep their own promise — nothing written
-//! outside their settings — because the tower does the saving.
+//! The saved reports: `~/.local/state/bramblers/<module>/report.json`, written by
+//! BrambleRS and by nobody else (rule R2). The modules keep their own promise — nothing
+//! written outside their settings — because BrambleRS does the saving.
 
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
@@ -24,24 +24,26 @@ pub struct Saved {
 }
 
 impl Cache {
-    /// `$BBL_STATE_DIR`, else `$XDG_STATE_HOME/blackberrylabs`, else
-    /// `~/.local/state/blackberrylabs`.
+    /// `$BRAMBLERS_STATE_DIR`, else `$XDG_STATE_HOME/bramblers`, else
+    /// `~/.local/state/bramblers`. `$BBL_STATE_DIR` is still read for the old scripts.
     pub fn default_location() -> Cache {
-        if let Some(d) = std::env::var_os("BBL_STATE_DIR") {
+        let dir =
+            std::env::var_os("BRAMBLERS_STATE_DIR").or_else(|| std::env::var_os("BBL_STATE_DIR"));
+        if let Some(d) = dir {
             return Cache {
                 dir: PathBuf::from(d),
             };
         }
         if let Some(d) = std::env::var_os("XDG_STATE_HOME").filter(|d| !d.is_empty()) {
             return Cache {
-                dir: PathBuf::from(d).join("blackberrylabs"),
+                dir: PathBuf::from(d).join("bramblers"),
             };
         }
         let home = std::env::var_os("HOME")
             .map(PathBuf::from)
             .unwrap_or_else(|| PathBuf::from("/"));
         Cache {
-            dir: home.join(".local/state/blackberrylabs"),
+            dir: home.join(".local/state/bramblers"),
         }
     }
 

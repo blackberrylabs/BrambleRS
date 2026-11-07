@@ -9,9 +9,14 @@ repository.workspace = true
 
 [dependencies]
 bramblers-report.workspace = true
+bramblers-billfold-core.workspace = true
+bramblers-cleanator-core.workspace = true
+bramblers-lastrun-core.workspace = true
+bramblers-linstruct-core.workspace = true
+bramblers-mcproster-core.workspace = true
+bramblers-permitt-core.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-toml.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true

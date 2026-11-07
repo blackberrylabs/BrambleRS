@@ -6,7 +6,7 @@
 //! moment they are read; actions shown, never run; every rule sourced.
 //!
 //! `tests/promises.rs` checks that the source of this crate never mentions a write or a
-//! network API, and that `report` conforms to `bbl-report/1`.
+//! network API, and that `report` conforms to `bramblers-report/1`.
 
 #![forbid(unsafe_code)]
 
@@ -14,6 +14,7 @@ pub mod model;
 pub mod projects;
 pub mod report;
 pub mod rules;
+pub mod run;
 pub mod scan;
 pub mod text;
 

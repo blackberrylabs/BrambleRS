@@ -1,13 +1,13 @@
-//! `bramblers`: the BrambleRS control tower on the command line. `bramblers` shows the saved
-//! reports (nothing is launched), `bramblers refresh` runs the installed modules, `bramblers modules`
-//! lists the family. `--json` for scripts.
+//! `bramblers-cli`: the command line of BrambleRS. `bramblers-cli` shows the saved reports
+//! (nothing is launched), `bramblers-cli refresh` runs the six modules in-process,
+//! `bramblers-cli modules` lists them. `--json` for scripts.
 
 use std::io::Write;
 
 use anyhow::Result;
 use bramblers_core::cache::age_label;
 use bramblers_core::dashboard::ReportState;
-use bramblers_core::{Cache, Dashboard, Modules};
+use bramblers_core::{Cache, Dashboard};
 use bramblers_report::{ActionKind, Severity};
 use clap::{Parser, Subcommand};
 
@@ -35,9 +35,9 @@ struct Cli {
 enum Command {
     /// The list of findings from the saved reports, most serious first (default).
     List,
-    /// The modules of the family: installed or not, and the age of their report.
+    /// The six modules of BrambleRS and the age of their report.
     Modules,
-    /// Run the installed modules (or the ones named), save their reports, then show the list.
+    /// Run the modules (or the ones named), save their reports, then show the list.
     Refresh { ids: Vec<String> },
 }
 
@@ -50,10 +50,8 @@ macro_rules! out {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    let modules = Modules::embedded();
     let cache = Cache::default_location();
-    let path = bramblers_core::discover::path_dirs();
-    let mut dash = Dashboard::from_saved(&modules, &cache, &path);
+    let mut dash = Dashboard::from_saved(&cache);
     let min = Severity::try_from(cli.min_severity).expect("1..=4");
 
     match cli.command.unwrap_or(Command::List) {
@@ -62,19 +60,15 @@ fn main() -> Result<()> {
             let ids: Vec<String> = if ids.is_empty() {
                 dash.modules
                     .iter()
-                    .filter(|m| m.cli.is_some())
-                    .map(|m| m.spec.id.clone())
+                    .map(|m| m.provider.id.to_string())
                     .collect()
             } else {
                 ids
             };
-            if ids.is_empty() {
-                eprintln!("no module installed: nothing to run (see `bramblers modules`)");
-            }
             for id in ids {
                 let name = dash
                     .module(&id)
-                    .map(|m| m.spec.name.clone())
+                    .map(|m| m.provider.name.to_string())
                     .unwrap_or_else(|| id.clone());
                 eprint!("{name} … ");
                 match dash.refresh(&id, &cache) {
@@ -102,8 +96,7 @@ fn state_line(m: &bramblers_core::ModuleStatus) -> String {
             "report {}",
             age_label(std::time::Duration::from_secs(*age_s))
         ),
-        ReportState::NoReport => "installed, no report yet — run `bramblers refresh`".to_string(),
-        ReportState::NotInstalled => format!("not installed — {}", m.spec.releases),
+        ReportState::NoReport => "no report yet — run `bramblers-cli refresh`".to_string(),
         ReportState::Failed { error } => format!("failed: {error}"),
     }
 }
@@ -126,7 +119,7 @@ fn list(dash: &Dashboard, min: Severity, only: Option<&str>, json: bool) {
         counts[3].1
     );
     for m in &dash.modules {
-        out!("  {:<10} {}", m.spec.name, state_line(m));
+        out!("  {:<10} {}", m.provider.name, state_line(m));
     }
     out!();
     if shown.is_empty() {
@@ -161,19 +154,12 @@ fn list(dash: &Dashboard, min: Severity, only: Option<&str>, json: bool) {
             };
             out!("{:>3} {:<name_w$}  → {line}", "", "", name_w = name_w);
         }
-        if let Some(o) = &f.open {
-            out!(
-                "{:>3} {:<name_w$}  ↗ {} {}",
-                "",
-                "",
-                o.app,
-                o.args.join(" "),
-                name_w = name_w
-            );
-        }
     }
     out!();
-    out!("{} finding(s) shown. BrambleRS changes nothing: every action above is for you to take, in the module or by hand.", shown.len());
+    out!(
+        "{} finding(s) shown. BrambleRS changes nothing: every action above is for you to take.",
+        shown.len()
+    );
 }
 
 fn sev_tag(s: Severity) -> &'static str {
@@ -191,16 +177,13 @@ fn modules_cmd(dash: &Dashboard, json: bool) {
         return;
     }
     for m in &dash.modules {
-        out!("{} — {} · {}", m.spec.name, m.spec.verb, m.spec.tagline);
-        match (&m.cli, &m.app) {
-            (Some(c), Some(a)) => out!("  installed: {} · {}", c.display(), a.display()),
-            (Some(c), None) => out!("  installed: {} (no desktop app found)", c.display()),
-            (None, Some(a)) => out!(
-                "  installed: {} (no command line found: the tower cannot refresh it)",
-                a.display()
-            ),
-            (None, None) => out!("  not installed. {}", m.spec.description),
-        }
+        out!(
+            "{} — {} · {}",
+            m.provider.name,
+            m.provider.verb,
+            m.provider.tagline
+        );
+        out!("  built in: {}", m.provider.id);
         out!("  {}", state_line(m));
         if let Some(r) = &m.report {
             let figures: Vec<String> = r
@@ -215,7 +198,6 @@ fn modules_cmd(dash: &Dashboard, json: bool) {
                 r.generated_at
             );
         }
-        out!("  {}", m.spec.home);
         out!();
     }
 }

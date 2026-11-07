@@ -95,7 +95,7 @@ pub fn read(files: &[PathBuf], since: DateTime<Utc>) -> Read {
     for group in seen.into_values() {
         let has_parent = group.iter().any(|(_, _, s)| !s);
         for (_, r, s) in group {
-            if s == !has_parent {
+            if s != has_parent {
                 out.requests.push(r);
             }
         }

@@ -21,6 +21,7 @@ pub mod inventory;
 pub mod model;
 pub mod probe;
 pub mod report;
+pub mod run;
 
 // The common ground with the other Blackberrylabs tools lives in `bbl-hostrules`; these
 // re-exports keep the paths of 0.1 and 0.2 valid.

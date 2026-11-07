@@ -1,17 +1,14 @@
-//! Assemble: the modules with their installation and report status, and one list of
-//! findings across modules, most serious first. The tower sorts; it never reinterprets.
+//! Assemble: the six modules with their report status, and one list of findings across
+//! modules, most serious first. BrambleRS sorts; it never reinterprets.
 
-use std::path::PathBuf;
 use std::time::Duration;
 
 use bramblers_report::{Finding, Report, Severity, Summary};
 use serde::Serialize;
 
 use crate::cache::Cache;
-use crate::discover::which;
-use crate::run;
-pub use crate::run::{Run, RunError};
-use crate::spec::{Modules, Spec};
+use crate::registry::{self, Provider};
+use crate::runner::{self, Run, RunError};
 
 /// Where a module's report comes from, or why there is none.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -21,21 +18,16 @@ pub enum ReportState {
     Fresh { elapsed_ms: u64 },
     /// Read from the saved reports.
     Saved { age_s: u64 },
-    /// Installed, never run yet.
+    /// Never run yet.
     NoReport,
-    /// Not installed: no binary on `PATH`.
-    NotInstalled,
     /// The run or the saved file failed; the reason.
     Failed { error: String },
 }
 
-/// One module, as the tower sees it.
+/// One module, as BrambleRS sees it.
 #[derive(Debug, Clone, Serialize)]
 pub struct ModuleStatus {
-    pub spec: Spec,
-    pub cli: Option<PathBuf>,
-    pub app: Option<PathBuf>,
-    pub installed: bool,
+    pub provider: Provider,
     pub state: ReportState,
     pub report: Option<Report>,
 }
@@ -57,16 +49,12 @@ pub struct Dashboard {
 }
 
 impl Dashboard {
-    /// Installed modules and their saved reports — nothing is launched.
-    pub fn from_saved(modules: &Modules, cache: &Cache, path_dirs: &[PathBuf]) -> Dashboard {
-        let statuses = modules
-            .specs
+    /// The six modules and their saved reports — nothing is run.
+    pub fn from_saved(cache: &Cache) -> Dashboard {
+        let statuses = registry::all()
             .iter()
-            .map(|spec| {
-                let cli = which(&spec.cli, path_dirs);
-                let app = spec.app.as_deref().and_then(|a| which(a, path_dirs));
-                let installed = cli.is_some() || app.is_some();
-                let (state, report) = match cache.read(&spec.id) {
+            .map(|provider| {
+                let (state, report) = match cache.read(provider.id) {
                     Some(Ok(saved)) => (
                         ReportState::Saved {
                             age_s: saved.age.as_secs(),
@@ -74,14 +62,10 @@ impl Dashboard {
                         Some(saved.report),
                     ),
                     Some(Err(e)) => (ReportState::Failed { error: e }, None),
-                    None if installed => (ReportState::NoReport, None),
-                    None => (ReportState::NotInstalled, None),
+                    None => (ReportState::NoReport, None),
                 };
                 ModuleStatus {
-                    spec: spec.clone(),
-                    cli,
-                    app,
-                    installed,
+                    provider: *provider,
                     state,
                     report,
                 }
@@ -90,38 +74,26 @@ impl Dashboard {
         Dashboard::assemble(statuses)
     }
 
-    /// Run one module now, save its report, and update its status. Not installed → the
-    /// status says so; a failure keeps the previous report if there was one.
+    /// Run one module now, save its report, and update its status. A failure keeps the
+    /// previous report if there was one.
     pub fn refresh(&mut self, id: &str, cache: &Cache) -> Result<Run, RunError> {
-        let result = match self.launch(id) {
-            Ok((spec, cli)) => run::report(&spec, &cli),
-            Err(e) => Err(e),
+        let provider = match self
+            .modules
+            .iter()
+            .find(|m| m.provider.id == id)
+            .map(|m| m.provider)
+        {
+            Some(p) => p,
+            None => return Err(RunError::Failed(format!("unknown module {id:?}"))),
         };
+        let result = runner::report(&provider);
         self.apply(id, &result, cache);
         result
     }
 
-    /// What `refresh` would run: the module's sheet and the path of its command line. An
-    /// app runs this on a thread and feeds the result back through [`Dashboard::apply`].
-    pub fn launch(&mut self, id: &str) -> Result<(Spec, PathBuf), RunError> {
-        let Some(m) = self.modules.iter_mut().find(|m| m.spec.id == id) else {
-            return Err(RunError::Spawn(format!("unknown module {id:?}")));
-        };
-        match m.cli.clone() {
-            Some(cli) => Ok((m.spec.clone(), cli)),
-            None => {
-                m.state = ReportState::NotInstalled;
-                Err(RunError::Spawn(format!(
-                    "{} is not installed ({} not on PATH)",
-                    m.spec.name, m.spec.cli
-                )))
-            }
-        }
-    }
-
     /// Take a run's outcome into account: save the report, set the state, re-sort.
     pub fn apply(&mut self, id: &str, result: &Result<Run, RunError>, cache: &Cache) {
-        if let Some(m) = self.modules.iter_mut().find(|m| m.spec.id == id) {
+        if let Some(m) = self.modules.iter_mut().find(|m| m.provider.id == id) {
             match result {
                 Ok(run) => {
                     m.state = match cache.write(id, &run.json) {
@@ -132,7 +104,6 @@ impl Dashboard {
                     };
                     m.report = Some(run.report.clone());
                 }
-                Err(_) if m.state == ReportState::NotInstalled => {}
                 Err(e) => {
                     m.state = ReportState::Failed {
                         error: e.to_string(),
@@ -144,13 +115,12 @@ impl Dashboard {
         *self = Dashboard::assemble(statuses);
     }
 
-    /// Run every installed module, in family order.
+    /// Run every module, in family order.
     pub fn refresh_all(&mut self, cache: &Cache) -> Vec<(String, Result<Duration, RunError>)> {
         let ids: Vec<String> = self
             .modules
             .iter()
-            .filter(|m| m.cli.is_some())
-            .map(|m| m.spec.id.clone())
+            .map(|m| m.provider.id.to_string())
             .collect();
         ids.into_iter()
             .map(|id| {
@@ -168,8 +138,8 @@ impl Dashboard {
                     lines.push((
                         order,
                         Line {
-                            module: m.spec.id.clone(),
-                            module_name: m.spec.name.clone(),
+                            module: m.provider.id.to_string(),
+                            module_name: m.provider.name.to_string(),
                             finding: f.clone(),
                         },
                     ));
@@ -220,12 +190,48 @@ impl Dashboard {
     }
 
     pub fn module(&self, id: &str) -> Option<&ModuleStatus> {
-        self.modules.iter().find(|m| m.spec.id == id)
+        self.modules.iter().find(|m| m.provider.id == id)
     }
 
     pub fn to_json(&self) -> String {
         let mut s = serde_json::to_string_pretty(self).expect("a dashboard serialises");
         s.push('\n');
         s
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_missing_report_is_not_a_failure() {
+        let tmp = tempfile::tempdir().unwrap();
+        let dash = Dashboard::from_saved(&Cache::at(tmp.path()));
+        assert_eq!(dash.modules.len(), 6);
+        assert!(dash
+            .modules
+            .iter()
+            .all(|m| m.state == ReportState::NoReport && m.report.is_none()));
+        assert!(dash.lines.is_empty());
+    }
+
+    #[test]
+    fn saved_reports_are_sorted_by_severity() {
+        let tmp = tempfile::tempdir().unwrap();
+        let cache = Cache::at(tmp.path());
+        cache
+            .write(
+                "permitt",
+                bramblers_report::conformance::example().to_json().as_str(),
+            )
+            .unwrap();
+        let dash = Dashboard::from_saved(&cache);
+        assert!(!dash.lines.is_empty());
+        assert!(dash
+            .lines
+            .windows(2)
+            .all(|w| w[0].finding.severity <= w[1].finding.severity));
+        assert!(dash.lines.iter().all(|l| l.module == "permitt"));
     }
 }

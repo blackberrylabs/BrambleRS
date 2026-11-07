@@ -16,6 +16,7 @@ pub mod inventory;
 pub mod model;
 pub mod report;
 pub mod rules;
+pub mod run;
 pub mod sheet;
 pub mod shell;
 

@@ -299,7 +299,6 @@ fn defaults_are_marked_and_sourced() {
     assert_eq!(net.evidence[0].level, Level::Default);
     assert!(net.evidence[0].source.url.is_some());
     let cc = inv.hosts.iter().find(|h| h.host == "claude-code").unwrap();
-    assert!(!cc.state(Capability::Commands).unwrap().is_default || true);
     assert!(cc.guards.iter().any(|g| g.name == "PreToolUse hooks"));
     assert!(cc.guards.iter().any(|g| g.name == "deny rules"));
 }
@@ -326,7 +325,7 @@ fn nothing_is_written_and_no_clear_secret_appears() {
     assert!(!json.contains("sk-ant-api03-SHOULD"));
 }
 
-/// The `bbl-report/1` view conforms, carries the same figures as the inventory, and maps
+/// The `bramblers-report/1` view conforms, carries the same figures as the inventory, and maps
 /// every kind of finding onto the common scale.
 #[test]
 fn report_conforms() {

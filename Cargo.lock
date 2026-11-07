@@ -478,11 +478,16 @@ dependencies = [
 name = "bramblers-core"
 version = "0.1.0"
 dependencies = [
+ "bramblers-billfold-core",
+ "bramblers-cleanator-core",
+ "bramblers-lastrun-core",
+ "bramblers-linstruct-core",
+ "bramblers-mcproster-core",
+ "bramblers-permitt-core",
  "bramblers-report",
  "serde",
  "serde_json",
  "tempfile",
- "toml",
 ]
 
 [[package]]

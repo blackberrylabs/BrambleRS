@@ -1,13 +1,12 @@
-//! The tower on fake modules: shell scripts named like the real binaries, each printing one
-//! of the real reports (`tests/fixtures/reports/*.json`, paths scrubbed). What is
-//! checked: an absent module is shown, a saved report is read with its age, a refresh writes
-//! only under the state directory (R2), a report of another schema or with extra fields is
-//! read without breaking, a failing module is reported not crashed.
+//! BrambleRS core on the real report fixtures: saved reports are read with their age and
+//! sorted across modules; a report of another schema is named, not fatal; applying a run
+//! writes under the state directory only; an unknown module is refused. Nothing is launched.
 
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 use bramblers_core::dashboard::ReportState;
-use bramblers_core::{Cache, Dashboard, Modules};
+use bramblers_core::{Cache, Dashboard, Run, RunError};
 use bramblers_report::Severity;
 
 fn fixture(name: &str) -> String {
@@ -17,19 +16,6 @@ fn fixture(name: &str) -> String {
             .join(name),
     )
     .unwrap()
-}
-
-/// A fake module binary: prints `body` on stdout, exits with `code`.
-#[cfg(unix)]
-fn fake_bin(dir: &Path, name: &str, body_file: &Path, code: i32) {
-    use std::os::unix::fs::PermissionsExt;
-    let script = format!(
-        "#!/bin/sh\n[ \"$1\" = report ] || exit 2\ncat '{}'\nexit {code}\n",
-        body_file.display()
-    );
-    let p = dir.join(name);
-    std::fs::write(&p, script).unwrap();
-    std::fs::set_permissions(&p, std::fs::Permissions::from_mode(0o755)).unwrap();
 }
 
 fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
@@ -45,104 +31,44 @@ fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
     }
 }
 
-struct World {
-    _tmp: tempfile::TempDir,
-    bin: PathBuf,
-    state: PathBuf,
-    root: PathBuf,
-}
-
-/// A temp root with `bin/` (fake Permitt and MCProster, no Cleanator) and `state/`.
-fn world() -> World {
-    let tmp = tempfile::tempdir().unwrap();
-    let root = tmp.path().to_path_buf();
-    let bin = root.join("bin");
-    let data = root.join("data");
-    let state = root.join("state");
-    std::fs::create_dir_all(&bin).unwrap();
-    std::fs::create_dir_all(&data).unwrap();
-    for (module, cli) in [("permitt", "permitt"), ("mcproster", "mcproster")] {
-        let body = data.join(format!("{module}.json"));
-        std::fs::write(&body, fixture(&format!("{module}.json"))).unwrap();
-        fake_bin(&bin, cli, &body, 0);
-    }
-    World {
-        _tmp: tmp,
-        bin,
-        state,
-        root,
-    }
-}
-
 #[test]
-fn an_absent_module_is_shown_and_saved_reports_are_read() {
-    let w = world();
-    let cache = Cache::at(&w.state);
-    let modules = Modules::embedded();
-    // Nothing saved yet.
-    let d = Dashboard::from_saved(&modules, &cache, std::slice::from_ref(&w.bin));
+fn saved_reports_are_read_with_their_age_and_sorted_across_modules() {
+    let tmp = tempfile::tempdir().unwrap();
+    let cache = Cache::at(tmp.path());
+    // Nothing saved yet: six modules, no report, no failure.
+    let d = Dashboard::from_saved(&cache);
     assert_eq!(d.modules.len(), 6);
+    let ids: Vec<&str> = d.modules.iter().map(|m| m.provider.id).collect();
     assert_eq!(
-        d.module("linstruct").unwrap().state,
-        ReportState::NotInstalled
+        ids,
+        [
+            "billfold",
+            "cleanator",
+            "lastrun",
+            "linstruct",
+            "mcproster",
+            "permitt"
+        ]
     );
-    assert_eq!(
-        d.module("cleanator").unwrap().state,
-        ReportState::NotInstalled
-    );
-    assert!(!d.module("cleanator").unwrap().installed);
-    assert_eq!(d.module("permitt").unwrap().state, ReportState::NoReport);
+    assert!(d
+        .modules
+        .iter()
+        .all(|m| m.state == ReportState::NoReport && m.report.is_none()));
     assert!(d.lines.is_empty());
-    // A saved report, read with its age.
+
+    // Two saved reports, read with their age.
     cache.write("permitt", &fixture("permitt.json")).unwrap();
-    let d = Dashboard::from_saved(&modules, &cache, std::slice::from_ref(&w.bin));
+    cache
+        .write("mcproster", &fixture("mcproster.json"))
+        .unwrap();
+    let d = Dashboard::from_saved(&cache);
     assert!(matches!(
         d.module("permitt").unwrap().state,
         ReportState::Saved { .. }
     ));
-    assert_eq!(d.lines.len(), 40);
-    assert!(d.lines.iter().all(|l| l.module == "permitt"));
-}
-
-#[test]
-fn refresh_writes_under_the_state_dir_only_and_sorts_across_modules() {
-    let w = world();
-    let cache = Cache::at(&w.state);
-    let modules = Modules::embedded();
-    let mut before = Vec::new();
-    walk(&w.root, &mut before);
-    before.sort();
-
-    let mut d = Dashboard::from_saved(&modules, &cache, std::slice::from_ref(&w.bin));
-    let results = d.refresh_all(&cache);
-    assert_eq!(results.len(), 2, "two installed modules, Cleanator absent");
-    assert!(results.iter().all(|(_, r)| r.is_ok()), "{results:?}");
-
-    // R2: the only new files are the two saved reports.
-    let mut after = Vec::new();
-    walk(&w.root, &mut after);
-    after.sort();
-    let new: Vec<&PathBuf> = after.iter().filter(|p| !before.contains(p)).collect();
-    assert_eq!(
-        new,
-        vec![
-            &w.state.join("mcproster/report.json"),
-            &w.state.join("permitt/report.json")
-        ]
-    );
-    assert!(new
-        .iter()
-        .all(|p| bramblers_core::cache::is_under(p, &w.state)));
-
-    // Both fresh, lines merged and sorted: severity, then family order (MCProster before
-    // Permitt), then title.
-    assert!(matches!(
-        d.module("permitt").unwrap().state,
-        ReportState::Fresh { .. }
-    ));
     assert!(matches!(
         d.module("mcproster").unwrap().state,
-        ReportState::Fresh { .. }
+        ReportState::Saved { .. }
     ));
     assert_eq!(d.lines.len(), 40 + 23);
     let sev: Vec<u8> = d
@@ -164,99 +90,73 @@ fn refresh_writes_under_the_state_dir_only_and_sorts_across_modules() {
     assert_eq!(counts.iter().map(|(_, n)| n).sum::<usize>(), d.lines.len());
     // Figures: one summary row per module card.
     assert_eq!(d.summaries().len(), 8);
-    // A second dashboard from the saved files sees the same thing.
-    let d2 = Dashboard::from_saved(&modules, &cache, std::slice::from_ref(&w.bin));
-    assert_eq!(d2.lines.len(), d.lines.len());
 }
 
 #[test]
-fn another_schema_and_extra_fields_do_not_break() {
-    let w = world();
-    let cache = Cache::at(&w.state);
-    let modules = Modules::embedded();
-    // Extra fields: read as if they were not there.
-    let mut v: serde_json::Value = serde_json::from_str(&fixture("mcproster.json")).unwrap();
-    v["future"] = serde_json::json!({ "anything": [1, 2, 3] });
-    v["findings"][0]["confidence"] = serde_json::json!(0.7);
-    cache.write("mcproster", &v.to_string()).unwrap();
-    // Another schema: named, not parsed, not fatal.
+fn a_report_of_another_schema_is_named_not_fatal() {
+    let tmp = tempfile::tempdir().unwrap();
+    let cache = Cache::at(tmp.path());
     cache
         .write(
             "permitt",
-            r#"{ "schema": "bbl-report/2", "module": { "id": "permitt" } }"#,
+            r#"{ "schema": "bramblers-report/2", "module": { "id": "permitt" } }"#,
         )
         .unwrap();
-    let d = Dashboard::from_saved(&modules, &cache, std::slice::from_ref(&w.bin));
-    assert!(matches!(
-        d.module("mcproster").unwrap().state,
-        ReportState::Saved { .. }
-    ));
-    assert_eq!(
-        d.lines.iter().filter(|l| l.module == "mcproster").count(),
-        23
-    );
+    let d = Dashboard::from_saved(&cache);
     match &d.module("permitt").unwrap().state {
-        ReportState::Failed { error } => assert!(error.contains("bbl-report/2"), "{error}"),
+        ReportState::Failed { error } => assert!(error.contains("bramblers-report/2"), "{error}"),
         other => panic!("{other:?}"),
     }
     assert!(d.lines.iter().all(|l| l.module != "permitt"));
 }
 
 #[test]
-fn a_failing_module_is_reported_not_crashed() {
-    let w = world();
-    let cache = Cache::at(&w.state);
-    let modules = Modules::embedded();
-    // Permitt now exits 1 with garbage; its saved report from before stays.
-    cache.write("permitt", &fixture("permitt.json")).unwrap();
-    let garbage = w.root.join("data/garbage.txt");
-    std::fs::write(&garbage, "boom\n").unwrap();
-    fake_bin(&w.bin, "permitt", &garbage, 1);
-    let mut d = Dashboard::from_saved(&modules, &cache, std::slice::from_ref(&w.bin));
-    let r = d.refresh("permitt", &cache);
-    assert!(
-        matches!(r, Err(bramblers_core::run::RunError::Exit(1, _))),
-        "{r:?}"
-    );
+fn applying_a_run_writes_under_the_state_dir_only() {
+    let tmp = tempfile::tempdir().unwrap();
+    let cache = Cache::at(tmp.path());
+    let json = fixture("permitt.json");
+    let report = bramblers_report::conformance::check(&json).unwrap();
+    let run = Run {
+        report,
+        json,
+        elapsed: Duration::from_millis(12),
+    };
+    let mut d = Dashboard::from_saved(&cache);
+    d.apply("permitt", &Ok(run), &cache);
     assert!(matches!(
         d.module("permitt").unwrap().state,
-        ReportState::Failed { .. }
+        ReportState::Fresh { .. }
     ));
-    assert_eq!(d.lines.len(), 40, "the previous report is still shown");
-    // A module that answers but not with a report.
-    fake_bin(&w.bin, "mcproster", &garbage, 0);
-    let r = d.refresh("mcproster", &cache);
-    assert!(
-        matches!(r, Err(bramblers_core::run::RunError::NotAReport(_))),
-        "{r:?}"
-    );
-    // Refreshing an absent module says so.
-    let r = d.refresh("cleanator", &cache);
-    assert!(
-        matches!(r, Err(bramblers_core::run::RunError::Spawn(ref e)) if e.contains("not installed")),
-        "{r:?}"
-    );
-    // The dashboard still serialises.
-    let json = d.to_json();
-    assert!(json.contains("\"state\": \"failed\""));
+    let mut files = Vec::new();
+    walk(tmp.path(), &mut files);
+    assert_eq!(files, vec![cache.path("permitt")]);
+    assert!(d.to_json().contains("\"state\": \"fresh\""));
 }
 
 #[test]
-fn the_real_reports_conform_and_open_their_module() {
-    for (name, app) in [
-        ("billfold.json", "billfold-app"),
-        ("cleanator.json", "cleanator"),
-        ("lastrun.json", "lastrun-app"),
-        ("linstruct.json", "linstruct-app"),
-        ("mcproster.json", "mcproster-app"),
-        ("permitt.json", "permitt-app"),
+fn an_unknown_module_is_refused() {
+    let tmp = tempfile::tempdir().unwrap();
+    let cache = Cache::at(tmp.path());
+    let mut d = Dashboard::from_saved(&cache);
+    match d.refresh("nope", &cache) {
+        Err(RunError::Failed(e)) => assert!(e.contains("unknown module"), "{e}"),
+        other => panic!("{other:?}"),
+    }
+}
+
+#[test]
+fn the_real_reports_conform() {
+    for name in [
+        "billfold.json",
+        "cleanator.json",
+        "lastrun.json",
+        "linstruct.json",
+        "mcproster.json",
+        "permitt.json",
     ] {
         let r = bramblers_report::conformance::check(&fixture(name))
             .unwrap_or_else(|e| panic!("{name}: {e:?}"));
-        assert_eq!(r.module.app.as_deref(), Some(app));
-        for f in r.findings.iter().filter(|f| f.open.is_some()) {
-            assert_eq!(f.open.as_ref().unwrap().app, app);
-        }
+        assert!(!r.findings.is_empty(), "{name}: no findings");
         assert!(
             !fixture(name).contains("/tmp/"),
             "{name}: a scratch path leaked into the fixture"

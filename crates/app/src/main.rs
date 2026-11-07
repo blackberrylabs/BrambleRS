@@ -14,8 +14,8 @@ use iced::widget::{
 };
 use iced::{Alignment, Background, Border, Color, Element, Length, Task, Theme};
 
-use bramblers_core::dashboard::{ReportState, Run, RunError};
-use bramblers_core::{Cache, Dashboard, ModuleStatus, Modules};
+use bramblers_core::dashboard::ReportState;
+use bramblers_core::{Cache, Dashboard, ModuleStatus, Run, RunError};
 use bramblers_report::{ActionKind, Finding, Severity, SubjectKind, Tone};
 use bramblers_ui::palette::{alert, amber, good, muted};
 use bramblers_ui::widgets::{card, inner, small_button, swatch};
@@ -44,16 +44,12 @@ enum Message {
     FilterSeverity(Severity),
     ToggleInfo(bool),
     Select(String, String),
-    OpenModule(String, Vec<String>),
     OpenFile(String),
     OpenUrl(String),
     Copy(String),
 }
 
 struct App {
-    /// The package this machine takes (`/etc/os-release`, read once); None sends to the
-    /// releases page.
-    package: Option<bramblers_core::packages::Kind>,
     prefs: Prefs<()>,
     lang: Lang,
     strings: Strings,
@@ -73,18 +69,16 @@ struct App {
 
 impl App {
     fn new() -> (App, Task<Message>) {
-        let prefs: Prefs<()> = Prefs::load("blackberrylabs");
+        let prefs: Prefs<()> = Prefs::load("bramblers");
         let lang = prefs.initial_lang();
         let dark = prefs.initial_dark();
         let strings = Strings::load(EN, FR, lang);
         let cache = Cache::default_location();
-        let modules = Modules::embedded();
-        let dash = Dashboard::from_saved(&modules, &cache, &bramblers_core::discover::path_dirs());
+        let dash = Dashboard::from_saved(&cache);
         let mut app = App {
             prefs,
             lang,
             strings,
-            package: bramblers_core::packages::detect(),
             dark,
             cache,
             dash,
@@ -142,8 +136,8 @@ impl App {
             .dash
             .modules
             .iter()
-            .filter(|m| m.cli.is_some() && !self.running.contains(&m.spec.id))
-            .map(|m| m.spec.id.clone())
+            .filter(|m| !self.running.contains(m.provider.id))
+            .map(|m| m.provider.id.to_string())
             .collect();
         Task::batch(ids.into_iter().map(|id| self.refresh(id)))
     }
@@ -152,29 +146,24 @@ impl App {
         if self.running.contains(&id) {
             return Task::none();
         }
-        match self.dash.launch(&id) {
-            Ok((spec, cli)) => {
-                self.running.insert(id.clone());
-                let (tx, rx) = iced::futures::channel::oneshot::channel();
-                std::thread::spawn(move || {
-                    let r = bramblers_core::run::report(&spec, &cli).map(Arc::new);
-                    let _ = tx.send(r);
-                });
-                Task::perform(
-                    async move {
-                        rx.await.unwrap_or_else(|_| {
-                            Err(RunError::Spawn("the run thread stopped".into()))
-                        })
-                    },
-                    move |r| Message::Refreshed(id.clone(), r),
-                )
-            }
-            Err(e) => {
-                let r: Result<Run, RunError> = Err(e);
-                self.dash.apply(&id, &r, &self.cache);
-                Task::none()
-            }
-        }
+        let Some(provider) = bramblers_core::registry::get(&id).copied() else {
+            let r: Result<Run, RunError> = Err(RunError::Failed(format!("unknown module {id:?}")));
+            self.dash.apply(&id, &r, &self.cache);
+            return Task::none();
+        };
+        self.running.insert(id.clone());
+        let (tx, rx) = iced::futures::channel::oneshot::channel();
+        std::thread::spawn(move || {
+            let r = bramblers_core::runner::report(&provider).map(Arc::new);
+            let _ = tx.send(r);
+        });
+        Task::perform(
+            async move {
+                rx.await
+                    .unwrap_or_else(|_| Err(RunError::Failed("the run thread stopped".into())))
+            },
+            move |r| Message::Refreshed(id.clone(), r),
+        )
     }
 
     fn update(&mut self, message: Message) -> Task<Message> {
@@ -227,9 +216,6 @@ impl App {
             }
             Message::ToggleInfo(b) => self.show_info = b,
             Message::Select(m, f) => self.selected = Some((m, f)),
-            Message::OpenModule(app, args) => {
-                let _ = std::process::Command::new(&app).args(&args).spawn();
-            }
             Message::OpenFile(p) | Message::OpenUrl(p) => {
                 let _ = std::process::Command::new("xdg-open").arg(&p).spawn();
             }
@@ -308,8 +294,7 @@ impl App {
 
     fn view(&self) -> Element<'_, Message> {
         let s = &self.strings;
-        let installed = self.dash.modules.iter().filter(|m| m.installed).count();
-        let absent = self.dash.modules.len() - installed;
+        let modules = self.dash.modules.len();
         let reports = self
             .dash
             .modules
@@ -319,8 +304,7 @@ impl App {
         let status = s.t(
             "status.summary",
             &[
-                ("installed", &installed.to_string()),
-                ("absent", &absent.to_string()),
+                ("modules", &modules.to_string()),
                 ("reports", &reports.to_string()),
             ],
         );
@@ -394,7 +378,7 @@ impl App {
             let names: Vec<String> = self
                 .running
                 .iter()
-                .filter_map(|id| self.dash.module(id).map(|m| m.spec.name.clone()))
+                .filter_map(|id| self.dash.module(id).map(|m| m.provider.name.to_string()))
                 .collect();
             s.t("when.refreshing", &[("list", &names.join(", "))])
         } else {
@@ -498,45 +482,14 @@ impl App {
 
     fn view_module(&self, m: &ModuleStatus) -> Element<'_, Message> {
         let s = &self.strings;
-        let running = self.running.contains(&m.spec.id);
-        // No "open" on the card: the card is a filter (T6); the module's own app opens from
-        // the pane only, by an explicit "Open in …" button.
-        let head = row![text(m.spec.name.clone()).size(14), horizontal_space()]
+        let running = self.running.contains(m.provider.id);
+        // The card is a filter (T6): a click stays in BrambleRS, on that module.
+        let head = row![text(m.provider.name).size(14), horizontal_space()]
             .align_y(Alignment::Center)
             .spacing(8);
-        if !m.installed {
-            // The showcase: what the module does, and where to take it from.
-            let what = if m.spec.description.is_empty() {
-                m.spec.tagline.clone()
-            } else {
-                m.spec.description.clone()
-            };
-            let mut col = column![
-                head,
-                text(what)
-                    .size(12)
-                    .style(text::secondary)
-                    .height(Length::Fill)
-            ]
-            .spacing(3);
-            col = col.push(
-                row![
-                    text(s.t("module.not_installed", &[]))
-                        .size(12)
-                        .style(text::secondary),
-                    horizontal_space(),
-                    self.get_button(m),
-                ]
-                .align_y(Alignment::Center),
-            );
-            return self.module_card(
-                m,
-                card(col.into()).height(Length::Fixed(140.0)).style(dashed),
-            );
-        }
         let mut col = column![
             head,
-            text(m.spec.tagline.clone()).size(12).style(text::secondary)
+            text(m.provider.tagline).size(12).style(text::secondary)
         ]
         .spacing(3);
         // Figures, with the module's tones.
@@ -563,9 +516,9 @@ impl App {
         } else if let ReportState::Failed { .. } = m.state {
         } else {
             col = col.push(
-                text(s.t("module.installed", &[("version", "")]))
+                text(s.t("module.no_report", &[]))
                     .size(12)
-                    .color(good(self.dark)),
+                    .style(text::secondary),
             );
         }
         let version = m
@@ -588,7 +541,6 @@ impl App {
                     &[("age", &self.age(*age_s)), ("version", &version)],
                 ),
                 ReportState::NoReport => s.t("module.no_report", &[]),
-                ReportState::NotInstalled => s.t("module.not_installed", &[]),
                 ReportState::Failed { error } => {
                     s.t("module.failed", &[("error", &shorten(error, 70))])
                 }
@@ -604,18 +556,16 @@ impl App {
                 .style(text::secondary)
                 .width(Length::Fill),
         };
-        let action: Element<'_, Message> = if m.cli.is_none() {
-            text(s.t("module.no_cli", &[("cli", &m.spec.cli)]))
-                .size(11)
-                .style(text::secondary)
-                .into()
-        } else if running {
+        let action: Element<'_, Message> = if running {
             text(s.t("refresh.running", &[]))
                 .size(11)
                 .style(text::secondary)
                 .into()
         } else {
-            small_button(s.t("refresh.one", &[]), Message::Refresh(m.spec.id.clone()))
+            small_button(
+                s.t("refresh.one", &[]),
+                Message::Refresh(m.provider.id.to_string()),
+            )
         };
         col = col.push(
             row![state_text, action]
@@ -625,52 +575,19 @@ impl App {
         self.module_card(m, card(col.into()).height(Length::Fixed(140.0)))
     }
 
-    fn releases_of(&self, m: &ModuleStatus) -> String {
-        if m.spec.releases.is_empty() {
-            m.spec.home.clone()
-        } else {
-            m.spec.releases.clone()
-        }
-    }
-
-    /// "Get it": the exact package for this machine when the sheet knows the latest version
-    /// (the browser downloads it; the tower itself never fetches), else the releases page.
-    fn get_button(&self, m: &ModuleStatus) -> Element<'_, Message> {
-        let s = &self.strings;
-        match self
-            .package
-            .and_then(|k| m.spec.package_url(k).map(|u| (k, u)))
-        {
-            Some((k, url)) => small_button(
-                s.t(
-                    "module.get_package",
-                    &[
-                        ("kind", &k.to_string()),
-                        ("version", m.spec.latest.as_deref().unwrap_or("")),
-                    ],
-                ),
-                Message::OpenUrl(url),
-            ),
-            None => small_button(
-                s.t("module.get", &[]),
-                Message::OpenUrl(self.releases_of(m)),
-            ),
-        }
-    }
-
-    /// A module card is a filter: a click keeps you in the tower, on that module (decision
+    /// A module card is a filter: a click keeps you in BrambleRS, on that module (decision
     /// T6); a second click lifts the filter. The chosen card is outlined.
     fn module_card<'a>(
         &self,
         m: &ModuleStatus,
         c: container::Container<'a, Message>,
     ) -> Element<'a, Message> {
-        let chosen = self.module_filter.as_deref() == Some(&m.spec.id);
+        let chosen = self.module_filter.as_deref() == Some(m.provider.id);
         let c = if chosen { c.style(chosen_card) } else { c };
         let next = if chosen {
             None
         } else {
-            Some(m.spec.id.clone())
+            Some(m.provider.id.to_string())
         };
         mouse_area(c.width(Length::Fill))
             .on_press(Message::FilterModule(next))
@@ -708,9 +625,9 @@ impl App {
         ));
         for m in self.dash.modules.iter().filter(|m| m.report.is_some()) {
             chips = chips.push(chip(
-                m.spec.name.clone(),
-                self.module_filter.as_deref() == Some(&m.spec.id),
-                Message::FilterModule(Some(m.spec.id.clone())),
+                m.provider.name.to_string(),
+                self.module_filter.as_deref() == Some(m.provider.id),
+                Message::FilterModule(Some(m.provider.id.to_string())),
             ));
         }
         let filters = row![
@@ -967,50 +884,27 @@ impl App {
             }
         }
         col = col.push(Space::with_height(12));
-        let open: Element<'_, Message> = match &f.open {
-            Some(o) => {
-                let m = self.dash.module(&l.module);
-                let app_found = m.is_some_and(|m| m.app.is_some());
-                if app_found {
-                    button(text(s.t("detail.open_in", &[("module", &l.module_name)])).size(13))
-                        .style(button::primary)
-                        .on_press(Message::OpenModule(o.app.clone(), o.args.clone()))
-                        .into()
-                } else {
-                    text(s.t("detail.open_in_missing", &[("app", &o.app)]))
-                        .size(12)
-                        .style(text::secondary)
-                        .into()
-                }
-            }
-            None => Space::with_width(0).into(),
-        };
         col = col.push(
-            row![
-                open,
-                text(s.t("detail.note", &[]))
-                    .size(12)
-                    .style(text::secondary)
-            ]
-            .spacing(10)
-            .align_y(Alignment::Center),
+            text(s.t("detail.note", &[]))
+                .size(12)
+                .style(text::secondary),
         );
         col.into()
     }
 
-    /// The module in the pane: what it is, its figures, the state of its report, its
-    /// findings by severity, and the two ways out of the tower (its app, its releases).
+    /// The module in the pane: what it is, its figures, the state of its report, and its
+    /// findings by severity.
     fn view_module_detail(&self, m: &ModuleStatus) -> Element<'_, Message> {
         let s = &self.strings;
         let mut col = column![
-            text(m.spec.name.clone()).size(16),
-            text(m.spec.tagline.clone()).size(12).style(text::secondary),
+            text(m.provider.name).size(16),
+            text(m.provider.tagline).size(12).style(text::secondary),
         ]
         .spacing(4);
-        let what = if m.spec.description.is_empty() {
-            m.spec.tagline.clone()
+        let what = if m.provider.description.is_empty() {
+            m.provider.tagline
         } else {
-            m.spec.description.clone()
+            m.provider.description
         };
         col = col.push(Space::with_height(4));
         col = col.push(text(what).size(13));
@@ -1048,7 +942,7 @@ impl App {
                     .dash
                     .lines
                     .iter()
-                    .filter(|l| l.module == m.spec.id && l.finding.severity == sev)
+                    .filter(|l| l.module == m.provider.id && l.finding.severity == sev)
                     .count();
                 if n > 0 {
                     col = col.push(
@@ -1076,7 +970,6 @@ impl App {
                 &[("age", &self.age(*age_s)), ("version", &version)],
             ),
             ReportState::NoReport => s.t("module.no_report", &[]),
-            ReportState::NotInstalled => s.t("module.not_installed", &[]),
             ReportState::Failed { error } => {
                 s.t("module.failed", &[("error", &shorten(error, 120))])
             }
@@ -1084,30 +977,18 @@ impl App {
         col = col.push(Space::with_height(8));
         col = col.push(text(state).size(12).style(text::secondary));
         let mut actions = row![].spacing(8);
-        if m.installed {
-            if let (Some(app), true) = (&m.spec.app, m.app.is_some()) {
-                actions = actions.push(small_button(
-                    s.t("module.open_in", &[("module", &m.spec.name)]),
-                    Message::OpenModule(app.clone(), vec![]),
-                ));
-            }
-            if m.cli.is_some() && !self.running.contains(&m.spec.id) {
-                actions = actions.push(small_button(
-                    s.t("refresh.one", &[]),
-                    Message::Refresh(m.spec.id.clone()),
-                ));
-            }
+        if self.running.contains(m.provider.id) {
+            actions = actions.push(
+                text(s.t("refresh.running", &[]))
+                    .size(11)
+                    .style(text::secondary),
+            );
         } else {
-            actions = actions.push(self.get_button(m));
             actions = actions.push(small_button(
-                s.t("module.all_versions", &[]),
-                Message::OpenUrl(self.releases_of(m)),
+                s.t("refresh.one", &[]),
+                Message::Refresh(m.provider.id.to_string()),
             ));
         }
-        actions = actions.push(small_button(
-            s.t("module.home", &[]),
-            Message::OpenUrl(m.spec.home.clone()),
-        ));
         col = col.push(Space::with_height(4));
         col = col.push(actions);
         col.into()
@@ -1175,20 +1056,6 @@ fn chosen_card(theme: &Theme) -> container::Style {
             radius: 10.0.into(),
             width: 1.5,
             color: p.primary.base.color,
-        },
-        ..Default::default()
-    }
-}
-
-/// A module that is not installed: the card with a dashed border.
-fn dashed(theme: &Theme) -> container::Style {
-    let p = theme.extended_palette();
-    container::Style {
-        background: Some(Background::Color(p.background.base.color)),
-        border: Border {
-            radius: 10.0.into(),
-            width: 1.0,
-            color: p.background.strong.color,
         },
         ..Default::default()
     }

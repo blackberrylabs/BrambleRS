@@ -14,6 +14,7 @@ pub mod paths;
 pub mod probes;
 pub mod report;
 pub mod rules;
+pub mod run;
 pub mod scan;
 pub mod script;
 pub mod size;
