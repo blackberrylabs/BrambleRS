@@ -106,13 +106,11 @@ pub fn parse_dotenv(text: &str) -> Value {
 
 /// Remove `//` and `/* */` comments outside strings, then trailing commas before `}` / `]`.
 pub fn strip_jsonc(text: &str) -> String {
-    let b = text.as_bytes();
     let mut out = String::with_capacity(text.len());
-    let mut i = 0;
+    let mut chars = text.char_indices().peekable();
     let mut in_str = false;
     let mut esc = false;
-    while i < b.len() {
-        let c = b[i] as char;
+    while let Some((i, c)) = chars.next() {
         if in_str {
             out.push(c);
             if esc {
@@ -122,23 +120,29 @@ pub fn strip_jsonc(text: &str) -> String {
             } else if c == '"' {
                 in_str = false;
             }
-            i += 1;
             continue;
         }
         if c == '"' {
             in_str = true;
             out.push(c);
-            i += 1;
-        } else if text[i..].starts_with("//") {
-            i = text[i..].find('\n').map(|j| i + j).unwrap_or(b.len());
-        } else if text[i..].starts_with("/*") {
-            i = text[i + 2..]
-                .find("*/")
-                .map(|j| i + 2 + j + 2)
-                .unwrap_or(b.len());
+        } else if c == '/' && text[i..].starts_with("//") {
+            while let Some(&(_, n)) = chars.peek() {
+                if n == '\n' {
+                    break;
+                }
+                chars.next();
+            }
+        } else if c == '/' && text[i..].starts_with("/*") {
+            chars.next(); // the `*`
+            let mut prev = '\0';
+            for (_, n) in chars.by_ref() {
+                if prev == '*' && n == '/' {
+                    break;
+                }
+                prev = n;
+            }
         } else {
             out.push(c);
-            i += 1;
         }
     }
     // Trailing commas: a comma followed only by whitespace then } or ].
@@ -271,6 +275,13 @@ mod tests {
         let v = parse(t, Format::Jsonc).unwrap();
         assert_eq!(v["a"], "http://x/y");
         assert_eq!(v["b"].as_array().unwrap().len(), 2);
+    }
+
+    #[test]
+    fn jsonc_keeps_non_ascii_text() {
+        let t = "{\n  // un commentaire accentué\n  \"chemin\": \"/home/rémi/projet\",\n}";
+        let v = parse(t, Format::Jsonc).unwrap();
+        assert_eq!(v["chemin"], "/home/rémi/projet");
     }
 
     #[test]

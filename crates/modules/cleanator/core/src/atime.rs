@@ -56,21 +56,23 @@ pub fn parse_mounts(text: &str) -> Vec<MountInfo> {
 }
 
 fn unescape(s: &str) -> String {
-    let mut out = String::with_capacity(s.len());
+    // Bytes, not `char`s: a mount point is UTF-8, and an octal escape can encode one byte
+    // of a multi-byte character (`\303\251` is `é`). Rebuild the bytes, then decode.
     let b = s.as_bytes();
+    let mut out: Vec<u8> = Vec::with_capacity(b.len());
     let mut i = 0;
     while i < b.len() {
         if b[i] == b'\\' && i + 4 <= b.len() {
             if let Ok(code) = u8::from_str_radix(&s[i + 1..i + 4], 8) {
-                out.push(code as char);
+                out.push(code);
                 i += 4;
                 continue;
             }
         }
-        out.push(b[i] as char);
+        out.push(b[i]);
         i += 1;
     }
-    out
+    String::from_utf8_lossy(&out).into_owned()
 }
 
 /// The mount a path lives on: the longest mount point that is a prefix of the path.
@@ -233,6 +235,12 @@ sysfs /sys sysfs rw,nosuid,nodev,noexec,relatime 0 0
 /dev/sdb1 /mnt/my\\040disk xfs rw,noatime 0 0
 tmpfs /run tmpfs rw,nosuid,nodev,noexec,relatime,size=3270096k 0 0
 ";
+
+    #[test]
+    fn unescape_keeps_utf8_mount_points() {
+        assert_eq!(unescape("/home/r\\303\\251mi"), "/home/rémi");
+        assert_eq!(unescape("/mnt/my\\040disk"), "/mnt/my disk");
+    }
 
     #[test]
     fn parses_mounts_and_finds_the_longest_prefix() {
