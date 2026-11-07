@@ -1,5 +1,5 @@
 {
-  "schema": "bbl-report/1",
+  "schema": "bramblers-report/1",
   "module": {
     "id": "mcproster",
     "name": "MCProster",

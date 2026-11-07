@@ -28,7 +28,7 @@ fn unknown_fields_are_ignored() {
 #[test]
 fn optional_lists_default() {
     let json = r#"{
-      "schema": "bbl-report/1",
+      "schema": "bramblers-report/1",
       "module": { "id": "x", "name": "X", "version": "0.0.1", "verb": "test" },
       "generated_at": "2026-10-16T00:00:00Z",
       "summary": [ { "key": "k", "label": "K", "value": "0" } ]
@@ -42,11 +42,11 @@ fn optional_lists_default() {
 
 #[test]
 fn another_schema_is_named_not_parsed() {
-    let json = r#"{ "schema": "bbl-report/2", "module": 42 }"#;
-    assert_eq!(peek_schema(json).as_deref(), Some("bbl-report/2"));
+    let json = r#"{ "schema": "bramblers-report/2", "module": 42 }"#;
+    assert_eq!(peek_schema(json).as_deref(), Some("bramblers-report/2"));
     let err = check(json).unwrap_err();
     assert_eq!(err.len(), 1);
-    assert!(err[0].contains("bbl-report/2"), "{err:?}");
+    assert!(err[0].contains("bramblers-report/2"), "{err:?}");
     assert_eq!(peek_schema("not json"), None);
     assert_eq!(peek_schema(r#"{ "schema": 1 }"#), None);
     assert!(check("not json").is_err());
@@ -64,7 +64,7 @@ fn expect_error(mutate: impl FnOnce(&mut Report), needle: &str) {
 
 #[test]
 fn every_rule_fires() {
-    expect_error(|r| r.schema = "bbl-report/0".into(), "schema");
+    expect_error(|r| r.schema = "bramblers-report/0".into(), "schema");
     expect_error(|r| r.module.id = "Permitt".into(), "module.id");
     expect_error(|r| r.module.name = " ".into(), "module.name");
     expect_error(|r| r.module.version = "".into(), "module.version");

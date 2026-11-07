@@ -1,21 +1,21 @@
-//! The report contract between the internal contract of BrambleRS.
+//! The internal report contract of BrambleRS.
 //!
-//! A module (Cleanator, MCProster, Permitt, …) answers `<module> report --json` with one
-//! `bbl-report/1` document on stdout. BrambleRS reads those documents, merges them into one
-//! sorted list of findings and opens the module at the right place. This crate is the only
-//! thing the two sides share: the types of that document, their JSON form, a validation that
-//! lists every defect, the four-level severity scale in words, and a conformance check every
-//! module runs on its own output.
+//! A module (Cleanator, MCProster, Permitt, …) builds one `bramblers-report/1` document.
+//! BrambleRS reads those documents, merges them into one sorted list of findings and opens
+//! the module at the right place. This crate is the only thing the modules share for that:
+//! the types of the document, their JSON form, a validation that lists every defect, the
+//! four-level severity scale in words, and a conformance check every module runs on its own
+//! output.
 //!
 //! What this crate does **not** do: read a file, write a file, touch the network, mask a
 //! secret, or interpret a finding. A module puts in its report only what it already shows on
-//! screen, secrets masked upstream; the tower displays actions, it never runs them.
+//! screen, secrets masked upstream; BrambleRS displays actions, it never runs them.
 //!
 //! # Compatibility
 //!
 //! Readers ignore unknown fields and every list or optional field has a default, so a field
-//! *added* to the report keeps the schema at `bbl-report/1`. A field removed or whose meaning
-//! changes becomes `bbl-report/2`, and the tower reads both. [`peek_schema`] reads the schema
+//! *added* to the report keeps the schema at `bramblers-report/1`. A field removed or whose meaning
+//! changes becomes `bramblers-report/2`, and BrambleRS reads both. [`peek_schema`] reads the schema
 //! string before any typed parsing.
 
 #![forbid(unsafe_code)]
@@ -27,9 +27,9 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// The schema this crate produces and validates.
-pub const SCHEMA: &str = "bbl-report/1";
+pub const SCHEMA: &str = "bramblers-report/1";
 
-/// One report: what a module found, ready for the tower.
+/// One report: what a module found, ready for BrambleRS.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Report {
     /// Always [`SCHEMA`] for documents produced by this crate.
@@ -44,7 +44,7 @@ pub struct Report {
     /// One to four figures, the ones the module shows on its KPI cards.
     #[serde(default)]
     pub summary: Vec<Summary>,
-    /// What the module found, in the module's own order; the tower sorts by severity.
+    /// What the module found, in the module's own order; BrambleRS sorts by severity.
     #[serde(default)]
     pub findings: Vec<Finding>,
     /// Short free sentences, e.g. `3 shell files read`.
@@ -66,7 +66,7 @@ pub struct Module {
     pub version: String,
     /// What the module does, one word: `clean`, `inventory`, `inspect`, …
     pub verb: String,
-    /// One line, as shown on the tower's module card.
+    /// One line, as shown on the BrambleRS module card.
     #[serde(default)]
     pub tagline: String,
     /// Binary name of the desktop app, if the module has one.
@@ -75,7 +75,7 @@ pub struct Module {
     /// Binary name of the command line, if the module has one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cli: Option<String>,
-    /// Home page, shown and never followed by the tower.
+    /// Home page, shown and never followed by BrambleRS.
     #[serde(default)]
     pub home: String,
 }
@@ -109,7 +109,7 @@ pub enum Tone {
     Alert,
 }
 
-/// The four common severities. Each module maps its own findings onto this scale; the tower
+/// The four common severities. Each module maps its own findings onto this scale; BrambleRS
 /// never reinterprets. Serialised as the number, named in words here.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(try_from = "u8", into = "u8")]
@@ -148,7 +148,7 @@ impl Severity {
         }
     }
 
-    /// The scale in words, as agreed between the tower and the modules.
+    /// The scale in words, as agreed between BrambleRS and the modules.
     pub fn meaning(self) -> &'static str {
         match self {
             Severity::ActNow => {
@@ -194,7 +194,7 @@ impl fmt::Display for Severity {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Finding {
     /// Stable inside the module across runs, e.g. `runs-without-asking/opencode/commands`;
-    /// the tower uses it to tell a finding already seen from a new one.
+    /// BrambleRS uses it to tell a finding already seen from a new one.
     pub id: String,
     /// Where it sits on the common scale.
     pub severity: Severity,
@@ -227,7 +227,7 @@ pub struct Subject {
     pub label: String,
 }
 
-/// Families of subject the tower knows how to label.
+/// Families of subject BrambleRS knows how to label.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum SubjectKind {
@@ -258,7 +258,7 @@ pub struct Evidence {
     pub line: Option<u32>,
 }
 
-/// Something the person could do. The tower shows it; it never runs it.
+/// Something the person could do. BrambleRS shows it; it never runs it.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Action {
     /// What kind of action.
@@ -278,7 +278,7 @@ pub enum ActionKind {
     Hint,
     /// Open `target` with the system's default application.
     OpenFile,
-    /// Show `target` as a link (the tower never follows it by itself).
+    /// Show `target` as a link (BrambleRS never follows it by itself).
     OpenUrl,
     /// A command line to copy; `target` is the command.
     Command,
@@ -321,7 +321,7 @@ impl Report {
         serde_json::from_str(json).map_err(|e| e.to_string())
     }
 
-    /// Every defect, or nothing. The tower and the modules both call this.
+    /// Every defect, or nothing. BrambleRS and the modules both call this.
     pub fn validate(&self) -> Result<(), Vec<String>> {
         let mut errors = Vec::new();
         if self.schema != SCHEMA {
@@ -430,8 +430,8 @@ impl Report {
     }
 }
 
-/// The `schema` string of a document, read before any typed parsing — so the tower can tell
-/// a `bbl-report/2` from garbage without failing on fields it does not know.
+/// The `schema` string of a document, read before any typed parsing — so BrambleRS can tell
+/// a `bramblers-report/2` from garbage without failing on fields it does not know.
 pub fn peek_schema(json: &str) -> Option<String> {
     let v: serde_json::Value = serde_json::from_str(json).ok()?;
     v.get("schema")?.as_str().map(str::to_string)

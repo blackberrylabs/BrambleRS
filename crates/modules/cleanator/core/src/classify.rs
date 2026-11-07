@@ -1304,7 +1304,7 @@ mod tests {
         assert_eq!(m.total, 250);
     }
 
-    /// The `bbl-report/1` view conforms, carries the cards' figures, one finding per rule
+    /// The `bramblers-report/1` view conforms, carries the cards' figures, one finding per rule
     /// group, every finding opening the app on its group.
     #[test]
     fn report_conforms() {

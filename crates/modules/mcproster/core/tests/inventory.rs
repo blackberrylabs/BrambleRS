@@ -202,7 +202,7 @@ fn nothing_is_written() {
     }
 }
 
-/// The `bbl-report/1` view conforms, carries the figures of the app's cards, maps every
+/// The `bramblers-report/1` view conforms, carries the figures of the app's cards, maps every
 /// finding onto the common scale, and never shows a secret.
 #[test]
 fn report_conforms() {

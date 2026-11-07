@@ -1,5 +1,5 @@
-//! The conformance check every module runs on its own `report --json` output, and the
-//! tower runs on what it reads.
+//! The conformance check every module runs on its own `report --json` output, and
+//! BrambleRS runs on what it reads.
 
 use crate::{peek_schema, Report, SCHEMA};
 

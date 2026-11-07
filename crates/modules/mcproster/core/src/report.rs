@@ -1,4 +1,4 @@
-//! The `bbl-report/1` view of an inventory, for the Blackberrylabs control tower.
+//! The `bramblers-report/1` view of an inventory, for the Blackberrylabs control tower.
 //!
 //! Nothing here is new: every figure, finding, path and action is already shown by the CLI
 //! or the app, secrets masked upstream. The mapping of MCProster's findings onto the four

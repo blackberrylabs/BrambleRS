@@ -1,4 +1,4 @@
-//! The `bbl-report/1` view of a classified scan, for the Blackberrylabs control tower.
+//! The `bramblers-report/1` view of a classified scan, for the Blackberrylabs control tower.
 //!
 //! Nothing here is new: the figures are the app's cards, the findings are the rule groups
 //! of the recommendations panel, the paths are the ones the panel shows. Cleanator proposes

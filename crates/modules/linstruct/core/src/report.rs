@@ -1,4 +1,4 @@
-//! The `bbl-report/1` view of an inventory, for the Blackberrylabs control tower. Nothing
+//! The `bramblers-report/1` view of an inventory, for the Blackberrylabs control tower. Nothing
 //! here is new: only what the CLI and the app already show, secrets masked upstream.
 //! Findings of hosts absent from the machine (the app's "what if") are left out (L4).
 

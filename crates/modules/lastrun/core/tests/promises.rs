@@ -72,8 +72,8 @@ fn the_report_conforms() {
     let (_tmp, inv) = scanned();
     let report = bramblers_lastrun_core::report::build(&inv, 1);
     let json = report.to_json();
-    let back =
-        bramblers_report::conformance::check(&json).expect("the report conforms to bbl-report/1");
+    let back = bramblers_report::conformance::check(&json)
+        .expect("the report conforms to bramblers-report/1");
     assert_eq!(back.module.id, "lastrun");
     assert_eq!(back.findings.len(), inv.findings.len());
     assert_eq!(
