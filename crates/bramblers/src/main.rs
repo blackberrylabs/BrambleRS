@@ -16,6 +16,7 @@ use iced::{Alignment, Background, Border, Color, Element, Length, Task, Theme};
 
 use bramblers_core::dashboard::ReportState;
 use bramblers_core::{Cache, Dashboard, ModuleStatus, Run, RunError};
+use bramblers_mcproster_view as mcproster_view;
 use bramblers_permitt_view as permitt_view;
 use bramblers_report::{ActionKind, Finding, Severity, SubjectKind, Tone};
 use bramblers_ui::palette::{alert, amber, blend, good, muted};
@@ -65,6 +66,7 @@ enum Message {
     Copy(String),
     /// A message from a module's detailed view.
     Permitt(permitt_view::Message),
+    Mcproster(mcproster_view::Message),
 }
 
 struct App {
@@ -85,6 +87,8 @@ struct App {
     selected: Option<(String, String)>,
     /// Built the first time the Permitt tab is opened, then kept.
     permitt: Option<permitt_view::View>,
+    /// Same for MCProster.
+    mcproster: Option<mcproster_view::View>,
 }
 
 impl App {
@@ -109,6 +113,7 @@ impl App {
             show_info: false,
             selected: None,
             permitt: None,
+            mcproster: None,
         };
         // `BRAMBLERS_MODULE=permitt` opens on a module tab (documentation screenshots);
         // `BRAMBLERS_SELECT=module:finding-id` preselects a finding; `BRAMBLERS_NO_REFRESH=1`
@@ -144,14 +149,23 @@ impl App {
 
     /// Build a module's detailed view the first time its tab is opened.
     fn open_view(&mut self, id: &str) -> Option<Task<Message>> {
-        if id != "permitt" || self.permitt.is_some() {
-            return None;
+        match id {
+            "permitt" if self.permitt.is_none() => {
+                let (mut view, task) = permitt_view::View::new();
+                view.set_lang(self.lang);
+                view.set_dark(self.dark);
+                self.permitt = Some(view);
+                Some(task.map(Message::Permitt))
+            }
+            "mcproster" if self.mcproster.is_none() => {
+                let (mut view, task) = mcproster_view::View::new();
+                view.set_lang(self.lang);
+                view.set_dark(self.dark);
+                self.mcproster = Some(view);
+                Some(task.map(Message::Mcproster))
+            }
+            _ => None,
         }
-        let (mut view, task) = permitt_view::View::new();
-        view.set_lang(self.lang);
-        view.set_dark(self.dark);
-        self.permitt = Some(view);
-        Some(task.map(Message::Permitt))
     }
 
     fn title(&self) -> String {
@@ -231,10 +245,18 @@ impl App {
             Message::RefreshAll => {
                 let mut tasks = vec![self.refresh_all()];
                 // The header refreshes what is on screen, not only the reports behind the rail.
-                if self.module_filter.as_deref() == Some("permitt") {
-                    if let Some(v) = &mut self.permitt {
-                        tasks.push(v.refresh().map(Message::Permitt));
+                match self.module_filter.as_deref() {
+                    Some("permitt") => {
+                        if let Some(v) = &mut self.permitt {
+                            tasks.push(v.refresh().map(Message::Permitt));
+                        }
                     }
+                    Some("mcproster") => {
+                        if let Some(v) = &mut self.mcproster {
+                            tasks.push(v.refresh().map(Message::Mcproster));
+                        }
+                    }
+                    _ => {}
                 }
                 return Task::batch(tasks);
             }
@@ -245,11 +267,17 @@ impl App {
                 if let Some(v) = &mut self.permitt {
                     v.set_lang(l);
                 }
+                if let Some(v) = &mut self.mcproster {
+                    v.set_lang(l);
+                }
                 self.remember();
             }
             Message::ToggleTheme => {
                 self.dark = !self.dark;
                 if let Some(v) = &mut self.permitt {
+                    v.set_dark(self.dark);
+                }
+                if let Some(v) = &mut self.mcproster {
                     v.set_dark(self.dark);
                 }
                 self.remember();
@@ -279,6 +307,11 @@ impl App {
             Message::Permitt(m) => {
                 if let Some(v) = &mut self.permitt {
                     return v.update(m).map(Message::Permitt);
+                }
+            }
+            Message::Mcproster(m) => {
+                if let Some(v) = &mut self.mcproster {
+                    return v.update(m).map(Message::Mcproster);
                 }
             }
             Message::OpenFile(p) | Message::OpenUrl(p) => {
@@ -358,34 +391,49 @@ impl App {
     // ------------------------------------------------------------------ view
 
     fn view(&self) -> Element<'_, Message> {
-        let content: Element<'_, Message> =
-            if let (Some("permitt"), Some(v)) = (self.module_filter.as_deref(), &self.permitt) {
-                column![self.view_page_head(), v.view().map(Message::Permitt),]
-                    .spacing(12)
-                    .padding(14)
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .into()
-            } else {
-                column![
-                    self.view_page_head(),
-                    self.view_severities(),
-                    row![self.view_list(), self.view_detail()]
-                        .spacing(12)
-                        .height(Length::Fill),
-                ]
-                .spacing(12)
-                .padding(14)
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .into()
-            };
+        let content: Element<'_, Message> = match self.module_filter.as_deref() {
+            Some("permitt") => match &self.permitt {
+                Some(v) => self.view_module(v.view().map(Message::Permitt)),
+                None => self.view_overview(),
+            },
+            Some("mcproster") => match &self.mcproster {
+                Some(v) => self.view_module(v.view().map(Message::Mcproster)),
+                None => self.view_overview(),
+            },
+            _ => self.view_overview(),
+        };
         column![
             self.view_header(),
             row![self.view_sidebar(), content]
                 .width(Length::Fill)
                 .height(Length::Fill),
         ]
+        .into()
+    }
+
+    /// A module's own screen, under the shell's page head.
+    fn view_module<'a>(&'a self, body: Element<'a, Message>) -> Element<'a, Message> {
+        column![self.view_page_head(), body]
+            .spacing(12)
+            .padding(14)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into()
+    }
+
+    /// The shared finding list, used by the overview and the tabs without a view yet.
+    fn view_overview(&self) -> Element<'_, Message> {
+        column![
+            self.view_page_head(),
+            self.view_severities(),
+            row![self.view_list(), self.view_detail()]
+                .spacing(12)
+                .height(Length::Fill),
+        ]
+        .spacing(12)
+        .padding(14)
+        .width(Length::Fill)
+        .height(Length::Fill)
         .into()
     }
 

@@ -292,16 +292,28 @@ pub fn results_file(home: &Path) -> PathBuf {
 
 /// Load saved results, keyed by server identity.
 pub fn load_results(home: &Path) -> BTreeMap<String, ProbeResult> {
-    std::fs::read_to_string(results_file(home))
-        .ok()
-        .and_then(|t| serde_json::from_str(&t).ok())
-        .unwrap_or_default()
+    load_results_at(&results_file(home))
 }
 
 /// Save results. The file holds names, versions, tool names and errors — never a value
 /// from a configuration file.
 pub fn save_results(home: &Path, results: &BTreeMap<String, ProbeResult>) -> std::io::Result<()> {
-    let path = results_file(home);
+    save_results_at(&results_file(home), results)
+}
+
+/// The same reader under an explicit path, for the hosts that keep their state elsewhere.
+pub fn load_results_at(path: &Path) -> BTreeMap<String, ProbeResult> {
+    std::fs::read_to_string(path)
+        .ok()
+        .and_then(|t| serde_json::from_str(&t).ok())
+        .unwrap_or_default()
+}
+
+/// The same writer under an explicit path; creates the parent directory.
+pub fn save_results_at(
+    path: &Path,
+    results: &BTreeMap<String, ProbeResult>,
+) -> std::io::Result<()> {
     if let Some(dir) = path.parent() {
         std::fs::create_dir_all(dir)?;
     }
@@ -324,5 +336,15 @@ mod tests {
         assert_eq!(expand_refs("{env:TOKEN}", &vars), "abc");
         assert_eq!(expand_refs("${MISSING:-dflt}", &vars), "dflt");
         assert_eq!(expand_refs("${MISSING}", &vars), "${MISSING}");
+    }
+
+    #[test]
+    fn results_can_live_at_an_explicit_path() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("nested/probes.json");
+        let empty = BTreeMap::new();
+        save_results_at(&path, &empty).unwrap();
+        assert!(path.is_file());
+        assert!(load_results_at(&path).is_empty());
     }
 }

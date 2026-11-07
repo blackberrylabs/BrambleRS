@@ -1,0 +1,14 @@
+[package]
+name = "bramblers-mcproster-view"
+description = "MCProster's screen in BrambleRS: the table of MCP servers, the probe, the context cost and the findings"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+bramblers-mcproster-core.workspace = true
+bramblers-ui.workspace = true
+iced = "=0.13.1"
+serde.workspace = true
