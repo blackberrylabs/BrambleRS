@@ -10,13 +10,16 @@
 //!   and theme for everyone, `X` for what one app adds; English by default, whatever the
 //!   system says;
 //! - [`i18n`]: `Lang` and `Strings` — every label comes from the app's own `locales/*.json`,
-//!   English as the fallback, plus the `same_keys` check for tests.
+//!   English as the fallback, plus the `same_keys` check for tests;
+//! - [`open`]: one policy for opening a file or a link in the desktop session: files go to
+//!   the default application, links must be http or https.
 //!
 //! No business logic, no network, and the only file ever written is `~/.config/<app>/settings.json`
 //! through [`settings::Prefs::save`]. iced is pinned to `0.13.1` here; apps do not pin another.
 #![forbid(unsafe_code)]
 
 pub mod i18n;
+pub mod open;
 pub mod palette;
 pub mod settings;
 pub mod widgets;

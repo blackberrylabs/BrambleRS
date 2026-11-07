@@ -225,7 +225,7 @@ impl View {
                 return iced::clipboard::write(s);
             }
             Message::OpenFile(p) => {
-                let _ = std::process::Command::new("xdg-open").arg(&p).spawn();
+                let _ = bramblers_ui::open::file(&p.to_string_lossy());
                 self.status = self
                     .strings
                     .t("footer.opened", &[("file", &short(&p, &self.env.home))]);

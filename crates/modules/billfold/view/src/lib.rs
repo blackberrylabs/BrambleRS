@@ -156,9 +156,8 @@ impl View {
                 self.prefs.save();
                 return self.refresh();
             }
-            Message::OpenFile(p) | Message::OpenUrl(p) => {
-                // the one thing the app launches: the system opener, on a path or a URL —
-                // never a command of ours
+            Message::OpenFile(p) => {
+                // the one thing the app launches: the system opener, on a path
                 let target = p
                     .rsplit_once(':')
                     .filter(|(_, l)| {
@@ -166,7 +165,10 @@ impl View {
                     })
                     .map(|(a, _)| a.to_string())
                     .unwrap_or(p);
-                let _ = std::process::Command::new("xdg-open").arg(&target).spawn();
+                let _ = bramblers_ui::open::file(&target);
+            }
+            Message::OpenUrl(u) => {
+                let _ = bramblers_ui::open::url(&u);
             }
             Message::Copy(s) => return iced::clipboard::write(s),
         }

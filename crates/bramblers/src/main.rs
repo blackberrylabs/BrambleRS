@@ -445,8 +445,11 @@ impl App {
                     return v.update(m).map(Message::Lastrun);
                 }
             }
-            Message::OpenFile(p) | Message::OpenUrl(p) => {
-                let _ = std::process::Command::new("xdg-open").arg(&p).spawn();
+            Message::OpenFile(p) => {
+                let _ = bramblers_ui::open::file(&p);
+            }
+            Message::OpenUrl(p) => {
+                let _ = bramblers_ui::open::url(&p);
             }
             Message::Copy(s) => return iced::clipboard::write(s),
         }

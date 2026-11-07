@@ -274,9 +274,7 @@ impl View {
                 }
             }
             Message::OpenDocs(url) => {
-                if url.starts_with("http") {
-                    let _ = std::process::Command::new("xdg-open").arg(&url).spawn();
-                }
+                let _ = bramblers_ui::open::url(&url);
             }
             Message::SelectSafe => {
                 if let Some(r) = &self.report {
