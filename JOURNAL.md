@@ -3,6 +3,16 @@
 
 ---
 
+## 2026-11-07, noms fonctionnels des six onglets
+
+- Décision d'Alexandre : renommer l'affichage, pas les identifiants. Les slugs `permitt`, `mcproster`, `linstruct`, `cleanator`, `billfold`, `lastrun` restent dans les chemins, préférences et rapports ; seuls les libellés changent.
+- Anglais : Agent permissions, MCP servers, Instruction files, Disk cleanup, Keys & spend, Activity. Français : Permissions IA, Serveurs MCP, Fichiers d'instructions, Nettoyage du disque, Clés et dépenses, Activité.
+- Le rail et les en-têtes lisent `module.<id>.name` dans `locales/en.json` et `locales/fr.json` ; la liste partagée et le détail utilisent le même nom. La colonne des modules dans la liste passe à 132 px pour les libellés français. Les noms des rapports (`module.name`) passent aussi aux libellés anglais ; un ancien rapport enregistré garde l'ancien nom dans son JSON jusqu'au prochain scan, l'écran utilise le registre.
+- README, CHANGELOG, AGENTS et profil `.github` alignés. Commit `74c2ea1` ; profil `cbbf10e`.
+- Preuves : 248 tests, clippy et fmt propres ; captures EN et FR vérifiées, rail et liste lisibles, compteurs sur une seule ligne.
+
+---
+
 ## 2026-11-07, Cleanator : le bug venait du backend GL, pas du treemap
 
 - Le treemap n'était pas en cause. Avec `WGPU_BACKEND=gl` (le chemin logiciel OpenGL), iced/wgpu 0.19 dessine mal les canvas : tuiles manquantes, textes flottants, marges ignorées. Avec Vulkan logiciel (lavapipe), la carte d'origine s'affiche correctement, titre et légende dans la carte.
