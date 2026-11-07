@@ -12,10 +12,10 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 ## État au 2026-11-07
 
 - `main` : décision validée (BRIEF rev. 2, PLAN étape 8). Un commit, pas poussé.
-- Branche `bramble-rs` : trois fondations importées et renommées `bramblers-*` ; six cores importés sous `crates/modules/<id>/core` avec leurs données ; registre interne et `runner` en processus ; schéma `bramblers-report/1` ; un seul binaire `bramblers` (app sans argument, CLI avec). `cargo test --workspace` passe (205 tests), fmt et clippy propres. Derniers commits : `b133f27`, `7b3c115`, `57aedb2`, `a49babc`.
-- Reste : paquet `bramblers`, archivage GitHub, dossier local `BrambleRS`.
+- Branche `bramble-rs` : trois fondations importées et renommées `bramblers-*` ; six cores importés sous `crates/modules/<id>/core` avec leurs données ; registre interne et `runner` en processus ; schéma `bramblers-report/1` ; un seul binaire `bramblers` (app sans argument, CLI avec) ; paquet `bramblers` 0.1.0 construit et `.deb` installé. `cargo test --workspace` passe (207 tests), fmt et clippy propres. Derniers commits : `b133f27`, `7b3c115`, `57aedb2`, `a49babc`, `8d2c7e1`.
+- Reste : GitHub (renommer le dépôt, archiver les dix anciens, release 0.1.0), dossier local `BrambleRS`.
 - La 0.1.0 garde l'écran actuel. Les six apps détaillées ne sont pas dans la 0.1.0 ; leurs fonctionnalités reviennent en 0.x, une vue par une. La 1.0 est la parité.
-- Le code de l'ancienne tour (`discover`, `spec`, `run`, `packages`), `modules/*.toml` et `docs/new-module.md` ne sont plus compilés mais restent sur disque : leur suppression attend l'accord d'Alexandre.
+- L'ancien code de l'ancienne tour et les fichiers importés redondants ont été supprimés le 2026-11-07. `packaging/github_meta.sh` reste à retirer ou réécrire avec l'étape GitHub.
 
 ## Promesses
 
@@ -26,14 +26,13 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 
 ## Repères
 
-- `crates/bramblers-core/src/` : `registry.rs` (les six fournisseurs statiques), `runner.rs` (appel en processus, limite de temps), `cache.rs` (rapports enregistrés), `dashboard.rs` (assemblage et tri). `discover.rs`, `spec.rs`, `run.rs` et `packages.rs` sont l'ancienne tour : plus déclarés, plus compilés, à supprimer avec accord.
+- `crates/bramblers-core/src/` : `registry.rs` (les six fournisseurs statiques), `runner.rs` (appel en processus, limite de temps), `cache.rs` (rapports enregistrés, anciens `bbl-report/1` ignorés), `dashboard.rs` (assemblage et tri).
 - `crates/modules/<id>/core` : la logique des six modules (`bramblers-<id>-core`) ; `run.rs` y expose `report()`, le point d'entrée du registre. Données embarquées : `crates/modules/<id>/{hosts,rules,providers,prices}`.
 - `crates/bramblers-report`, `crates/bramblers-hostrules`, `crates/bramblers-ui` : les trois fondations.
 - `crates/app/` : l'app iced, paquet `bramblers`, binaire `bramblers`. `crates/cli/` : `bramblers-cli`, une bibliothèque liée dans ce même binaire (arguments = ligne de commande, aucun argument = app).
-- `modules/*.toml` : les anciennes fiches de découverte, plus lues ; leur suppression attend l'accord d'Alexandre.
 - Tests : `cargo test --workspace`. Le registre et les rapports : `crates/core/tests/tower.rs` et `fixtures/reports/`.
 - `00_cadrage/2026-11-07_plan_restructuration.md` : le plan détaillé, hors git.
-- Les imports ont apporté les fichiers de pilotage et les README des fondations et des modules dans `crates/` ; ils sont redondants et attendent l'accord d'Alexandre pour être retirés.
+- `README.md` et `CHANGELOG.md` sont à jour pour la 0.1.0 ; le BRIEF, le PLAN et ce fichier restent en français.
 
 ## Commandes (sur le PC d'Alexandre, depuis la racine du dépôt)
 

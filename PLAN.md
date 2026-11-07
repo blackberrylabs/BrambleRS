@@ -96,14 +96,19 @@ module non plus.
 - [x] Registre interne `registry` : six fournisseurs statiques, `runner` en processus avec limite de temps, plus de PATH ni de sous-processus pour les modules ; app et CLI adaptés ; `Dashboard::from_saved` sans découverte — 2026-11-07, commit `7b3c115`
 - [x] Preuve du registre : `cargo test --workspace` passe (202 tests), fmt et clippy propres ; `bramblers-cli refresh permitt` sur la machine : 16 constats en 0,1 s, un seul fichier écrit (`<state>/permitt/report.json`) — 2026-11-07
 - [x] Binaire et CLI `bramblers` : `report --json`, `report <module> --json`, `list`, `refresh` ; sans argument, l'app — 2026-11-07, commit `a49babc` ; `--help` et `report permitt --json` vérifiés
-- [x] `packaging/build.sh` réécrit pour le paquet unique : un binaire `bramblers`, `.desktop` et icônes `bramblers`, AppImage `bramblers-<version>-<arch>`, `Conflicts`/`Replaces`/`Provides` des anciens paquets dans les métadonnées deb et rpm — 2026-11-07 ; syntaxe et métadonnées vérifiées, pas encore lancé
-- [ ] Paquet `bramblers` : .deb/.rpm/AppImage, menu `BrambleRS`, icône `bramblers`, shim config/état
+- [x] `packaging/build.sh` réécrit pour le paquet unique : un binaire `bramblers`, `.desktop` et icônes `bramblers`, AppImage `bramblers-<version>-<arch>`, `Conflicts`/`Replaces`/`Provides` des anciens paquets dans les métadonnées deb et rpm — 2026-11-07
+- [x] `packaging/build.sh` lancé : `.deb`, `.rpm`, AppImage et `SHA256SUMS` dans `dist/` ; `sha256sum -c` passe sur les trois — 2026-11-07
+- [x] `.deb` installé : `bramblers 0.1.0`, `blackberrylabs-full` 0.4.0 retiré, `bramblers report permitt --json` rend 16 constats, l'app lancée 8 s écrit ses rapports dans `~/.local/state/bramblers/`, `desktop-file-validate` propre — 2026-11-07
+- [x] AppImage lancée 8 s et extraite : `AppRun`, `bramblers.desktop`, icône — 2026-11-07
+- [x] Shim : les réglages de l'ancienne app `blackberrylabs` sont lus une fois vers `bramblers` ; les anciens rapports `bbl-report/1` sont ignorés — 2026-11-07
+- [x] `README.md` et `CHANGELOG.md` réécrits pour BrambleRS 0.1.0 ; fichiers morts supprimés : 4 sources de l'ancienne tour, 6 fiches `modules/*.toml`, `docs/new-module.md`, `packaging/bundle.sh`, 27 fichiers de pilotage importés, `dist/` et `packaging/.bundle/` — 2026-11-07
+- [ ] `.rpm` installé sur une machine RPM (rpm n'est pas installé ici ; le paquet est construit)
 - [ ] GitHub : renommer le dépôt en `BrambleRS`, archiver les dix anciens dépôts (pas supprimer), profil d'org, release 0.1.0, tag `bramblers-v0.1.0`
 - [ ] Nettoyage local : dossier `BrambleRS`, AGENTS/CLAUDE/PLAN/JOURNAL
 - [ ] 0.2.0+ : portage des six vues détaillées (Cleanator, MCProster, Permitt, Linstruct, Billfold, Lastrun)
 - [ ] 1.0.0 : parité, toutes les fonctionnalités des six apps dans BrambleRS
 
-> Plus compilés depuis le registre, encore sur disque et à supprimer avec l'accord d'Alexandre : `crates/core/src/discover.rs`, `spec.rs`, `run.rs`, `packages.rs` ; les six `modules/*.toml` ; `docs/new-module.md` (contrat des modules externes). Le `README.md` racine décrit encore l'ancienne tour et sera réécrit avec le paquet 0.1.0.
+> L'ancienne tour n'a plus de code mort sur disque. Le seul reliquat est `packaging/github_meta.sh`, écrit pour les douze dépôts, à retirer ou réécrire avec l'étape GitHub.
 
 ## Historique — idees de la tour 0.x (remplacees par l'etape 8)
 

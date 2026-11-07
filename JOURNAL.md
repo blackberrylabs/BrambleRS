@@ -3,6 +3,19 @@
 
 ---
 
+## 2026-11-07, README, shim, suppressions, paquet installé
+
+- `README.md` réécrit pour BrambleRS : six modules, read-only, installation, commandes, architecture du workspace. `CHANGELOG.md` remplacé par l'entrée 0.1.0, avec la limite explicite : les vues détaillées des six anciennes apps arrivent en 0.x. Contrôle de style : aucun tiret cadratin, aucun mot de la liste noire.
+- Shim : `Prefs::load_with_fallback("bramblers", "blackberrylabs")` lit une fois les réglages de l'ancienne app et écrit ensuite dans `~/.config/bramblers/`. Les rapports `bbl-report/1` trouvés dans l'ancien dossier d'état sont ignorés au lieu d'apparaître comme des échecs.
+- Suppressions avec l'accord d'Alexandre : `crates/core/src/{discover,spec,run,packages}.rs`, les six `modules/*.toml`, `docs/new-module.md`, `packaging/bundle.sh`, 27 fichiers de pilotage et README importés dans `crates/bramblers-*`, `dist/` (400 Mo) et `packaging/.bundle/` (152 Mo).
+- `packaging/build.sh` lancé trois fois. Produits dans `dist/` : `bramblers_0.1.0-1_amd64.deb`, `bramblers-0.1.0-1.x86_64.rpm`, `bramblers-0.1.0-x86_64.AppImage`, `SHA256SUMS` ; `sha256sum -c` passe sur les trois.
+- `.deb` installé par `apt install ./dist/bramblers_0.1.0-1_amd64.deb` : `blackberrylabs-full` 0.4.0 retiré, `bramblers 0.1.0` installé. `bramblers report permitt --json` rend 16 constats. L'app lancée 8 s écrit Billfold, Cleanator, MCProster et Permitt dans `~/.local/state/bramblers/` avant d'être arrêtée. L'AppImage lancée 8 s démarre aussi. `desktop-file-validate` propre après passage de `Categories` à `Utility`.
+- Le `.rpm` est construit mais pas installé : `rpm` n'est pas présent sur cette machine. À vérifier sur une machine RPM.
+- Reste : GitHub (renommer le dépôt, bandeaux et archivage des dix anciens, profil d'org, release 0.1.0, tag `bramblers-v0.1.0`), dossier local `BrambleRS`. `packaging/github_meta.sh` est encore écrit pour les douze dépôts.
+- Rien n'a été poussé.
+
+---
+
 ## 2026-11-07, `build.sh` réécrit pour le paquet unique
 
 - `packaging/build.sh` ne construit plus que `bramblers` : un binaire release, un `.deb`, un `.rpm`, une AppImage `bramblers-<version>-<arch>.AppImage`. Les variantes `full`, l'appel à `bundle.sh` et les chemins `bbl`/`blackberrylabs` ont disparu.
