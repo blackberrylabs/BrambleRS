@@ -18,6 +18,7 @@ use bramblers_billfold_view as billfold_view;
 use bramblers_cleanator_view as cleanator_view;
 use bramblers_core::dashboard::ReportState;
 use bramblers_core::{Cache, Dashboard, ModuleStatus, Run, RunError};
+use bramblers_lastrun_view as lastrun_view;
 use bramblers_linstruct_view as linstruct_view;
 use bramblers_mcproster_view as mcproster_view;
 use bramblers_permitt_view as permitt_view;
@@ -74,6 +75,7 @@ enum Message {
     Linstruct(linstruct_view::Message),
     Cleanator(cleanator_view::Message),
     Billfold(billfold_view::Message),
+    Lastrun(lastrun_view::Message),
 }
 
 struct App {
@@ -102,6 +104,8 @@ struct App {
     cleanator: Option<cleanator_view::View>,
     /// Same for Billfold.
     billfold: Option<billfold_view::View>,
+    /// Same for Lastrun.
+    lastrun: Option<lastrun_view::View>,
 }
 
 impl App {
@@ -130,6 +134,7 @@ impl App {
             linstruct: None,
             cleanator: None,
             billfold: None,
+            lastrun: None,
         };
         // `BRAMBLERS_MODULE=permitt` opens on a module tab (documentation screenshots);
         // `BRAMBLERS_SELECT=module:finding-id` preselects a finding; `BRAMBLERS_NO_REFRESH=1`
@@ -200,6 +205,13 @@ impl App {
                 view.set_dark(self.dark);
                 self.billfold = Some(view);
                 Some(task.map(Message::Billfold))
+            }
+            "lastrun" if self.lastrun.is_none() => {
+                let (mut view, task) = lastrun_view::View::new();
+                view.set_lang(self.lang);
+                view.set_dark(self.dark);
+                self.lastrun = Some(view);
+                Some(task.map(Message::Lastrun))
             }
             _ => None,
         }
@@ -320,6 +332,11 @@ impl App {
                             tasks.push(v.refresh().map(Message::Billfold));
                         }
                     }
+                    Some("lastrun") => {
+                        if let Some(v) = &mut self.lastrun {
+                            tasks.push(v.refresh().map(Message::Lastrun));
+                        }
+                    }
                     _ => {}
                 }
                 return Task::batch(tasks);
@@ -343,6 +360,9 @@ impl App {
                 if let Some(v) = &mut self.billfold {
                     v.set_lang(l);
                 }
+                if let Some(v) = &mut self.lastrun {
+                    v.set_lang(l);
+                }
                 self.remember();
             }
             Message::ToggleTheme => {
@@ -360,6 +380,9 @@ impl App {
                     v.set_dark(self.dark);
                 }
                 if let Some(v) = &mut self.billfold {
+                    v.set_dark(self.dark);
+                }
+                if let Some(v) = &mut self.lastrun {
                     v.set_dark(self.dark);
                 }
                 self.remember();
@@ -409,6 +432,11 @@ impl App {
             Message::Billfold(m) => {
                 if let Some(v) = &mut self.billfold {
                     return v.update(m).map(Message::Billfold);
+                }
+            }
+            Message::Lastrun(m) => {
+                if let Some(v) = &mut self.lastrun {
+                    return v.update(m).map(Message::Lastrun);
                 }
             }
             Message::OpenFile(p) | Message::OpenUrl(p) => {
@@ -507,6 +535,10 @@ impl App {
             },
             Some("billfold") => match &self.billfold {
                 Some(v) => self.view_module(v.view().map(Message::Billfold)),
+                None => self.view_overview(),
+            },
+            Some("lastrun") => match &self.lastrun {
+                Some(v) => self.view_module(v.view().map(Message::Lastrun)),
                 None => self.view_overview(),
             },
             _ => self.view_overview(),

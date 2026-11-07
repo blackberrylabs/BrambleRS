@@ -16,6 +16,7 @@ bramblers-core = { path = "../bramblers-core" }
 bramblers-cli = { path = "../bramblers-cli" }
 bramblers-billfold-view.workspace = true
 bramblers-cleanator-view.workspace = true
+bramblers-lastrun-view.workspace = true
 bramblers-linstruct-view.workspace = true
 bramblers-mcproster-view.workspace = true
 bramblers-permitt-view.workspace = true

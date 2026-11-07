@@ -1,0 +1,17 @@
+[package]
+name = "bramblers-lastrun-view"
+description = "Lastrun's screen in BrambleRS: the sessions, the deletions, the packages, the refusals and the findings"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+bramblers-hostrules.workspace = true
+bramblers-lastrun-core.workspace = true
+bramblers-report.workspace = true
+bramblers-ui.workspace = true
+chrono.workspace = true
+iced = "=0.13.1"
+serde.workspace = true

@@ -415,12 +415,13 @@ dependencies = [
 
 [[package]]
 name = "bramblers"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "bramblers-billfold-view",
  "bramblers-cleanator-view",
  "bramblers-cli",
  "bramblers-core",
+ "bramblers-lastrun-view",
  "bramblers-linstruct-view",
  "bramblers-mcproster-view",
  "bramblers-permitt-view",
@@ -433,7 +434,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-billfold-core"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "base64",
  "bramblers-hostrules",
@@ -455,7 +456,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-billfold-view"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "bramblers-billfold-core",
  "bramblers-hostrules",
@@ -467,7 +468,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-cleanator-core"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "anyhow",
  "bramblers-report",
@@ -483,7 +484,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-cleanator-view"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "bramblers-cleanator-core",
  "bramblers-ui",
@@ -492,7 +493,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-cli"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "anyhow",
  "bramblers-core",
@@ -503,7 +504,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-core"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "bramblers-billfold-core",
  "bramblers-cleanator-core",
@@ -519,7 +520,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-hostrules"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "glob",
  "regex",
@@ -533,7 +534,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-lastrun-core"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "bramblers-hostrules",
  "bramblers-report",
@@ -549,8 +550,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "bramblers-lastrun-view"
+version = "0.1.6"
+dependencies = [
+ "bramblers-hostrules",
+ "bramblers-lastrun-core",
+ "bramblers-report",
+ "bramblers-ui",
+ "chrono",
+ "iced",
+ "serde",
+]
+
+[[package]]
 name = "bramblers-linstruct-core"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "bramblers-hostrules",
  "bramblers-report",
@@ -563,7 +577,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-linstruct-view"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "bramblers-hostrules",
  "bramblers-linstruct-core",
@@ -575,7 +589,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-mcproster-core"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "anyhow",
  "bramblers-hostrules",
@@ -593,7 +607,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-mcproster-view"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "bramblers-mcproster-core",
  "bramblers-ui",
@@ -603,7 +617,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-permitt-core"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "bramblers-hostrules",
  "bramblers-report",
@@ -617,7 +631,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-permitt-view"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "bramblers-hostrules",
  "bramblers-permitt-core",
@@ -628,7 +642,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-report"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "serde",
  "serde_json",
@@ -636,7 +650,7 @@ dependencies = [
 
 [[package]]
 name = "bramblers-ui"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "iced",
  "serde",
