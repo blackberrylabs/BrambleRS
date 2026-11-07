@@ -874,11 +874,7 @@ impl View {
         })
         .width(Length::Fill)
         .height(Length::Fill);
-        // iced 0.13 draws a canvas at the root of its layout tree, ignoring container
-        // padding. The head and the legend are therefore outside the canvas, and the
-        // treemap keeps its own margins (see `treemap::content`) so nothing overlaps.
-        column![head, map, self.view_legend()]
-            .spacing(10)
+        card(column![head, map, self.view_legend()].spacing(10).into())
             .height(Length::Fill)
             .into()
     }
@@ -1407,9 +1403,9 @@ fn level_color(level: Level, dark: bool) -> Color {
 /// The tile colour of a folder nothing is classified under (not the family's grey).
 fn tile_neutral(dark: bool) -> Color {
     if dark {
-        hex(0x4b505b)
+        hex(0x3a3d45)
     } else {
-        hex(0xd2d6de)
+        hex(0xd9dce3)
     }
 }
 
