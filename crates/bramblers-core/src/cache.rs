@@ -2,8 +2,9 @@
 //! BrambleRS and by nobody else (rule R2). The modules keep their own promise — nothing
 //! written outside their settings — because BrambleRS does the saving.
 
+use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use bramblers_report::Report;
 
@@ -90,11 +91,7 @@ impl Cache {
     /// to its final name and renamed into place, so a reader never sees a half file.
     pub fn write(&self, module: &str, json: &str) -> Result<PathBuf, String> {
         let path = self.path(module);
-        let dir = path.parent().expect("a module directory");
-        std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
-        let tmp = dir.join("report.json.tmp");
-        std::fs::write(&tmp, json).map_err(|e| format!("{}: {e}", tmp.display()))?;
-        std::fs::rename(&tmp, &path).map_err(|e| format!("{}: {e}", path.display()))?;
+        write_private(&path, json.as_bytes()).map_err(|e| format!("{}: {e}", path.display()))?;
         Ok(path)
     }
 
@@ -132,6 +129,40 @@ pub fn is_under(p: &Path, dir: &Path) -> bool {
     p.starts_with(dir)
 }
 
+/// Write `data` to a new private file next to `path`, then rename it over `path`. The
+/// temporary name is created with `create_new`, so a symlink planted there is not followed;
+/// renaming replaces a symlink at the final name instead of writing through it. The final
+/// file is 0600: a saved report is nobody else's business.
+fn write_private(path: &Path, data: &[u8]) -> std::io::Result<()> {
+    let dir = path.parent().unwrap_or_else(|| Path::new("."));
+    std::fs::create_dir_all(dir)?;
+    let name = path.file_name().unwrap_or_default().to_string_lossy();
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    let tmp = dir.join(format!(".{name}.{}.{nanos}.tmp", std::process::id()));
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let mut file = options.open(&tmp)?;
+    if let Err(e) = file.write_all(data).and_then(|()| file.sync_all()) {
+        drop(file);
+        let _ = std::fs::remove_file(&tmp);
+        return Err(e);
+    }
+    drop(file);
+    if let Err(e) = std::fs::rename(&tmp, path) {
+        let _ = std::fs::remove_file(&tmp);
+        return Err(e);
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -142,6 +173,30 @@ mod tests {
         assert_eq!(age_label(Duration::from_secs(185)), "3 min ago");
         assert_eq!(age_label(Duration::from_secs(7300)), "2 h ago");
         assert_eq!(age_label(Duration::from_secs(200_000)), "2 d ago");
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn a_symlink_at_the_report_path_is_replaced_not_followed() {
+        use std::os::unix::fs::{symlink, PermissionsExt};
+        let tmp = tempfile::tempdir().unwrap();
+        let c = Cache::at(tmp.path());
+        let path = c.path("permitt");
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        let target = tmp.path().join("target");
+        std::fs::write(&target, "keep").unwrap();
+        symlink(&target, &path).unwrap();
+        c.write("permitt", "{\"x\":1}").unwrap();
+        assert_eq!(std::fs::read_to_string(&target).unwrap(), "keep");
+        assert!(!std::fs::symlink_metadata(&path)
+            .unwrap()
+            .file_type()
+            .is_symlink());
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "{\"x\":1}");
+        assert_eq!(
+            std::fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+            0o600
+        );
     }
 
     #[test]

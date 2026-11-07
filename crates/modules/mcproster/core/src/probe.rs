@@ -12,7 +12,7 @@ use std::io::{BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::mpsc;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
@@ -342,18 +342,44 @@ pub fn load_results_at(path: &Path) -> BTreeMap<String, ProbeResult> {
         .unwrap_or_default()
 }
 
-/// The same writer under an explicit path; creates the parent directory.
+/// The same writer under an explicit path; creates the parent directory and writes through
+/// a new private file renamed into place, so a symlink at the path is replaced, not followed.
 pub fn save_results_at(
     path: &Path,
     results: &BTreeMap<String, ProbeResult>,
 ) -> std::io::Result<()> {
-    if let Some(dir) = path.parent() {
-        std::fs::create_dir_all(dir)?;
+    let json = serde_json::to_string_pretty(results).unwrap_or_default();
+    write_private(path, json.as_bytes())
+}
+
+fn write_private(path: &Path, data: &[u8]) -> std::io::Result<()> {
+    let dir = path.parent().unwrap_or_else(|| Path::new("."));
+    std::fs::create_dir_all(dir)?;
+    let name = path.file_name().unwrap_or_default().to_string_lossy();
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    let tmp = dir.join(format!(".{name}.{}.{nanos}.tmp", std::process::id()));
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
     }
-    std::fs::write(
-        path,
-        serde_json::to_string_pretty(results).unwrap_or_default(),
-    )
+    let mut file = options.open(&tmp)?;
+    if let Err(e) = file.write_all(data).and_then(|()| file.sync_all()) {
+        drop(file);
+        let _ = std::fs::remove_file(&tmp);
+        return Err(e);
+    }
+    drop(file);
+    if let Err(e) = std::fs::rename(&tmp, path) {
+        let _ = std::fs::remove_file(&tmp);
+        return Err(e);
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -369,6 +395,27 @@ mod tests {
         assert_eq!(expand_refs("{env:TOKEN}", &vars), "abc");
         assert_eq!(expand_refs("${MISSING:-dflt}", &vars), "dflt");
         assert_eq!(expand_refs("${MISSING}", &vars), "${MISSING}");
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn a_symlink_at_the_probe_file_is_replaced_not_followed() {
+        use std::os::unix::fs::{symlink, PermissionsExt};
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("probes.json");
+        let target = dir.path().join("target");
+        std::fs::write(&target, "keep").unwrap();
+        symlink(&target, &path).unwrap();
+        save_results_at(&path, &BTreeMap::new()).unwrap();
+        assert_eq!(std::fs::read_to_string(&target).unwrap(), "keep");
+        assert!(!std::fs::symlink_metadata(&path)
+            .unwrap()
+            .file_type()
+            .is_symlink());
+        assert_eq!(
+            std::fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+            0o600
+        );
     }
 
     #[test]

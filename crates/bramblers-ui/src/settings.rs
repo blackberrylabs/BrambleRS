@@ -5,7 +5,9 @@
 //! The language starts in **English** whatever the system language; French is a choice
 //! the user makes once. `<APP>_LANG` / `<APP>_THEME` override for one launch.
 
-use std::path::PathBuf;
+use std::io::Write;
+use std::path::{Path, PathBuf};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -77,7 +79,7 @@ impl<X: Default + Serialize + DeserializeOwned> Prefs<X> {
             let _ = std::fs::create_dir_all(dir);
         }
         if let Ok(json) = serde_json::to_string_pretty(self) {
-            let _ = std::fs::write(p, json + "\n");
+            let _ = write_private(&p, format!("{json}\n").as_bytes());
         }
     }
 
@@ -115,6 +117,36 @@ impl<X: Default + Serialize + DeserializeOwned> Prefs<X> {
         self.lang = Some(lang.code().to_string());
         self.theme = Some(if dark { "dark" } else { "light" }.to_string());
     }
+}
+
+fn write_private(path: &Path, data: &[u8]) -> std::io::Result<()> {
+    let dir = path.parent().unwrap_or_else(|| Path::new("."));
+    std::fs::create_dir_all(dir)?;
+    let name = path.file_name().unwrap_or_default().to_string_lossy();
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    let tmp = dir.join(format!(".{name}.{}.{nanos}.tmp", std::process::id()));
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let mut file = options.open(&tmp)?;
+    if let Err(e) = file.write_all(data).and_then(|()| file.sync_all()) {
+        drop(file);
+        let _ = std::fs::remove_file(&tmp);
+        return Err(e);
+    }
+    drop(file);
+    if let Err(e) = std::fs::rename(&tmp, path) {
+        let _ = std::fs::remove_file(&tmp);
+        return Err(e);
+    }
+    Ok(())
 }
 
 #[cfg(test)]

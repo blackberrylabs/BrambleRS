@@ -6,10 +6,11 @@
 mod treemap;
 
 use std::collections::{BTreeMap, HashSet};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use iced::widget::{
     button, canvas, checkbox, column, container, horizontal_space, row, scrollable, text, Space,
@@ -300,8 +301,7 @@ impl View {
                         return Task::none();
                     };
                     let path = dir.join("cleanup.sh");
-                    let _ = std::fs::create_dir_all(&dir);
-                    match std::fs::write(&path, script) {
+                    match write_private(&path, script.as_bytes()) {
                         Ok(()) => {
                             self.status = self.strings.t(
                                 "panel.saved",
@@ -1433,6 +1433,36 @@ fn color_for(path: &Path, size: u64, report: &Report, dark: bool) -> Color {
     } else {
         blend(category_color(cat, dark), tile_neutral(dark), 0.55)
     }
+}
+
+fn write_private(path: &Path, data: &[u8]) -> std::io::Result<()> {
+    let dir = path.parent().unwrap_or_else(|| Path::new("."));
+    std::fs::create_dir_all(dir)?;
+    let name = path.file_name().unwrap_or_default().to_string_lossy();
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    let tmp = dir.join(format!(".{name}.{}.{nanos}.tmp", std::process::id()));
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let mut file = options.open(&tmp)?;
+    if let Err(e) = file.write_all(data).and_then(|()| file.sync_all()) {
+        drop(file);
+        let _ = std::fs::remove_file(&tmp);
+        return Err(e);
+    }
+    drop(file);
+    if let Err(e) = std::fs::rename(&tmp, path) {
+        let _ = std::fs::remove_file(&tmp);
+        return Err(e);
+    }
+    Ok(())
 }
 
 #[cfg(test)]
