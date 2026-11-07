@@ -91,7 +91,7 @@ module non plus.
 > Branche de travail : `bramble-rs` (locale, pas poussée). `main` garde le commit de décision.
 
 - [x] BRIEF rev. 2 validé (« Oui, je valide ») ; nom BrambleRS, radical technique `bramblers`, org Blackberrylabs — 2026-11-07
-- [x] Trois fondations importées (subtree) et renommées `bramblers-*` ; tour renommée `bramblers` ; `cargo test --workspace` passe (66 tests), fmt et clippy propres — 2026-11-07, commit `8190546`
+- [x] Trois fondations importées (subtree) et renommées `bramblers-*` ; tour renommée `bramblers` ; `cargo test --workspace` passe (63 tests), fmt et clippy propres — 2026-11-07, commit `8190546`
 - [ ] Six cores importés, registre interne, dépendances par chemin
 - [ ] Registre interne : plus de PATH ni de sous-processus, l'app appelle les six cores ; tests et rapports identiques
 - [ ] Binaire et CLI `bramblers` : `report --json`, `report <module> --json`

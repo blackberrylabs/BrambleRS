@@ -10,7 +10,7 @@
 - Nomenclature validée : produit `BrambleRS`, dépôt `blackberrylabs/BrambleRS`, radical technique `bramblers` partout (paquet, binaire, crates, chemins, tags `bramblers-v0.1.0`). Org `Blackberrylabs` inchangée.
 - `BRIEF.md` passe en rev. 2 ; `PLAN.md` gagne l'étape 8 ; le plan détaillé est dans `00_cadrage/2026-11-07_plan_restructuration.md` (hors git).
 - Rien n'a été poussé ni modifié sur GitHub. Les anciens dépôts seront archivés, pas supprimés, après la 0.1.0.
-- Premier morceau de code sur la branche locale `bramble-rs` : trois fondations importées par subtree, tour renommée `bramblers`, 66 tests passent, fmt et clippy propres ; commit `8190546`. La suite (six cores, registre) est dans PLAN, étape 8.
+- Premier morceau de code sur la branche locale `bramble-rs` : trois fondations importées par subtree, tour renommée `bramblers`, 63 tests passent, fmt et clippy propres ; commit `8190546`. La suite (six cores, registre) est dans PLAN, étape 8.
 - Preuve : « Oui, je valide » du 2026-11-07 ; `BRIEF.md` rev. 2 ; étape 8 de `PLAN.md`.
 
 ---
