@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.1.2] - 2026-11-07
+
+BrambleRS 0.1.2 brings MCProster's screen into its tab.
+
+### MCProster
+
+- The tab shows the table of MCP servers and where each one is declared: transport, version,
+  probed size, and one column per host when six or fewer hosts have configuration.
+- Filters: name, package, URL or file; one host; findings only; disabled and legacy entries.
+  The detail shows each declaration with its file, launch command, environment, headers and
+  masked secrets, then the probe.
+- The probe starts a stdio server as its host would, sends initialize and tools/list, stops it,
+  and adds the tool definitions to the context cost per host. A confirmation comes first.
+- Probe results move to `~/.config/bramblers/mcproster/probes.json`; the old
+  `~/.config/mcproster/probes.json` is read once.
+- Remote servers are listed, never contacted.
+
+### Still to come
+
+- The four other module tabs still show the shared finding list. Their detailed screens come
+  in 0.1.3 to 0.1.6.
+- No website, no telemetry, no network request.
+
+### Promises
+
+- Read-only: nothing on the machine is modified. Every corrective action is displayed, never
+  executed.
+- The only writes are the settings files, the probe results and the saved reports.
+- `#![forbid(unsafe_code)]` across the workspace.
+
 ## [0.1.1] - 2026-11-07
 
 BrambleRS 0.1.1 brings the first detailed module screen, Permitt, inside its tab. The rest of

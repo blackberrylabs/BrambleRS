@@ -3,6 +3,17 @@
 
 ---
 
+## 2026-11-07, la vue MCProster portée dans son onglet
+
+- La crate `crates/modules/mcproster/view` (`bramblers-mcproster-view`) reprend l'écran de l'ancienne app (1 367 lignes) sans fenêtre : `View::new`, `update`, `view`, `set_lang`, `set_dark`, `refresh`. Contenu : quatre chiffres, filtres (recherche nom, paquet, URL ou fichier ; hôte ; constats ; désactivés et anciens), tableau serveurs × hôtes (une colonne par hôte jusqu'à six, sinon une colonne « déclaré dans »), détail des déclarations (fichier, commande, environnement, en-têtes, secrets masqués), sonde avec confirmation, coût en contexte par hôte, constats et actions.
+- La sonde est portée telle quelle : un test à la fois, `initialize` et `tools/list`, dix secondes, arrêt du processus. La confirmation reste, avec « ne plus demander ».
+- Écarté : `--select` (le choix d'onglet revient à `BRAMBLERS_MODULE`), `app.title` et `theme.*` (portés par la coquille). Les filtres passent sur deux lignes, comme Permitt, et le tableau prend 15/22 de la largeur ; les colonnes fixes sont réduites (transport 60, version 90, tokens 64) pour que les colonnes d'hôtes tiennent dans 1280 px.
+- Les résultats de sonde ne vont plus dans `~/.config/mcproster/probes.json`, hors des chemins promis : ils s'écrivent dans `~/.config/bramblers/mcproster/probes.json`, via `load_results_at` et `save_results_at` ajoutés au core. L'ancien fichier est lu une fois.
+- Preuves : `cargo test --workspace` passe (218 tests, dont 5 dans la vue et 1 nouveau dans le core), fmt et clippy propres ; capture `docs/screenshots/mcproster.png` (1280x820) sur le HOME factice, avec `mcpServers` dans `.claude.json`, `.cursor/mcp.json`, le `.mcp.json` du projet et `mcp` dans `opencode.json` ; `BRAMBLERS_MODULE=mcproster` lancé sans panique.
+- Version du workspace passée à 0.1.2. Commit `aa98290` pour la vue. Rien n'a été poussé.
+
+---
+
 ## 2026-11-07, la vue Permitt portée dans son onglet
 
 - La crate `crates/modules/permitt/view` (`bramblers-permitt-view`) reprend l'écran de l'ancienne app (1 023 lignes) sans fenêtre ni `iced::application` : `View::new` rend l'état et la tâche de lecture, puis `update`, `view`, `set_lang`, `set_dark`, `refresh`. L'ancienne app n'est plus qu'une référence dans `00_cadrage/references/permitt/`.
