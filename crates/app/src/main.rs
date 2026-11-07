@@ -1,4 +1,4 @@
-//! BrambleRS desktop app (iced): one screen — a sentence, the four severities in words,
+//! BrambleRS desktop app (iced): one screen. A sentence, the four severities in words,
 //! the six modules, the findings of every module in one list, and the detail of the selected
 //! one with where it comes from and what the person could do. The same binary is the command
 //! line when given arguments (`bramblers report --json`); it writes only its preferences and
@@ -17,7 +17,7 @@ use iced::{Alignment, Background, Border, Color, Element, Length, Task, Theme};
 use bramblers_core::dashboard::ReportState;
 use bramblers_core::{Cache, Dashboard, ModuleStatus, Run, RunError};
 use bramblers_report::{ActionKind, Finding, Severity, SubjectKind, Tone};
-use bramblers_ui::palette::{alert, amber, good, muted};
+use bramblers_ui::palette::{alert, amber, blend, good, muted};
 use bramblers_ui::widgets::{card, inner, small_button, swatch};
 use bramblers_ui::{Lang, Prefs, Strings};
 
@@ -104,9 +104,15 @@ impl App {
             show_info: false,
             selected: None,
         };
-        // `BRAMBLERS_SELECT=module:finding-id` preselects a finding (documentation
-        // screenshots); `BRAMBLERS_NO_REFRESH=1` skips the start-up refresh. The old BBL_*
-        // names are still read for the archived screenshots.
+        // `BRAMBLERS_MODULE=permitt` opens on a module tab (documentation screenshots);
+        // `BRAMBLERS_SELECT=module:finding-id` preselects a finding; `BRAMBLERS_NO_REFRESH=1`
+        // skips the start-up refresh. The old BBL_* names are still read for the archived
+        // screenshots.
+        if let Ok(m) = std::env::var("BRAMBLERS_MODULE") {
+            if bramblers_core::registry::get(&m).is_some() {
+                app.module_filter = Some(m);
+            }
+        }
         let select = std::env::var("BRAMBLERS_SELECT").or_else(|_| std::env::var("BBL_SELECT"));
         if let Ok(v) = select {
             if let Some((m, f)) = v.split_once(':') {
@@ -212,10 +218,9 @@ impl App {
             }
             Message::Search(s) => self.search = s,
             Message::FilterModule(m) => {
-                if let (Some(m), Some((sm, _))) = (&m, &self.selected) {
-                    if sm != m {
-                        self.selected = None;
-                    }
+                if self.module_filter != m {
+                    self.selected = None;
+                    self.severity_filter = None;
                 }
                 self.module_filter = m;
             }
@@ -308,8 +313,88 @@ impl App {
     // ------------------------------------------------------------------ view
 
     fn view(&self) -> Element<'_, Message> {
+        let content = column![
+            self.view_page_head(),
+            self.view_severities(),
+            row![self.view_list(), self.view_detail()]
+                .spacing(12)
+                .height(Length::Fill),
+        ]
+        .spacing(12)
+        .padding(14)
+        .width(Length::Fill)
+        .height(Length::Fill);
+        column![
+            self.view_header(),
+            row![self.view_sidebar(), content]
+                .width(Length::Fill)
+                .height(Length::Fill),
+        ]
+        .into()
+    }
+
+    fn view_header(&self) -> Element<'_, Message> {
         let s = &self.strings;
-        let modules = self.dash.modules.len();
+        let refresh: Element<'_, Message> = if self.running.is_empty() {
+            button(text(s.t("refresh.all", &[])).size(12))
+                .style(button::primary)
+                .on_press(Message::RefreshAll)
+                .into()
+        } else {
+            button(text(s.t("refresh.running", &[])).size(12))
+                .style(button::secondary)
+                .into()
+        };
+        let accent = (if self.dark { Theme::Dark } else { Theme::Light })
+            .extended_palette()
+            .primary
+            .base
+            .color;
+        container(
+            row![
+                swatch(accent, 9),
+                text("BrambleRS").size(15),
+                text(format!("v{}", env!("CARGO_PKG_VERSION")))
+                    .size(10)
+                    .style(text::secondary),
+                horizontal_space(),
+                text(self.when_line()).size(12).style(text::secondary),
+                refresh,
+            ]
+            .spacing(10)
+            .align_y(Alignment::Center),
+        )
+        .padding([9, 14])
+        .width(Length::Fill)
+        .style(header_style)
+        .into()
+    }
+
+    fn view_sidebar(&self) -> Element<'_, Message> {
+        let s = &self.strings;
+        let mut nav = column![].spacing(2);
+        nav = nav.push(self.nav_group(s.t("nav.overview", &[])));
+        nav = nav.push(self.nav_item(
+            s.t("nav.all", &[]),
+            None,
+            self.dash.lines.len(),
+            self.worst(None),
+        ));
+        nav = nav.push(self.nav_group(s.t("nav.modules", &[])));
+        for m in &self.dash.modules {
+            let n = self
+                .dash
+                .lines
+                .iter()
+                .filter(|l| l.module == m.provider.id)
+                .count();
+            nav = nav.push(self.nav_item(
+                m.provider.name.to_string(),
+                Some(m.provider.id),
+                n,
+                self.worst(Some(m.provider.id)),
+            ));
+        }
         let reports = self
             .dash
             .modules
@@ -319,7 +404,7 @@ impl App {
         let status = s.t(
             "status.summary",
             &[
-                ("modules", &modules.to_string()),
+                ("modules", &self.dash.modules.len().to_string()),
                 ("reports", &reports.to_string()),
             ],
         );
@@ -328,28 +413,114 @@ impl App {
         } else {
             self.t("theme.dark")
         };
-        let footer = bramblers_ui::widgets::footer(
-            status,
-            self.lang,
-            Message::SetLang,
-            theme_label,
-            Message::ToggleTheme,
-        );
-        column![
-            self.view_headline(),
-            self.view_severities(),
-            self.view_modules(),
-            row![self.view_list(), self.view_detail()]
-                .spacing(12)
-                .height(Length::Fill),
-            footer,
+        let foot = column![
+            text(status).size(10).style(text::secondary),
+            row![
+                bramblers_ui::widgets::lang_picker(self.lang, Message::SetLang),
+                horizontal_space(),
+                button(text(theme_label).size(11))
+                    .style(button::text)
+                    .on_press(Message::ToggleTheme),
+            ]
+            .spacing(4)
+            .align_y(Alignment::Center),
         ]
-        .spacing(12)
-        .padding(14)
-        .into()
+        .spacing(8)
+        .padding(iced::Padding {
+            top: 10.0,
+            ..Default::default()
+        });
+        container(column![scrollable(nav).height(Length::Fill), foot])
+            .width(210)
+            .height(Length::Fill)
+            .padding(12)
+            .style(sidebar_style)
+            .into()
     }
 
-    fn view_headline(&self) -> Element<'_, Message> {
+    fn nav_group(&self, label: String) -> Element<'_, Message> {
+        container(text(label.to_uppercase()).size(10).style(text::secondary))
+            .padding(iced::Padding {
+                top: 12.0,
+                right: 9.0,
+                bottom: 2.0,
+                left: 9.0,
+            })
+            .into()
+    }
+
+    fn nav_item(
+        &self,
+        label: String,
+        id: Option<&'static str>,
+        count: usize,
+        worst: Option<Severity>,
+    ) -> Element<'_, Message> {
+        let active = self.module_filter.as_deref() == id;
+        let mut line = row![].spacing(8).align_y(Alignment::Center);
+        match worst {
+            Some(sev) => line = line.push(swatch(self.sev_color(sev), 7)),
+            None => line = line.push(Space::with_width(7)),
+        }
+        let name = if active {
+            text(label).size(13).style(text::primary)
+        } else {
+            text(label).size(13).style(text::secondary)
+        };
+        line = line.push(name);
+        line = line.push(horizontal_space());
+        line = line.push(text(count.to_string()).size(11).style(text::secondary));
+        let cell =
+            container(line)
+                .padding([7, 9])
+                .width(Length::Fill)
+                .style(move |theme: &Theme| {
+                    let p = theme.extended_palette();
+                    container::Style {
+                        background: if active {
+                            Some(Background::Color(blend(
+                                p.background.weak.color,
+                                p.primary.base.color,
+                                0.18,
+                            )))
+                        } else {
+                            None
+                        },
+                        border: Border {
+                            radius: 8.0.into(),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    }
+                });
+        mouse_area(cell)
+            .on_press(Message::FilterModule(id.map(str::to_string)))
+            .into()
+    }
+
+    fn view_page_head(&self) -> Element<'_, Message> {
+        let s = &self.strings;
+        match self.module_filter.as_deref() {
+            Some(id) => {
+                let (name, tagline) = self
+                    .dash
+                    .module(id)
+                    .map(|m| (m.provider.name.to_string(), m.provider.tagline.to_string()))
+                    .unwrap_or_else(|| (id.to_string(), String::new()));
+                column![
+                    text(name).size(22),
+                    text(tagline).size(12).style(text::secondary),
+                ]
+                .spacing(2)
+                .into()
+            }
+            None => column![text(s.t("nav.all", &[])).size(22), self.headline_sentence(),]
+                .spacing(4)
+                .into(),
+        }
+    }
+
+    fn headline_sentence(&self) -> Element<'_, Message> {
         let s = &self.strings;
         let counts = self.dash.counts();
         let (act, review) = (counts[0].1, counts[1].1);
@@ -360,13 +531,13 @@ impl App {
                 s.t("headline.things", &[("n", &n.to_string())])
             }
         };
-        let sentence: Element<'_, Message> = if !self.has_reports() {
-            text(s.t("headline.none", &[])).size(20).into()
+        if !self.has_reports() {
+            text(s.t("headline.none", &[])).size(14).into()
         } else if act == 0 && review == 0 {
-            text(s.t("headline.clear", &[])).size(20).into()
+            text(s.t("headline.clear", &[])).size(14).into()
         } else if act == 0 {
             text(s.t("headline.review", &[("review", &review.to_string())]))
-                .size(20)
+                .size(14)
                 .into()
         } else {
             // The "act now" part in the alert colour: split the sentence around it.
@@ -380,16 +551,20 @@ impl App {
                     let (a, rest) = full.split_at(i);
                     let (b, c) = rest.split_at(marker.len());
                     row![
-                        text(a.to_string()).size(20),
-                        text(b.to_string()).size(20).color(alert(self.dark)),
-                        text(c.to_string()).size(20),
+                        text(a.to_string()).size(14),
+                        text(b.to_string()).size(14).color(alert(self.dark)),
+                        text(c.to_string()).size(14),
                     ]
                     .into()
                 }
-                None => text(full).size(20).into(),
+                None => text(full).size(14).into(),
             }
-        };
-        let when: String = if !self.running.is_empty() {
+        }
+    }
+
+    fn when_line(&self) -> String {
+        let s = &self.strings;
+        if !self.running.is_empty() {
             let names: Vec<String> = self
                 .running
                 .iter()
@@ -411,38 +586,19 @@ impl App {
                 Some(a) => s.t("when.reports", &[("age", &self.age(a))]),
                 None => s.t("when.none", &[]),
             }
-        };
-        let refresh: Element<'_, Message> = if self.running.is_empty() {
-            button(text(s.t("refresh.all", &[])).size(12))
-                .style(button::primary)
-                .on_press(Message::RefreshAll)
-                .into()
-        } else {
-            button(text(s.t("refresh.running", &[])).size(12))
-                .style(button::secondary)
-                .into()
-        };
-        row![
-            sentence,
-            horizontal_space(),
-            text(when).size(12).style(text::secondary),
-            refresh
-        ]
-        .spacing(10)
-        .align_y(Alignment::Center)
-        .into()
+        }
     }
 
     fn view_severities(&self) -> Element<'_, Message> {
         let s = &self.strings;
-        let counts = self.dash.counts();
+        let counts = self.scoped_counts();
         let mut r = row![].spacing(12);
         for (sev, n) in counts {
             let k = sev.number().to_string();
-            let value = if self.has_reports() {
+            let value = if self.scope_has_reports() {
                 n.to_string()
             } else {
-                "—".to_string()
+                "n/a".to_string()
             };
             let on = self.severity_filter == Some(sev);
             let color = self.sev_color(sev);
@@ -487,126 +643,36 @@ impl App {
         r.into()
     }
 
-    fn view_modules(&self) -> Element<'_, Message> {
-        let mut r = row![].spacing(12);
-        for m in &self.dash.modules {
-            r = r.push(self.view_module(m));
-        }
-        r.into()
-    }
-
-    fn view_module(&self, m: &ModuleStatus) -> Element<'_, Message> {
-        let s = &self.strings;
-        let running = self.running.contains(m.provider.id);
-        // The card is a filter (T6): a click stays in BrambleRS, on that module.
-        let head = row![text(m.provider.name).size(14), horizontal_space()]
-            .align_y(Alignment::Center)
-            .spacing(8);
-        let mut col = column![
-            head,
-            text(m.provider.tagline).size(12).style(text::secondary)
-        ]
-        .spacing(3);
-        // Figures, with the module's tones.
-        if let Some(r) = &m.report {
-            // The module's figures, two per line, with the module's tones.
-            let mut grid = column![].spacing(1);
-            for pair in r.summary.chunks(2) {
-                let mut line = row![].spacing(10);
-                for f in pair {
-                    let value: Element<'_, Message> = match self.tone_color(f.tone) {
-                        Some(c) => text(f.value.clone()).size(12).color(c).into(),
-                        None => text(f.value.clone()).size(12).into(),
-                    };
-                    line = line.push(
-                        row![text(f.label.clone()).size(11).style(text::secondary), value]
-                            .spacing(4)
-                            .align_y(Alignment::Center)
-                            .width(Length::Fill),
-                    );
-                }
-                grid = grid.push(line);
-            }
-            col = col.push(grid);
-        } else if let ReportState::Failed { .. } = m.state {
-        } else {
-            col = col.push(
-                text(s.t("module.no_report", &[]))
-                    .size(12)
-                    .style(text::secondary),
-            );
-        }
-        let version = m
-            .report
-            .as_ref()
-            .map(|r| r.module.version.clone())
-            .unwrap_or_default();
-        let state = if running {
-            match &m.state {
-                ReportState::Saved { age_s } => {
-                    s.t("module.running", &[("age", &self.age(*age_s))])
-                }
-                _ => s.t("module.running_first", &[]),
-            }
-        } else {
-            match &m.state {
-                ReportState::Fresh { .. } => s.t("module.fresh", &[("version", &version)]),
-                ReportState::Saved { age_s } => s.t(
-                    "module.report_age",
-                    &[("age", &self.age(*age_s)), ("version", &version)],
-                ),
-                ReportState::NoReport => s.t("module.no_report", &[]),
-                ReportState::Failed { error } => {
-                    s.t("module.failed", &[("error", &shorten(error, 70))])
-                }
-            }
-        };
-        let state_text = match &m.state {
-            ReportState::Failed { .. } if !running => text(state)
-                .size(12)
-                .color(alert(self.dark))
-                .width(Length::Fill),
-            _ => text(state)
-                .size(12)
-                .style(text::secondary)
-                .width(Length::Fill),
-        };
-        let action: Element<'_, Message> = if running {
-            text(s.t("refresh.running", &[]))
-                .size(11)
-                .style(text::secondary)
-                .into()
-        } else {
-            small_button(
-                s.t("refresh.one", &[]),
-                Message::Refresh(m.provider.id.to_string()),
+    /// The four severity counts for the current page: all modules, or the selected one.
+    fn scoped_counts(&self) -> [(Severity, usize); 4] {
+        let scope = self.module_filter.as_deref();
+        Severity::ALL.map(|s| {
+            (
+                s,
+                self.dash
+                    .lines
+                    .iter()
+                    .filter(|l| l.finding.severity == s && scope.is_none_or(|m| l.module == m))
+                    .count(),
             )
-        };
-        col = col.push(
-            row![state_text, action]
-                .spacing(8)
-                .align_y(Alignment::Center),
-        );
-        self.module_card(m, card(col.into()).height(Length::Fixed(140.0)))
+        })
     }
 
-    /// A module card is a filter: a click keeps you in BrambleRS, on that module (decision
-    /// T6); a second click lifts the filter. The chosen card is outlined.
-    fn module_card<'a>(
-        &self,
-        m: &ModuleStatus,
-        c: container::Container<'a, Message>,
-    ) -> Element<'a, Message> {
-        let chosen = self.module_filter.as_deref() == Some(m.provider.id);
-        let c = if chosen { c.style(chosen_card) } else { c };
-        let next = if chosen {
-            None
-        } else {
-            Some(m.provider.id.to_string())
-        };
-        mouse_area(c.width(Length::Fill))
-            .on_press(Message::FilterModule(next))
-            .into()
+    fn scope_has_reports(&self) -> bool {
+        match self.module_filter.as_deref() {
+            Some(id) => self.dash.module(id).is_some_and(|m| m.report.is_some()),
+            None => self.has_reports(),
+        }
+    }
+
+    /// The most serious severity of a page, for the dot in the sidebar.
+    fn worst(&self, module: Option<&str>) -> Option<Severity> {
+        self.dash
+            .lines
+            .iter()
+            .filter(|l| module.is_none_or(|m| l.module == m))
+            .map(|l| l.finding.severity)
+            .min()
     }
 
     fn view_list(&self) -> Element<'_, Message> {
@@ -623,35 +689,13 @@ impl App {
                 .count()
         };
 
-        // Filters: search, module chips, information toggle.
-        let mut chips = row![].spacing(6).align_y(Alignment::Center);
-        let chip = |label: String, on: bool, msg: Message| -> Element<'_, Message> {
-            let b = button(text(label).size(11)).padding([2, 9]);
-            if on {
-                b.style(button::primary).on_press(msg).into()
-            } else {
-                b.style(button::secondary).on_press(msg).into()
-            }
-        };
-        chips = chips.push(chip(
-            s.t("list.all", &[]),
-            self.module_filter.is_none(),
-            Message::FilterModule(None),
-        ));
-        for m in self.dash.modules.iter().filter(|m| m.report.is_some()) {
-            chips = chips.push(chip(
-                m.provider.name.to_string(),
-                self.module_filter.as_deref() == Some(m.provider.id),
-                Message::FilterModule(Some(m.provider.id.to_string())),
-            ));
-        }
+        // Filters: search and the information toggle. The modules are the sidebar.
         let filters = row![
             text_input(&s.t("list.search", &[]), &self.search)
                 .on_input(Message::Search)
                 .size(12)
                 .padding(5)
-                .width(Length::FillPortion(2)),
-            chips,
+                .width(Length::Fill),
             checkbox(s.t("list.show_info", &[]), self.show_info)
                 .on_toggle(Message::ToggleInfo)
                 .size(14)
@@ -660,10 +704,22 @@ impl App {
         .spacing(10)
         .align_y(Alignment::Center);
 
+        let scope_has_lines = self
+            .dash
+            .lines
+            .iter()
+            .any(|l| self.module_filter.as_deref().is_none_or(|m| l.module == m));
         let body: Element<'_, Message> = if lines.is_empty() {
-            let (title, sub) = if !self.has_reports() {
-                (s.t("list.empty_none", &[]), s.t("list.empty_none_sub", &[]))
-            } else if self.dash.lines.is_empty() {
+            let (title, sub) = if !self.scope_has_reports() {
+                (
+                    s.t("list.empty_none", &[]),
+                    if self.module_filter.is_some() {
+                        s.t("list.empty_none_sub_one", &[])
+                    } else {
+                        s.t("list.empty_none_sub", &[])
+                    },
+                )
+            } else if !scope_has_lines {
                 (s.t("list.empty_clear", &[]), String::new())
             } else {
                 (s.t("list.empty_filter", &[]), String::new())
@@ -675,11 +731,15 @@ impl App {
             .spacing(6)
             .align_x(Alignment::Center)
             .max_width(460);
-            if !self.has_reports() && self.running.is_empty() {
+            if !self.scope_has_reports() && self.running.is_empty() {
+                let (label, msg) = match self.module_filter.as_deref() {
+                    Some(id) => (s.t("refresh.one", &[]), Message::Refresh(id.to_string())),
+                    None => (s.t("refresh.all", &[]), Message::RefreshAll),
+                };
                 c = c.push(
-                    button(text(s.t("refresh.all", &[])).size(12))
+                    button(text(label).size(12))
                         .style(button::primary)
-                        .on_press(Message::RefreshAll),
+                        .on_press(msg),
                 );
             }
             container(c).center(Length::Fill).into()
@@ -726,9 +786,13 @@ impl App {
         card(
             column![
                 text(s.t("list.title", &[])).size(15),
-                text(s.t("list.subtitle", &[]))
-                    .size(12)
-                    .style(text::secondary),
+                text(if self.module_filter.is_some() {
+                    s.t("list.subtitle_one", &[])
+                } else {
+                    s.t("list.subtitle", &[])
+                })
+                .size(12)
+                .style(text::secondary),
                 filters,
                 body,
             ]
@@ -1029,8 +1093,8 @@ impl App {
             col = col.push(
                 row![
                     swatch(self.sev_color(sev), 9),
-                    text(s.t(&format!("sev.{k}"), &[])).size(13),
-                    text(format!("— {}", s.t(&format!("sev.{k}.desc"), &[])))
+                    text(format!("{}:", s.t(&format!("sev.{k}"), &[]))).size(13),
+                    text(s.t(&format!("sev.{k}.desc"), &[]))
                         .size(13)
                         .style(text::secondary),
                 ]
@@ -1062,15 +1126,29 @@ fn subject_slug(k: SubjectKind) -> &'static str {
     }
 }
 
-/// The module the tower is filtered on: the card with the accent border.
-fn chosen_card(theme: &Theme) -> container::Style {
+/// The header bar: the panel background, a thin border.
+fn header_style(theme: &Theme) -> container::Style {
     let p = theme.extended_palette();
     container::Style {
         background: Some(Background::Color(p.background.weak.color)),
         border: Border {
-            radius: 10.0.into(),
-            width: 1.5,
-            color: p.primary.base.color,
+            width: 1.0,
+            color: p.background.strong.color,
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
+
+/// The left rail: the panel background, a thin border.
+fn sidebar_style(theme: &Theme) -> container::Style {
+    let p = theme.extended_palette();
+    container::Style {
+        background: Some(Background::Color(p.background.weak.color)),
+        border: Border {
+            width: 1.0,
+            color: p.background.strong.color,
+            ..Default::default()
         },
         ..Default::default()
     }
