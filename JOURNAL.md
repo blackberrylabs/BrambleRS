@@ -3,6 +3,16 @@
 
 ---
 
+## 2026-11-07, vérification des vues : Cleanator corrigé, Lastrun lent en debug
+
+- Cleanator : le canvas iced 0.13 dessine à l'origine de son arbre de disposition ; le treemap recouvrait le titre et la légende. Le titre et la légende sont sortis de la carte, le treemap garde ses propres marges (48 px en haut, 64 en bas, 14 sur les côtés) et le clic utilise le même rectangle. Test des marges. Commit `c6c66b0`.
+- Lastrun : pas un blocage. Le scan a pris 137,8 s dans le build de debug sur 201 Mo de transcriptions, puis a affiché 128 sessions et 14 401 commandes. Le binaire release est construit et se lance en environ 8 s pour le même travail ; c'est celui qui sert à la vérification.
+- Le premier lancement a été tué par un reset du GPU AMD (`amdgpu ... GPU reset(8)`), pas par le code. La vérification tourne en rendu logiciel (`WGPU_BACKEND=gl LIBGL_ALWAYS_SOFTWARE=1`), plus lent mais stable.
+- Preuves : `cargo test --workspace` passe 248 tests, clippy et fmt propres ; l'app release est lancée sur Cleanator.
+- Les six vues restent à vérifier écran par écran par Alexandre ; Cleanator est la première contrôlée.
+
+---
+
 ## 2026-11-07, audit de sécurité : F15 corrigé, audit clos
 
 - Textes alignés sur le code : `lastrun/core/src/lib.rs`, `linstruct/core/src/lib.rs`, `mcproster/core/src/lib.rs`, `linstruct/core/src/projects.rs` et `bramblers-ui/src/lib.rs` disent les chemins réels (`~/.config/bramblers/<module>/`) et que le coeur n'écrit rien. Commit `23052cd`.
