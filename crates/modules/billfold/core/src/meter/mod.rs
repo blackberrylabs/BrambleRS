@@ -2,6 +2,7 @@
 //! requests — model, time, tokens, what the host said about billing — deduplicated as the
 //! host's own format requires. Nothing here prices anything; `scan` does, per request.
 
+use std::io::Read as _;
 use std::path::{Path, PathBuf};
 
 use chrono::{DateTime, Utc};
@@ -97,12 +98,52 @@ pub(crate) fn time_at(v: &Value, path: &str, unit: &str) -> Option<DateTime<Utc>
     bramblers_hostrules::read::get(v, path).and_then(|x| crate::util::parse_time(x, unit))
 }
 
-/// Read a text file, decompressing zstd by extension.
+/// A usage log larger than this is skipped with an error, not read into memory.
+const MAX_LOG_BYTES: u64 = 256 * 1024 * 1024;
+/// The same limit after zstd decompression.
+const MAX_ZSTD_BYTES: u64 = 256 * 1024 * 1024;
+
+/// Read a text file, decompressing zstd by extension. Both the file and the decompressed
+/// text are capped: a log can be large, and a zstd bomb is small on disk.
 pub(crate) fn read_text(path: &Path) -> Result<String, String> {
-    let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let file = std::fs::File::open(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    if file
+        .metadata()
+        .map(|m| m.len() > MAX_LOG_BYTES)
+        .unwrap_or(false)
+    {
+        return Err(format!(
+            "{}: larger than {} MiB, skipped",
+            path.display(),
+            MAX_LOG_BYTES / (1024 * 1024)
+        ));
+    }
+    let mut bytes = Vec::new();
+    file.take(MAX_LOG_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|e| format!("{}: {e}", path.display()))?;
+    if bytes.len() as u64 > MAX_LOG_BYTES {
+        return Err(format!(
+            "{}: larger than {} MiB, skipped",
+            path.display(),
+            MAX_LOG_BYTES / (1024 * 1024)
+        ));
+    }
     if path.extension().is_some_and(|e| e == "zst") {
-        let out =
-            zstd::decode_all(&bytes[..]).map_err(|e| format!("{}: zstd: {e}", path.display()))?;
+        let decoder =
+            zstd::Decoder::new(&bytes[..]).map_err(|e| format!("{}: zstd: {e}", path.display()))?;
+        let mut out = Vec::new();
+        decoder
+            .take(MAX_ZSTD_BYTES + 1)
+            .read_to_end(&mut out)
+            .map_err(|e| format!("{}: zstd: {e}", path.display()))?;
+        if out.len() as u64 > MAX_ZSTD_BYTES {
+            return Err(format!(
+                "{}: decompresses past {} MiB, skipped",
+                path.display(),
+                MAX_ZSTD_BYTES / (1024 * 1024)
+            ));
+        }
         Ok(String::from_utf8_lossy(&out).to_string())
     } else {
         Ok(String::from_utf8_lossy(&bytes).to_string())

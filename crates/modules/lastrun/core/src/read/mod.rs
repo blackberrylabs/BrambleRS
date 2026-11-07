@@ -4,6 +4,7 @@
 //! reads for credentials, keeping their masked form only.
 
 use std::collections::HashMap;
+use std::io::Read as _;
 use std::path::{Path, PathBuf};
 
 use chrono::{DateTime, Utc};
@@ -461,12 +462,55 @@ pub fn mtime(p: &Path) -> Option<DateTime<Utc>> {
         .map(DateTime::<Utc>::from)
 }
 
-/// Read a text file, decompressing zstd by extension.
+/// A transcript larger than this is skipped, with its path in the error list. The biggest
+/// real transcript seen on the development machine was 201 MB; 256 MiB keeps room above it
+/// and stops a runaway or malicious file from taking the application down.
+const MAX_TEXT_BYTES: u64 = 256 * 1024 * 1024;
+
+/// The same limit after zstd decompression.
+const MAX_ZSTD_BYTES: u64 = 256 * 1024 * 1024;
+
+/// Read a text file, decompressing zstd by extension. Both the file and the decompressed
+/// text are capped: a zstd bomb is otherwise just a small file that asks for all the memory.
 pub fn read_text(path: &Path) -> Result<String, String> {
-    let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let file = std::fs::File::open(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    if file
+        .metadata()
+        .map(|m| m.len() > MAX_TEXT_BYTES)
+        .unwrap_or(false)
+    {
+        return Err(format!(
+            "{}: larger than {} MiB, skipped",
+            path.display(),
+            MAX_TEXT_BYTES / (1024 * 1024)
+        ));
+    }
+    let mut bytes = Vec::new();
+    file.take(MAX_TEXT_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|e| format!("{}: {e}", path.display()))?;
+    if bytes.len() as u64 > MAX_TEXT_BYTES {
+        return Err(format!(
+            "{}: larger than {} MiB, skipped",
+            path.display(),
+            MAX_TEXT_BYTES / (1024 * 1024)
+        ));
+    }
     if path.extension().is_some_and(|e| e == "zst") {
-        let out =
-            zstd::decode_all(&bytes[..]).map_err(|e| format!("{}: zstd: {e}", path.display()))?;
+        let decoder =
+            zstd::Decoder::new(&bytes[..]).map_err(|e| format!("{}: zstd: {e}", path.display()))?;
+        let mut out = Vec::new();
+        decoder
+            .take(MAX_ZSTD_BYTES + 1)
+            .read_to_end(&mut out)
+            .map_err(|e| format!("{}: zstd: {e}", path.display()))?;
+        if out.len() as u64 > MAX_ZSTD_BYTES {
+            return Err(format!(
+                "{}: decompresses past {} MiB, skipped",
+                path.display(),
+                MAX_ZSTD_BYTES / (1024 * 1024)
+            ));
+        }
         Ok(String::from_utf8_lossy(&out).into_owned())
     } else {
         Ok(String::from_utf8_lossy(&bytes).into_owned())

@@ -19,8 +19,11 @@ impl Output {
     }
 }
 
+const MAX_OUTPUT: u64 = 16 * 1024 * 1024;
+
 /// Run `program args…` and capture its output. Returns `None` when the program is not
-/// installed, could not be started, or exceeded `timeout`.
+/// installed, could not be started, or exceeded `timeout`. Each stream is capped at
+/// `MAX_OUTPUT`: an external tool that floods its output must not take the application down.
 pub fn run(program: &str, args: &[&str], timeout: Duration) -> Option<Output> {
     let mut child = Command::new(program)
         .args(args)
@@ -31,13 +34,13 @@ pub fn run(program: &str, args: &[&str], timeout: Duration) -> Option<Output> {
         .env("LANG", "C")
         .spawn()
         .ok()?;
-    let mut stdout = child.stdout.take()?;
-    let mut stderr = child.stderr.take()?;
+    let stdout = child.stdout.take()?;
+    let stderr = child.stderr.take()?;
     let reader = std::thread::spawn(move || {
         let mut out = String::new();
         let mut err = String::new();
-        let _ = stdout.read_to_string(&mut out);
-        let _ = stderr.read_to_string(&mut err);
+        let _ = stdout.take(MAX_OUTPUT).read_to_string(&mut out);
+        let _ = stderr.take(MAX_OUTPUT).read_to_string(&mut err);
         (out, err)
     });
     let start = Instant::now();
