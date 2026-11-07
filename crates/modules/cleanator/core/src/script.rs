@@ -77,7 +77,7 @@ pub fn generate(report: &Report, opts: &ScriptOptions) -> (String, usize) {
         "# Cleanator cleanup script — generated {} by cleanator {}",
         report.generated_at, report.cleanator_version
     );
-    let _ = writeln!(s, "# Scanned: {}", report.root.display());
+    let _ = writeln!(s, "# Scanned: {}", one_line(&report.root.to_string_lossy()));
     let _ = writeln!(s, "# Items: {} ({} expected to be freed). Read every line: nothing runs until you run this file.", items.len(), human(total));
     let _ = writeln!(s, "# `safe` items are removed outright; `review` items are moved to the trash and can be restored.");
     let _ = writeln!(s, "# Each block names its rule: https://github.com/blackberrylabs/cleanator/blob/main/docs/rules.md");
@@ -137,8 +137,8 @@ fn write_item(s: &mut String, r: &Recommendation) {
     let _ = writeln!(
         s,
         "# [{}] {} — {} ({})",
-        r.rule_id,
-        r.display,
+        one_line(&r.rule_id),
+        one_line(&r.display),
         human(r.reclaimable),
         r.effective_level
     );
@@ -161,7 +161,13 @@ fn write_item(s: &mut String, r: &Recommendation) {
 }
 
 fn one_line(text: &str) -> String {
-    text.split_whitespace().collect::<Vec<_>>().join(" ")
+    // A name can contain a newline or an escape sequence. A comment must stay one line:
+    // a second line would be read as a command by the shell when the script is run.
+    let printable: String = text
+        .chars()
+        .map(|c| if c.is_control() { ' ' } else { c })
+        .collect();
+    printable.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 #[cfg(test)]
@@ -230,6 +236,25 @@ mod tests {
             rule_notes: vec![],
             atime: Default::default(),
         }
+    }
+
+    #[test]
+    fn a_newline_in_a_display_name_does_not_create_a_command_line() {
+        let mut r = rec(
+            "pip-cache",
+            Level::Safe,
+            "rm -rf -- '/home/u/pip-cache'",
+            "user",
+            None,
+        );
+        r.display = "/home/u/x\nrm -rf ~ #".into();
+        let (text, _) = generate(&report(vec![r]), &ScriptOptions::default());
+        assert!(
+            text.lines()
+                .all(|l| !l.trim_start().starts_with("rm -rf ~")),
+            "a newline in a display name became a command line:\n{text}"
+        );
+        assert!(text.contains("# [pip-cache] /home/u/x rm -rf ~ # — 1M (safe)"));
     }
 
     #[test]

@@ -1040,12 +1040,10 @@ fn substitute(template: &str, cand: &Candidate) -> Option<String> {
             .or_insert(p.to_string_lossy().to_string());
     }
     for (k, v) in &fields {
-        let needs_quote = k == "path" || k == "project";
-        let value = if needs_quote {
-            shell_quote(v)
-        } else {
-            v.clone()
-        };
+        // Every field is quoted: a name, a tag or a version can come from the filesystem
+        // or from a tool's output and can contain shell syntax. Quoting a number or a
+        // plain name changes nothing for the shell, and closes the injection.
+        let value = shell_quote(v);
         out = out.replace(&format!("{{{k}}}"), &value);
     }
     if out.contains('{') && out.contains('}') {
@@ -1619,11 +1617,16 @@ mod tests {
         c.fields.insert("name".into(), "gpt2".into());
         assert_eq!(
             substitute("hf cache rm model/{org}/{name} --yes", &c).unwrap(),
-            "hf cache rm model/gpt2 --yes"
+            "hf cache rm model/'gpt2' --yes"
         );
         assert_eq!(
             substitute("cargo clean --manifest-path {project}/Cargo.toml", &c).unwrap(),
             "cargo clean --manifest-path '/p'/Cargo.toml"
+        );
+        c.fields.insert("name".into(), "x'; rm -rf ~ #".into());
+        assert_eq!(
+            substitute("rm {name}", &c).unwrap(),
+            "rm 'x'\\''; rm -rf ~ #'"
         );
         assert!(substitute("snap remove {missing}", &c).is_none());
     }
