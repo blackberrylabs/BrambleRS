@@ -1,0 +1,15 @@
+[package]
+name = "bbl-report"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+license = "MIT"
+authors = ["Alexandre Do"]
+repository = "https://github.com/blackberrylabs/bbl-report"
+description = "The report contract between the Blackberrylabs control tower and its modules: types, validation, severity scale, conformance check"
+keywords = ["report", "schema", "desktop", "read-only"]
+categories = ["data-structures"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
