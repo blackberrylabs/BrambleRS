@@ -3,6 +3,16 @@
 
 ---
 
+## 2026-11-07, Cleanator : le bug venait du backend GL, pas du treemap
+
+- Le treemap n'était pas en cause. Avec `WGPU_BACKEND=gl` (le chemin logiciel OpenGL), iced/wgpu 0.19 dessine mal les canvas : tuiles manquantes, textes flottants, marges ignorées. Avec Vulkan logiciel (lavapipe), la carte d'origine s'affiche correctement, titre et légende dans la carte.
+- Les commits `c6c66b0` et `4a9cddf` (marges internes, titre hors carte) sont donc annulés par `650bb6d` : retour à la disposition d'origine, sans rustine.
+- Le lancement matériel plante à cause d'un reset du pilote AMD (`amdgpu ... GPU reset(8)`), qui emporte X et OpenCode. Pour vérifier sans GPU : `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json WGPU_BACKEND=vulkan BRAMBLERS_NO_REFRESH=1 BRAMBLERS_MODULE=cleanator ./target/debug/bramblers`.
+- Lastrun n'était pas un bug : 137,8 s en debug sur 201 Mo de transcriptions, environ 8 s en release.
+- Preuves : `cargo test --workspace` passe 247 tests, clippy et fmt propres ; capture de la carte d'origine sous lavapipe, titre, tuiles et légende à leur place.
+
+---
+
 ## 2026-11-07, vérification des vues : Cleanator corrigé, Lastrun lent en debug
 
 - Cleanator : le canvas iced 0.13 dessine à l'origine de son arbre de disposition ; le treemap recouvrait le titre et la légende. Le titre et la légende sont sortis de la carte, le treemap garde ses propres marges (48 px en haut, 64 en bas, 14 sur les côtés) et le clic utilise le même rectangle. Test des marges. Commit `c6c66b0`.
@@ -10,6 +20,7 @@
 - Le premier lancement a été tué par un reset du GPU AMD (`amdgpu ... GPU reset(8)`), pas par le code. La vérification tourne en rendu logiciel (`WGPU_BACKEND=gl LIBGL_ALWAYS_SOFTWARE=1`), plus lent mais stable.
 - Preuves : `cargo test --workspace` passe 248 tests, clippy et fmt propres ; l'app release est lancée sur Cleanator.
 - Les six vues restent à vérifier écran par écran par Alexandre ; Cleanator est la première contrôlée.
+- Correction le même jour : ce diagnostic était faux, voir l'entrée « le bug venait du backend GL » ci-dessus.
 
 ---
 

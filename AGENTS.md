@@ -11,10 +11,10 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 
 ## État au 2026-11-07
 
-- `main` : restructuration fusionnée et poussée. Dernier commit de code `c6c66b0` (audit et treemap Cleanator) ; les corrections de textes suivent sur `main`. Dernier tag publié : `bramblers-v0.1.0`, avec `.deb`, `.rpm`, AppImage et `SHA256SUMS`.
+- `main` : restructuration fusionnée et poussée. Dernier commit de code `650bb6d` (audit, puis retour à la carte Cleanator d'origine) ; les corrections de textes suivent sur `main`. Dernier tag publié : `bramblers-v0.1.0`, avec `.deb`, `.rpm`, AppImage et `SHA256SUMS`.
 - Le dépôt GitHub s'appelle `blackberrylabs/BrambleRS` ; le dossier local est `Logiciels/BrambleRS`. Les dix anciens dépôts (trois fondations, six modules, template) et leurs releases ont été supprimés le 2026-11-07. Le profil de l'organisation présente BrambleRS.
 - Arborescence du 2026-11-07 : `crates/bramblers` (app), `crates/bramblers-core`, `crates/bramblers-cli`, les trois fondations, et `crates/modules/<id>/core` et `view` pour les six modules.
-- Paquet `bramblers` 0.1.0 construit et `.deb` installé ; l'AppImage a été lancée. Le workspace est en 0.1.6 ; cette version n'a ni paquet ni release. `cargo test --workspace` passe (248 tests au 2026-11-07), fmt et clippy propres.
+- Paquet `bramblers` 0.1.0 construit et `.deb` installé ; l'AppImage a été lancée. Le workspace est en 0.1.6 ; cette version n'a ni paquet ni release. `cargo test --workspace` passe (247 tests au 2026-11-07), fmt et clippy propres.
 - **Les six vues détaillées sont portées.** Permitt, MCProster, Linstruct, Cleanator, Billfold et Lastrun ont leur `view/`, leurs textes, leurs tests et une capture (`docs/screenshots/{permitt,mcproster,linstruct,cleanator,billfold,lastrun}.png`, 0.1.6 non publiée). Les six anciens checkouts ont été supprimés le 2026-11-07. Il reste la vérification écran par écran par Alexandre, puis la 1.0 quand aucune fonctionnalité ne manque.
 - Reste : la vérification des six vues par Alexandre, la parité 1.0, test du `.rpm` sur une machine RPM, épinglage et aperçu social de BrambleRS (réglages GitHub manuels), nettoyage des anciennes captures et de `assets/blackberrylabs.desktop`.
 - La 0.1.0 garde l'écran de la tour, réorganisé avec les modules en onglet à gauche. La 1.0 est la parité.
