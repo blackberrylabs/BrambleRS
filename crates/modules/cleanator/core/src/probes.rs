@@ -422,7 +422,7 @@ fn docker_probe(ctx: &ProbeContext, item: Option<&str>) -> ProbeResult {
                             .as_deref()
                             .map(|n| format!("{n}; "))
                             .unwrap_or_default(),
-                        crate::size::human(img.size - img.unique_size),
+                        crate::size::human(img.size.saturating_sub(img.unique_size)),
                         crate::size::human(img.size)
                     ));
                 }

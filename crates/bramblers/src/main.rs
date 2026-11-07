@@ -12,8 +12,9 @@ use iced::widget::{
     button, checkbox, column, container, horizontal_space, mouse_area, row, scrollable, text,
     text_input, Space,
 };
-use iced::{Alignment, Background, Border, Color, Element, Length, Task, Theme};
+use iced::{Alignment, Background, Border, Color, Element, Length, Subscription, Task, Theme};
 
+use bramblers_cleanator_view as cleanator_view;
 use bramblers_core::dashboard::ReportState;
 use bramblers_core::{Cache, Dashboard, ModuleStatus, Run, RunError};
 use bramblers_linstruct_view as linstruct_view;
@@ -45,6 +46,7 @@ fn main() {
 fn run_app() -> iced::Result {
     iced::application(App::title, App::update, App::view)
         .theme(App::theme)
+        .subscription(App::subscription)
         .window_size((1280.0, 820.0))
         .run_with(App::new)
 }
@@ -69,6 +71,7 @@ enum Message {
     Permitt(permitt_view::Message),
     Mcproster(mcproster_view::Message),
     Linstruct(linstruct_view::Message),
+    Cleanator(cleanator_view::Message),
 }
 
 struct App {
@@ -93,6 +96,8 @@ struct App {
     mcproster: Option<mcproster_view::View>,
     /// Same for Linstruct.
     linstruct: Option<linstruct_view::View>,
+    /// Same for Cleanator.
+    cleanator: Option<cleanator_view::View>,
 }
 
 impl App {
@@ -119,6 +124,7 @@ impl App {
             permitt: None,
             mcproster: None,
             linstruct: None,
+            cleanator: None,
         };
         // `BRAMBLERS_MODULE=permitt` opens on a module tab (documentation screenshots);
         // `BRAMBLERS_SELECT=module:finding-id` preselects a finding; `BRAMBLERS_NO_REFRESH=1`
@@ -176,6 +182,13 @@ impl App {
                 self.linstruct = Some(view);
                 Some(task.map(Message::Linstruct))
             }
+            "cleanator" if self.cleanator.is_none() => {
+                let (mut view, task) = cleanator_view::View::new();
+                view.set_lang(self.lang);
+                view.set_dark(self.dark);
+                self.cleanator = Some(view);
+                Some(task.map(Message::Cleanator))
+            }
             _ => None,
         }
     }
@@ -189,6 +202,18 @@ impl App {
             Theme::Dark
         } else {
             Theme::Light
+        }
+    }
+
+    /// The Cleanator loading screen counts while its scan runs.
+    fn subscription(&self) -> Subscription<Message> {
+        match self.module_filter.as_deref() {
+            Some("cleanator") => self
+                .cleanator
+                .as_ref()
+                .map(|v| v.subscription().map(Message::Cleanator))
+                .unwrap_or_else(Subscription::none),
+            _ => Subscription::none(),
         }
     }
 
@@ -273,6 +298,11 @@ impl App {
                             tasks.push(v.refresh().map(Message::Linstruct));
                         }
                     }
+                    Some("cleanator") => {
+                        if let Some(v) = &mut self.cleanator {
+                            tasks.push(v.refresh().map(Message::Cleanator));
+                        }
+                    }
                     _ => {}
                 }
                 return Task::batch(tasks);
@@ -290,6 +320,9 @@ impl App {
                 if let Some(v) = &mut self.linstruct {
                     v.set_lang(l);
                 }
+                if let Some(v) = &mut self.cleanator {
+                    v.set_lang(l);
+                }
                 self.remember();
             }
             Message::ToggleTheme => {
@@ -301,6 +334,9 @@ impl App {
                     v.set_dark(self.dark);
                 }
                 if let Some(v) = &mut self.linstruct {
+                    v.set_dark(self.dark);
+                }
+                if let Some(v) = &mut self.cleanator {
                     v.set_dark(self.dark);
                 }
                 self.remember();
@@ -340,6 +376,11 @@ impl App {
             Message::Linstruct(m) => {
                 if let Some(v) = &mut self.linstruct {
                     return v.update(m).map(Message::Linstruct);
+                }
+            }
+            Message::Cleanator(m) => {
+                if let Some(v) = &mut self.cleanator {
+                    return v.update(m).map(Message::Cleanator);
                 }
             }
             Message::OpenFile(p) | Message::OpenUrl(p) => {
@@ -430,6 +471,10 @@ impl App {
             },
             Some("linstruct") => match &self.linstruct {
                 Some(v) => self.view_module(v.view().map(Message::Linstruct)),
+                None => self.view_overview(),
+            },
+            Some("cleanator") => match &self.cleanator {
+                Some(v) => self.view_module(v.view().map(Message::Cleanator)),
                 None => self.view_overview(),
             },
             _ => self.view_overview(),
