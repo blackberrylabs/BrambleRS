@@ -3,6 +3,15 @@
 
 ---
 
+## 2026-11-07, docs vérifiées pour la passation
+
+- Reprise une par une des cinq demandes : AGENTS (état, dernier commit de code `0c46011`, six vues, `target/` supprimé), PLAN (note des six vues, 1.0 à constater), JOURNAL (entrée de passation), BRIEF (D8 remplace D4), `Logiciels/AGENTS.md` et `Logiciels/PASSATION.md`, README, CHANGELOG et profil `.github`. Tout était déjà en place et poussé (`07c3ada`, `51e3fcc`).
+- Trois formulations devenues fausses corrigées : « `view` (à créer en 0.x) » dans `AGENTS.md`, « 0.1.6 sans paquet ni release » (vrai pour cette version seule), et la règle multi-dépôts de `Logiciels/AGENTS.md` qui ne vaut plus pour `.github`. Les deux titres qui nommaient encore la série sont neutralisés. Le README liste les six crates de vue ; `PASSATION.md` signale que sa section 7 vise des dépôts supprimés.
+- Preuve : `git diff --stat` (AGENTS.md, BRIEF.md, README.md) ; aucun `.rs` touché, `cargo` non relancé.
+- BRIEF corrigé avec son accord (« go, corriges ») : la crate de l'app est `crates/bramblers`, le portage est daté en 0.1.1 à 0.1.6 (workspace, sans paquet ni tag), les anciens tags `v0.1.0` à `v0.4.0` sont dits supprimés (D8) et l'ordre de migration ne parle plus d'archivage. Amendement daté en tête du BRIEF, sections 4, 8 et 9.
+
+---
+
 ## 2026-11-07, passation
 
 - État : workspace 0.1.6, six vues portées (Permitt, MCProster, Linstruct, Cleanator, Billfold, Lastrun), 233 tests, fmt et clippy propres. Dépôt unique de 60 Mo, `target/` et `dist/` supprimés.

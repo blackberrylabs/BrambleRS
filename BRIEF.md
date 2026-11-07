@@ -3,6 +3,8 @@
 
 Rev. 2 — 2026-11-07, validée le 2026-11-07 (« Oui, je valide »). Proposée après les décisions d'Alexandre du 2026-11-07 : le logiciel ne porte plus le nom de l'org, les six outils deviennent un seul logiciel, et la 0.1.0 garde l'écran actuel de la tour.
 
+Compléments du 2026-11-07, avec l'accord d'Alexandre : nom de la crate de l'app (section 4), calendrier réel des six vues et anciens tags supprimés (section 8), ordre de migration sans archivage (section 9).
+
 ## 1. Objet
 
 **BrambleRS est un logiciel unique qui montre ce que les agents de code IA font à la machine, le plus grave en premier, et ouvre chaque constat au bon endroit.**
@@ -45,7 +47,7 @@ Accroche : *BrambleRS — everything your AI coding agents do to your machine, o
 - `crates/bramblers-report` : types du rapport et des gravités (ancien `bbl-report`), schéma interne `bramblers-report/1`.
 - `crates/bramblers-hostrules` : fiches d'hôtes et lecteurs (ancien `bbl-hostrules`).
 - `crates/bramblers-ui` : palette et briques iced (ancien `bbl-ui`).
-- `crates/bramblers-app` : l'app iced unique, l'écran actuel de la tour.
+- `crates/bramblers` : l'app iced unique, l'écran actuel de la tour.
 - `crates/bramblers-cli` : le CLI `bramblers`, avec `report --json` et les sous-commandes des six modules.
 - `crates/modules/<id>/core` (crate `bramblers-<id>-core`) : la logique des six outils, réutilisée telle quelle. Les six apps ne sont pas importées en 0.1.0.
 - **Un binaire `bramblers`** : sans argument, l'app ; `bramblers report --json` pour le rapport global ; `bramblers report <module> --json` pour un module.
@@ -87,14 +89,15 @@ Le portage se fait vue par vue, en 0.x, sans bloquer la 0.1.0. Une vue est termi
 ## 8. Versions
 
 - **0.1.0** : la restructuration. Un dépôt, une app, l'écran actuel, six cores, un paquet.
-- **0.2.0 à 0.x** : le portage des six vues détaillées, une ou plusieurs par release.
+- **0.1.1 à 0.1.6** : le portage des six vues détaillées, une par version (Permitt, MCProster, Linstruct, Cleanator, Billfold, Lastrun), dans le workspace, sans paquet ni tag (2026-11-07).
+- **0.2.0 à 0.x** : les releases suivantes, à commencer par les paquets des six vues, jusqu'à la parité.
 - **1.0.0** : la parité. Toutes les fonctionnalités des six apps vivent dans BrambleRS ; aucune app séparée n'a de fonctionnalité propre.
 
-Les tags de la nouvelle ligne sont `bramblers-v0.1.0`, `bramblers-v0.2.0`, etc. : le dépôt renommé garde les anciens tags `v0.1.0` à `v0.4.0` de la tour, et un nouveau `v0.1.0` entrerait en collision. La version du paquet est `0.1.0`.
+Les tags de la nouvelle ligne sont `bramblers-v0.1.0`, `bramblers-v0.2.0`, etc. Les anciens tags `v0.1.0` à `v0.4.0` de la tour ont été supprimés le 2026-11-07 (D8). La version du paquet publiée est `0.1.0` ; le workspace est en 0.1.6.
 
 ## 9. Migration
 
-Le détail est dans `00_cadrage/2026-11-07_plan_restructuration.md`. Ordre : nom et BRIEF validés, monodépôt avec les six cores, registre interne (plus de PATH ni de sous-processus), app actuelle renommée BrambleRS, paquet unique, archivage GitHub puis suppression des anciens dépôts (D8), release 0.1.0. Chaque étape est livrable et testée.
+Le détail est dans `00_cadrage/2026-11-07_plan_restructuration.md`. Ordre : nom et BRIEF validés, monodépôt avec les six cores, registre interne (plus de PATH ni de sous-processus), app actuelle renommée BrambleRS, paquet unique, suppression des anciens dépôts (D8), release 0.1.0. Chaque étape est livrable et testée.
 
 ## 10. Hors périmètre (0.1.0)
 

@@ -78,6 +78,7 @@ One Cargo workspace, one version, one binary.
 - `crates/bramblers-cli`: the command line, linked into the binary.
 - `crates/bramblers`: the iced shell, package and binary `bramblers`.
 - `crates/modules/<id>/core`: the six modules, each a crate, with its embedded rules and host sheets.
+- `crates/modules/<id>/view`: the iced screen each module shows in its own tab.
 
 `packaging/build.sh` builds the `.deb`, `.rpm` and AppImage into `dist/`. The whole workspace
 is `#![forbid(unsafe_code)]`. The design brief, plan and journal are kept in French at the
