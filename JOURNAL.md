@@ -3,6 +3,15 @@
 
 ---
 
+## 2026-11-07, About du dépôt et profil .github à niveau
+
+- About de `blackberrylabs/BrambleRS` refait avec l'accord d'Alexandre (« go ») : description de 195 caractères (« Shows what AI coding agents do to a Linux machine, most serious first, on one screen: ... Read-only, one binary, six modules. Rust. »), page d'accueil vers la page des releases, topics curés à 18 (retirés `blackberrylabs`, `bramble-rs`, `bramblers` ; ajoutés `instruction-files`, `cost-tracking`, `session-history`). Preuve : `gh repo view blackberrylabs/BrambleRS --json description,homepageUrl,repositoryTopics`.
+- `.github` : `AGENTS.md` suit `BrambleRS/PLAN.md` et ne parle plus de `github_meta.sh` (supprimé) ; le profil et le README corrigent la promesse d'écriture (préférences des vues, sondes MCProster, script Cleanator) et mentionnent les six écrans. Commit `a0b4031`.
+- BrambleRS : le README liste les écritures réelles, commit `c121177`. Ce journal suit dans le même push.
+- Aperçu social : réglage manuel restant, `assets/social-preview.png` fait 1280 × 640.
+
+---
+
 ## 2026-11-07, docs vérifiées pour la passation
 
 - Reprise une par une des cinq demandes : AGENTS (état, dernier commit de code `0c46011`, six vues, `target/` supprimé), PLAN (note des six vues, 1.0 à constater), JOURNAL (entrée de passation), BRIEF (D8 remplace D4), `Logiciels/AGENTS.md` et `Logiciels/PASSATION.md`, README, CHANGELOG et profil `.github`. Tout était déjà en place et poussé (`07c3ada`, `51e3fcc`).
