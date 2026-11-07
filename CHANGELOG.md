@@ -1,62 +1,60 @@
 # Changelog
 
-## [0.4.0] — 2026-10-17
+## [0.1.0] - 2026-11-07
 
-- Sixth module: **Lastrun** 0.1.0 (`replay`) — what the AI agents did on the machine,
-  session by session — commands, files created, edited and deleted, packages installed,
-  refusals — read back from the transcripts the hosts already write, never their text.
-  Sheet `modules/lastrun.toml`, fixture report in the tests (from Lastrun's own fake home,
-  no real machine data), time limit 120 s.
-- The full package `blackberrylabs-full` ships Lastrun too (provides, conflicts and
-  replaces the `lastrun` package).
-- `docs/new-module.md`: Lastrun's severity mapping added to the examples.
+BrambleRS 0.1.0 is the first release of the single software. It keeps the screen of the old
+Blackberrylabs tower and puts the six tools inside it.
 
-## [0.3.1] — 2026-10-17
+### One software
 
-- Packaging only: in the full package the modules' menu entries are hidden (`NoDisplay`) —
-  one piece of software in the menu, the tower, which opens each module itself. The unit
-  packages and the tower alone keep their entries. Binaries unchanged.
+- The program is now BrambleRS, package and binary `bramblers`. The organization stays
+  Blackberrylabs.
+- The six tools are internal crates: Permitt, MCProster, Linstruct, Cleanator, Billfold and
+  Lastrun. They run in the same process as the screen. Nothing is looked up on `PATH`, and no
+  module is started as a subprocess.
+- One workspace, one version, one `.deb`, one `.rpm`, one AppImage. The package replaces
+  `blackberrylabs`, `blackberrylabs-full` and the six module packages. Their releases stay
+  downloadable.
 
-## [0.3.0] — 2026-10-17
+### The screen
 
-- Fifth module: **Billfold** 0.1.0 (`tally`) — the accounts the machine is wired to, the
-  keys it holds, the tokens each host burned. Sheet `modules/billfold.toml`, fixture report
-  in the tests (from Billfold's own fake home, no real machine data).
-- A click on a module keeps you in the tower, filtered on it, with its figures and findings
-  in the pane; its own app opens only from an explicit *Open in …* button (decision T6:
-  "one tool, not a launcher").
-- *Get it* opens the exact package for this machine — `.deb` on the Debian family, `.rpm`
-  on the RPM family, AppImage elsewhere, from `/etc/os-release` (the system's identity, read
-  once, not a host file) — of the latest version each sheet knows (`latest`), so the browser
-  downloads it; *All versions* keeps the releases page. The tower still never fetches
-  anything (R3).
-- **The full package**: `blackberrylabs-full` (`.deb`, `.rpm`, AppImage) ships the tower and
-  the five modules' released binaries, gathered from their own packages by
-  `packaging/bundle.sh` — one install for someone who wants several tools; the tower alone
-  stays for someone who adds modules one by one. The tower looks for modules next to its
-  own binary first (an AppImage's `usr/bin` is not on `PATH`), then on `PATH`.
-- README: the family sentence, the five modules, one module alone or several with the tower;
-  `packaging/github_meta.sh` sets the descriptions, topics and homepages of every repository
-  of the family from one file.
+- The tower screen is kept: four severity counts, one finding list across the six modules,
+  and the detail of the selected finding with its evidence and its actions.
+- The module cards show each module's figures and the age of its report.
+- Removed: the "Get it" button, the "Open in <Module>" button and the not-installed state.
+  The six modules are always there.
+- English by default, French available, light and dark.
 
-## [0.2.0] — 2026-10-17
+### Report and paths
 
-- Fourth module: **Linstruct** 0.1.0 (`lint`) — your AI instruction files (CLAUDE.md,
-  AGENTS.md, .cursor/rules…) as each agent will actually read them, and what it silently
-  drops. Sheet `modules/linstruct.toml`, fixture report in the tests, time limit 120 s.
-- `docs/new-module.md`: how a module joins the family, with the module template
-  (`blackberrylabs/template`); Linstruct's severity mapping added to the examples.
+- The internal report schema is `bramblers-report/1`. The old `bbl-report/1` reports are
+  ignored; the six modules rebuild theirs on the first run.
+- Settings live in `~/.config/bramblers/settings.json`, saved reports in
+  `~/.local/state/bramblers/<module>/report.json`. The settings of the old `blackberrylabs`
+  app are read once at the first launch.
 
-## [0.1.0] — 2026-10-17
+### Command line
 
-First release of the control tower, with three modules that speak the contract: Cleanator
-0.2.0, MCProster 0.2.1, Permitt 0.2.0.
+- One binary: `bramblers` with no argument opens the screen.
+- `bramblers report --json` prints the global dashboard, `bramblers report <module> --json`
+  prints one module's report. `list`, `refresh`, `--min-severity` and `--module` are kept.
 
-- Desktop app `bbl-app` (iced, `bbl-ui`): the sentence, the four severities, the module
-  cards with the modules' own figures, the list and the detail, open-in-module; saved
-  reports shown at once and refreshed in the background; English and French; light and
-  dark. Packaging: `.deb`, `.rpm`, AppImage.
-- Core and command line: module sheets (`modules/*.toml`), discovery on `PATH`, launch with
-  a time limit, saved reports under `~/.local/state/blackberrylabs/`, one list of findings
-  across modules sorted by severity; `bbl`, `bbl refresh`, `bbl modules`, `--json`,
-  `--min-severity`, `--module`.
+### Not in 0.1.0
+
+- The detailed screens of the six old apps (their tables, filters and dedicated views) are
+  not in this release. They come back in 0.2.0 and later, one view at a time, until 1.0 has
+  every feature of the six apps inside BrambleRS.
+- No website, no telemetry, no network request.
+
+### Promises
+
+- Read-only: nothing on the machine is modified. Every corrective action is displayed, never
+  executed.
+- The only writes are the settings file and the saved reports.
+- `#![forbid(unsafe_code)]` across the workspace.
+
+## Older releases
+
+The releases before 0.1.0 were the Blackberrylabs tower and the six separate tools. Their
+notes are on the archived repositories under
+[github.com/blackberrylabs](https://github.com/blackberrylabs).

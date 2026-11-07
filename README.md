@@ -1,84 +1,89 @@
-# Blackberrylabs
+# BrambleRS
 
-**Read-only tools that show what AI coding agents do to your machine — and one screen that
-gathers them.**
+BrambleRS shows what AI coding agents do to a Linux machine, most serious first, on one
+screen.
 
-![Blackberrylabs — the findings of every module in one list, most serious first](docs/screenshots/light.png)
+It is one program with six modules inside. It reads the configuration, instruction files,
+transcripts and caches the agents already leave, merges their findings into one list, and
+writes only its own settings and saved reports.
 
-Blackberrylabs is a small family of desktop tools for developers and vibe coders who run AI
-on Linux. Each tool answers one question about your machine and never acts in your place.
-**Want one of them? Install it, it is complete on its own. Want several? Install the tower,
-then pick the modules you need: it works with any subset and shows the others as available.**
+## What it answers
 
-| Module | Verb | What it answers |
-|---|---|---|
-| [Permitt](https://github.com/blackberrylabs/permitt) | inspect | What each AI assistant may do without asking, and which setting says so |
-| [MCProster](https://github.com/blackberrylabs/mcproster) | inventory | Every MCP server declared on the machine, once, with what is wrong |
-| [Cleanator](https://github.com/blackberrylabs/cleanator) | clean | What AI tooling left on the disk, and what could go |
-| [Linstruct](https://github.com/blackberrylabs/linstruct) | lint | Your AI instruction files (CLAUDE.md, AGENTS.md, .cursor/rules…) as each agent will actually read them, and what it silently drops |
-| [Billfold](https://github.com/blackberrylabs/billfold) | tally | The accounts the machine is wired to, the keys it holds, the tokens each host burned |
-| [Lastrun](https://github.com/blackberrylabs/lastrun) | replay | What your AI agents actually did — commands, files deleted, packages installed — session by session, from their own transcripts |
+| Module | Question |
+|---|---|
+| Permitt | What each AI assistant may do without asking, and which setting says so |
+| MCProster | Which MCP servers are declared, once per server, with duplicates, clear secrets and dead commands |
+| Linstruct | Which instruction files each host would load, in which order, and what it would drop |
+| Cleanator | What AI tooling left on the disk, and what could go |
+| Billfold | Which accounts and keys this machine holds, and how many tokens each host burned |
+| Lastrun | What the agents actually ran, created, edited or deleted, session by session |
 
-**Get it**: the [full package](https://github.com/blackberrylabs/blackberrylabs/releases)
-(`blackberrylabs-full`, the tower and every module, one install) or the tower alone, which
-shows the modules you do not have and opens the right package of each for your system.
-`.deb`, `.rpm` and AppImage, x86_64.
+The four severities are act now, review, good to know and information. Each finding says
+where it comes from and what you could do.
 
-The tower computes nothing. It launches the installed modules, reads their reports
-([`bbl-report/1`](https://github.com/blackberrylabs/bbl-report)), merges them into one list
-of findings sorted by severity — act now, review, good to know, information — and opens the
-module at the right place. A module that is not installed is shown with where to get it.
+## Read-only
 
-## What is wrong on my machine, AI side?
+BrambleRS never edits an agent's configuration, never deletes a file, and makes no network
+request. Every action in the interface is yours to take.
 
-`bbl-app` opens on one screen: a sentence (*Your machine, AI side: 6 things to act on now,
-32 to review*), the four severities in words, the modules with their own figures and the
-age of their report, the findings of every module in one list, and for the selected one
-where it comes from, what you could do, and a button that opens the module right there.
-On start it shows the saved reports, runs every installed module again in the background
-and replaces each report when it is ready. A module that is not installed is shown with
-what it does and where to get it. English by default, French available; light and dark.
+The only files it writes are `~/.config/bramblers/settings.json` for the language and theme,
+and `~/.local/state/bramblers/<module>/report.json` for the saved reports.
 
-Preferences (language, theme) live in `~/.config/blackberrylabs/settings.json`. For
-screenshots: `BBL_SELECT=module:finding-id` preselects a finding, `BBL_NO_REFRESH=1` skips
-the start-up refresh.
+## Install
 
-## Command line
+The releases page has the `.deb`, `.rpm` and AppImage for x86_64 Linux:
+[github.com/blackberrylabs/BrambleRS/releases](https://github.com/blackberrylabs/BrambleRS/releases).
+The package replaces the old `blackberrylabs` package and the six separate module packages;
+their releases stay downloadable.
+
+From source:
 
 ```sh
-bbl                    # the findings from the saved reports, most serious first
-bbl refresh            # run the installed modules, save their reports, show the list
-bbl refresh permitt    # one module
-bbl modules            # the family: installed or not, age of each report
-bbl --min-severity 2   # act now and review only
-bbl --module permitt   # one module's findings
-bbl --json             # for scripts
+git clone https://github.com/blackberrylabs/BrambleRS.git
+cd BrambleRS
+cargo build --release -p bramblers --bin bramblers
+./target/release/bramblers
 ```
 
-`bbl` never launches anything by itself; `bbl refresh` does, and the only command it ever
-runs is each module's own `report`. Reports are saved by the tower under
-`~/.local/state/blackberrylabs/<module>/report.json` (`$XDG_STATE_HOME` honoured,
-`$BBL_STATE_DIR` overrides); nothing else is written.
+The build needs a Rust toolchain and the system libraries iced uses (X11 or Wayland, with
+Vulkan recommended).
 
-## Adding a module
+## Use
 
-A module is a binary that answers `<module> report` with a `bbl-report/1` document, maps
-its findings onto the four severities, accepts `--select` in its app — plus one declarative
-sheet in `modules/<id>.toml`. The tower holds no code specific to a module. Start from the
-[module template](https://github.com/blackberrylabs/template); the whole procedure is in
-[`docs/new-module.md`](docs/new-module.md).
+With no argument, `bramblers` opens the screen. It shows the saved reports at once, runs the
+six modules in the background, and replaces each report when it is ready.
 
-## How it is built
+```
+bramblers report --json              # the global report, all six modules
+bramblers report permitt --json      # one module's report
+bramblers report                     # run the six modules and show the list
+bramblers list                       # the saved reports, nothing is run
+bramblers refresh permitt            # rerun one module and show the list
+bramblers --min-severity 2           # act now and review only
+bramblers --module permitt           # one module's findings
+```
 
-A Rust workspace: `crates/core` (module sheets, discovery on `PATH`, launch with a time
-limit, saved reports, assembly and sorting), `crates/cli` (`bbl`), `crates/app` (`bbl-app`,
-iced, on [`bbl-ui`](https://github.com/blackberrylabs/bbl-ui)). `packaging/build.sh` builds
-the `.deb`, `.rpm` and AppImage into `dist/`. `#![forbid(unsafe_code)]`.
-The design brief, plan and journal are kept in French at the root; code, comments and
-documentation are in English.
+`bramblers report --json` prints the assembled dashboard; `bramblers report <module> --json`
+prints that module's `bramblers-report/1` document. Both are meant for scripts.
+
+## Build
+
+One Cargo workspace, one version, one binary.
+
+- `crates/bramblers-core`: the module registry, the in-process runner, the saved reports, the sorting.
+- `crates/bramblers-report`: the report types and the conformance check.
+- `crates/bramblers-hostrules`: the host sheets and the readers that never write.
+- `crates/bramblers-ui`: the palette and the iced building blocks.
+- `crates/bramblers-cli`: the command line, linked into the binary.
+- `crates/app`: the iced screen, package and binary `bramblers`.
+- `crates/modules/<id>/core`: the six modules, each a crate, with its embedded rules and host sheets.
+
+`packaging/build.sh` builds the `.deb`, `.rpm` and AppImage into `dist/`. The whole workspace
+is `#![forbid(unsafe_code)]`. The design brief, plan and journal are kept in French at the
+root; code, comments and documentation are in English.
 
 By [Alexandre Do](https://github.com/blackberrylabs).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
