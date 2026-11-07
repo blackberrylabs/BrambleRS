@@ -34,25 +34,62 @@ fn key_re() -> &'static Regex {
     })
 }
 
+/// Credential shapes with a known prefix. Kept in one place: the whole-value check and the
+/// search inside free text must agree.
+const SHAPES: &str = concat!(
+    r"sk-[A-Za-z0-9_-]{16,}",              // OpenAI / Anthropic style
+    r"|sk_(?:live|test)_[A-Za-z0-9]{16,}", // Stripe
+    r"|rk_(?:live|test)_[A-Za-z0-9]{16,}", // Stripe restricted
+    r"|gh[pousr]_[A-Za-z0-9]{20,}",        // GitHub
+    r"|github_pat_[A-Za-z0-9_]{20,}",
+    r"|xox[abp]-[A-Za-z0-9-]{10,}",                 // Slack
+    r"|xapp-[0-9]-[A-Za-z0-9-]{10,}",               // Slack app-level
+    r"|AKIA[0-9A-Z]{16}",                           // AWS access key id
+    r"|AIza[0-9A-Za-z_-]{30,}",                     // Google API key
+    r"|ntn_[A-Za-z0-9]{20,}",                       // Notion
+    r"|glpat-[A-Za-z0-9_-]{20,}",                   // GitLab
+    r"|shpat_[A-Za-z0-9]{32,}",                     // Shopify
+    r"|SG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}", // SendGrid
+    r"|SK[0-9a-fA-F]{32}",                          // Twilio
+    r"|eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}", // JWT
+);
+
+/// A pure hexadecimal blob is a credential when it is the whole value, but not when it
+/// appears inside a command: commit hashes and object ids are 40 hex characters.
+const HEX_BLOB: &str = r"[0-9a-fA-F]{32,}";
+
 fn shape_re() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| Regex::new(&format!("^({SHAPES}|{HEX_BLOB})$")).unwrap())
+}
+
+fn embedded_shape_re() -> &'static Regex {
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| Regex::new(SHAPES).unwrap())
+}
+
+/// `KEY=value`, `KEY: value`, with optional quotes around the key or the value.
+fn assignment_re() -> &'static Regex {
+    static RE: OnceLock<Regex> = OnceLock::new();
     RE.get_or_init(|| {
-        Regex::new(concat!(
-            r"^(",
-            r"sk-[A-Za-z0-9_-]{16,}",       // OpenAI / Anthropic style
-            r"|gh[pousr]_[A-Za-z0-9]{20,}", // GitHub
-            r"|github_pat_[A-Za-z0-9_]{20,}",
-            r"|xox[abp]-[A-Za-z0-9-]{10,}", // Slack
-            r"|AKIA[0-9A-Z]{16}",           // AWS access key id
-            r"|AIza[0-9A-Za-z_-]{30,}",     // Google API key
-            r"|ntn_[A-Za-z0-9]{20,}",       // Notion
-            r"|glpat-[A-Za-z0-9_-]{20,}",   // GitLab
-            r"|eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}", // JWT
-            r"|[0-9a-fA-F]{32,}",           // hex blob
-            r")$"
-        ))
+        Regex::new(
+            r#"(?i)("?[A-Za-z_][A-Za-z0-9_.-]{0,60}"?)(\s*[=:]\s*)("[^"\n]*"|'[^'\n]*'|[^\s&;|]+)"#,
+        )
         .unwrap()
     })
+}
+
+/// Names that are a credential even when the value is only digits. `API` and `AUTH` alone
+/// are not enough: `API_PORT=8080` is a setting, `PASSWORD=12345678` is a secret.
+fn key_is_strongly_secret(key: &str) -> bool {
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| {
+        Regex::new(
+            r"(?i)(passw|passphrase|secret|token|credential|bearer|private[_-]?key|access[_-]?key|api[_-]?key|apikey)",
+        )
+        .unwrap()
+    })
+    .is_match(key)
 }
 
 fn reference_re() -> &'static Regex {
@@ -115,6 +152,22 @@ pub fn mask(value: &str) -> String {
     }
 }
 
+/// A value that stays readable even under a secret-looking name: a URL, a path, a
+/// boolean, or a number under a name that is not strongly secret (`API_PORT=8080`).
+fn may_stay_plain(key: &str, value: &str) -> bool {
+    let v = value.trim().trim_matches(|c| c == '"' || c == '\'');
+    if v.starts_with("http://")
+        || v.starts_with("https://")
+        || v.starts_with('/')
+        || v.starts_with("~/")
+        || v.eq_ignore_ascii_case("true")
+        || v.eq_ignore_ascii_case("false")
+    {
+        return true;
+    }
+    v.chars().all(|c| c.is_ascii_digit()) && !key_is_strongly_secret(key)
+}
+
 /// Classify a key/value pair and produce what may be shown.
 pub fn classify(key: &str, value: &str) -> Masked {
     if is_reference(value) || (contains_reference(value) && !value_looks_secret(value)) {
@@ -124,8 +177,9 @@ pub fn classify(key: &str, value: &str) -> Masked {
         };
     }
     if key_looks_secret(key) && !value.is_empty() || value_looks_secret(value) {
-        // A URL-looking value under a "secret" key name is not a secret (APIPRICEINDEX_URL).
-        if key_looks_secret(key) && !value_looks_secret(value) && looks_like_url_or_path(value) {
+        // A URL, a path or a flag under a secret-looking name is not a secret
+        // (APIPRICEINDEX_URL). A numeric password under PASSWORD is one.
+        if key_looks_secret(key) && !value_looks_secret(value) && may_stay_plain(key, value) {
             return Masked {
                 shown: value.to_string(),
                 kind: ValueKind::Plain,
@@ -142,48 +196,93 @@ pub fn classify(key: &str, value: &str) -> Masked {
     }
 }
 
-fn looks_like_url_or_path(v: &str) -> bool {
-    v.starts_with("http://")
-        || v.starts_with("https://")
-        || v.starts_with('/')
-        || v.starts_with("~/")
-        || v.eq_ignore_ascii_case("true")
-        || v.eq_ignore_ascii_case("false")
-        || v.chars().all(|c| c.is_ascii_digit())
+/// The quote around an assignment value, if any.
+fn quote_parts(value: &str) -> (&str, &str) {
+    if value.len() >= 2
+        && ((value.starts_with('"') && value.ends_with('"'))
+            || (value.starts_with('\'') && value.ends_with('\'')))
+    {
+        (&value[..1], &value[1..value.len() - 1])
+    } else {
+        ("", value)
+    }
 }
 
-/// A free-text value (argument, URL): masked only if a credential shape appears inside it,
-/// such as `?token=…` or `Bearer …`.
+/// A free-text value (argument, URL, shell line): mask every credential shape, every
+/// secret-looking assignment, and every secret query parameter, wherever they sit.
 pub fn scrub_text(text: &str) -> Masked {
-    // query parameter with a secret-looking name
-    if let Some(q) = text.find('?') {
-        let (base, query) = text.split_at(q);
-        let mut changed = false;
-        let parts: Vec<String> = query[1..]
+    let mut changed = false;
+
+    // Known shapes first: `sk-…`, `ghp_…`, a JWT, a Stripe or Twilio key, anywhere.
+    let mut shown = embedded_shape_re()
+        .replace_all(text, |c: &regex::Captures| {
+            if is_reference(&c[0]) {
+                return c[0].to_string();
+            }
+            changed = true;
+            mask(&c[0])
+        })
+        .into_owned();
+
+    // `KEY=value` and `KEY: value`, with optional quotes.
+    shown = assignment_re()
+        .replace_all(&shown, |c: &regex::Captures| {
+            let key = &c[1];
+            let value = &c[3];
+            if value.is_empty()
+                || value.contains('…')
+                || is_reference(value)
+                || !key_looks_secret(key)
+                || may_stay_plain(key, value)
+            {
+                return c[0].to_string();
+            }
+            let (quote, inner) = quote_parts(value);
+            changed = true;
+            format!("{}{}{quote}{}{quote}", &c[1], &c[2], mask(inner))
+        })
+        .into_owned();
+
+    // Query parameters with a secret-looking name.
+    if let Some(q) = shown.find('?') {
+        let base = shown[..q].to_string();
+        let query = shown[q + 1..].to_string();
+        let mut qchanged = false;
+        let parts: Vec<String> = query
             .split('&')
             .map(|kv| match kv.split_once('=') {
-                Some((k, v)) if key_looks_secret(k) && !v.is_empty() && !is_reference(v) => {
-                    changed = true;
+                Some((k, v))
+                    if key_looks_secret(k)
+                        && !v.is_empty()
+                        && !v.contains('…')
+                        && !is_reference(v) =>
+                {
+                    qchanged = true;
                     format!("{k}={}", mask(v))
                 }
                 _ => kv.to_string(),
             })
             .collect();
-        if changed {
-            return Masked {
-                shown: format!("{base}?{}", parts.join("&")),
-                kind: ValueKind::Secret,
-            };
+        if qchanged {
+            changed = true;
+            shown = format!("{base}?{}", parts.join("&"));
         }
     }
-    if value_looks_secret(text) && !is_reference(text) {
+
+    if changed {
         return Masked {
-            shown: mask(text),
+            shown,
+            kind: ValueKind::Secret,
+        };
+    }
+    if value_looks_secret(&shown) && !is_reference(&shown) {
+        return Masked {
+            shown: mask(&shown),
             kind: ValueKind::Secret,
         };
     }
     Masked {
-        shown: text.to_string(),
+        shown,
         kind: ValueKind::Plain,
     }
 }
@@ -240,6 +339,46 @@ mod tests {
         );
         assert_eq!(classify("AUTH_ENABLED", "true").kind, ValueKind::Plain);
         assert_eq!(classify("NODE_ENV", "production").kind, ValueKind::Plain);
+    }
+
+    #[test]
+    fn numeric_passwords_are_masked_but_ports_are_not() {
+        let m = classify("PASSWORD", "12345678");
+        assert_eq!(m.kind, ValueKind::Secret);
+        assert_eq!(m.shown, "••••••••");
+        let m = classify("DB_PASSWORD", "1234");
+        assert_eq!(m.kind, ValueKind::Secret);
+        assert_eq!(classify("API_PORT", "8080").kind, ValueKind::Plain);
+        assert_eq!(classify("AUTH_ENABLED", "true").kind, ValueKind::Plain);
+    }
+
+    #[test]
+    fn assignments_in_a_shell_line_are_masked() {
+        let m = scrub_text("export ANTHROPIC_API_KEY=sk-ant-api03-abcdefghijklmnopqrstuvwxyz");
+        assert_eq!(m.kind, ValueKind::Secret);
+        assert!(!m.shown.contains("abcdefghijklmnop"));
+        assert!(m.shown.contains("ANTHROPIC_API_KEY=sk-ant…"));
+
+        let token = "AbCdEfGhIjKlMnOpQrStUvWxYz012345";
+        let m = scrub_text(&format!("TOKEN={token}"));
+        assert_eq!(m.kind, ValueKind::Secret);
+        assert!(!m.shown.contains(token));
+        assert!(m.shown.starts_with("TOKEN=AbCdEf…"));
+    }
+
+    #[test]
+    fn provider_shapes_are_masked_inside_text() {
+        // Assembled at run time: a test fixture must never have the exact shape of a real
+        // key, or GitHub's push protection blocks the commit (seen on 2026-11-07).
+        let stripe = ["sk_", "live_", "51AbCdEfGhIjKlMnOpQrStUv"].concat();
+        let twilio = ["SK", "0123456789abcdef", "0123456789abcdef"].concat();
+        let sendgrid = ["SG", ".abcdefghijklmnop", ".qrstuvwxyz012345"].concat();
+        let shopify = ["shpat_", "0123456789abcdef", "0123456789abcdef"].concat();
+        for value in [stripe, twilio, sendgrid, shopify] {
+            let m = scrub_text(&format!("run with {value} now"));
+            assert_eq!(m.kind, ValueKind::Secret, "{value}");
+            assert!(!m.shown.contains(&value), "{value} came out");
+        }
     }
 
     #[test]
