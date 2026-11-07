@@ -52,6 +52,18 @@ impl<X: Default + Serialize + DeserializeOwned> Prefs<X> {
         p
     }
 
+    /// Like [`Prefs::load`], but reads `old_app`'s settings when `app` has none yet. The
+    /// old file is only read; the first save goes to `app`'s path. Used by BrambleRS to
+    /// pick up the preferences of the old `blackberrylabs` app once.
+    pub fn load_with_fallback(app: &str, old_app: &str) -> Prefs<X> {
+        if Self::path_for(app).is_some_and(|p| p.exists()) {
+            return Self::load(app);
+        }
+        let mut p = Self::load(old_app);
+        p.app = app.to_string();
+        p
+    }
+
     pub fn app(&self) -> &str {
         &self.app
     }
@@ -109,6 +121,9 @@ impl<X: Default + Serialize + DeserializeOwned> Prefs<X> {
 mod tests {
     use super::*;
 
+    /// Tests that change the process environment take this lock in turn.
+    static ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
     #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
     struct Extra {
         #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -125,6 +140,7 @@ mod tests {
 
     #[test]
     fn an_existing_file_of_an_app_is_read_and_written_back_identically() {
+        let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let tmp = tempfile::tempdir().unwrap();
         std::env::set_var("XDG_CONFIG_HOME", tmp.path());
         let dir = tmp.path().join("mcproster");
@@ -151,5 +167,29 @@ mod tests {
         assert!(p.initial_dark());
         std::env::remove_var("OTHERAPP_LANG");
         std::env::remove_var("OTHERAPP_THEME");
+    }
+
+    #[test]
+    fn the_old_app_settings_are_read_once_into_the_new_app() {
+        let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        let tmp = tempfile::tempdir().unwrap();
+        std::env::set_var("XDG_CONFIG_HOME", tmp.path());
+        let old = tmp.path().join("blackberrylabs");
+        std::fs::create_dir_all(&old).unwrap();
+        std::fs::write(
+            old.join("settings.json"),
+            "{\n  \"lang\": \"fr\",\n  \"theme\": \"dark\"\n}\n",
+        )
+        .unwrap();
+        let p: Prefs<()> = Prefs::load_with_fallback("bramblers", "blackberrylabs");
+        assert_eq!(p.app(), "bramblers");
+        assert_eq!(p.initial_lang(), Lang::Fr);
+        assert!(p.initial_dark());
+        p.save();
+        assert!(tmp.path().join("bramblers/settings.json").is_file());
+        // A second load reads the new file, not the old one.
+        let p: Prefs<()> = Prefs::load_with_fallback("bramblers", "blackberrylabs");
+        assert_eq!(p.initial_lang(), Lang::Fr);
+        std::env::remove_var("XDG_CONFIG_HOME");
     }
 }

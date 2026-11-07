@@ -84,7 +84,7 @@ struct App {
 
 impl App {
     fn new() -> (App, Task<Message>) {
-        let prefs: Prefs<()> = Prefs::load("bramblers");
+        let prefs: Prefs<()> = Prefs::load_with_fallback("bramblers", "blackberrylabs");
         let lang = prefs.initial_lang();
         let dark = prefs.initial_dark();
         let strings = Strings::load(EN, FR, lang);

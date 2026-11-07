@@ -70,6 +70,11 @@ impl Cache {
             .ok()
             .and_then(|t| SystemTime::now().duration_since(t).ok())
             .unwrap_or_default();
+        // The old tower wrote `bbl-report/1`; those reports predate this schema and carry
+        // nothing BrambleRS can use. They are ignored, not shown as a permanent failure.
+        if bramblers_report::peek_schema(&json).is_some_and(|s| s.starts_with("bbl-report/")) {
+            return None;
+        }
         match bramblers_report::conformance::check(&json) {
             Ok(report) => Some(Ok(Saved {
                 report,
@@ -146,5 +151,19 @@ mod tests {
             c.path("permitt"),
             PathBuf::from("/tmp/x/permitt/report.json")
         );
+    }
+
+    #[test]
+    fn a_report_of_the_old_schema_is_ignored() {
+        let tmp = tempfile::tempdir().unwrap();
+        let c = Cache::at(tmp.path());
+        let path = c.path("permitt");
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(
+            &path,
+            r#"{ "schema": "bbl-report/1", "module": { "id": "permitt" } }"#,
+        )
+        .unwrap();
+        assert!(c.read("permitt").is_none());
     }
 }

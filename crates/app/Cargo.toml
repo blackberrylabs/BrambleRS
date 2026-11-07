@@ -1,6 +1,6 @@
 [package]
 name = "bramblers"
-description = "BrambleRS — everything your AI agents do to your machine, on one screen. Read-only, like the tools behind it."
+description = "BrambleRS: everything your AI agents do to your machine, on one screen. Read-only, like the tools behind it."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
