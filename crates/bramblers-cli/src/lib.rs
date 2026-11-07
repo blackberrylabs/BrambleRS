@@ -50,6 +50,15 @@ macro_rules! out {
     }};
 }
 
+/// Replace control characters in a human line. A finding's title, detail or command comes
+/// from a file on the machine and must not drive the terminal (OSC 52, title changes,
+/// carriage returns). JSON output is untouched: `serde_json` escapes it already.
+fn safe(text: &str) -> String {
+    text.chars()
+        .map(|c| if c.is_control() { ' ' } else { c })
+        .collect()
+}
+
 /// Run the command line. `args` includes the program name (as `std::env::args` gives it).
 pub fn run<I, T>(args: I) -> Result<()>
 where
@@ -123,14 +132,14 @@ fn run_modules(dash: &mut Dashboard, cache: &Cache, ids: &[String]) {
             .module(id)
             .map(|m| m.provider.name)
             .unwrap_or(id.as_str());
-        eprint!("{name} … ");
+        eprint!("{} … ", safe(name));
         match dash.refresh(id, cache) {
             Ok(run) => eprintln!(
                 "{} finding(s) in {:.1} s",
                 run.report.findings.len(),
                 run.elapsed.as_secs_f64()
             ),
-            Err(e) => eprintln!("{e}"),
+            Err(e) => eprintln!("{}", safe(&e.to_string())),
         }
     }
 }
@@ -167,7 +176,7 @@ fn list(dash: &Dashboard, min: Severity, only: Option<&str>, json: bool) {
         counts[3].1
     );
     for m in &dash.modules {
-        out!("  {:<10} {}", m.provider.name, state_line(m));
+        out!("  {:<10} {}", m.provider.name, safe(&state_line(m)));
     }
     out!();
     if shown.is_empty() {
@@ -187,20 +196,28 @@ fn list(dash: &Dashboard, min: Severity, only: Option<&str>, json: bool) {
             "{} {:<name_w$}  {}",
             sev_tag(f.severity),
             l.module_name,
-            f.title,
+            safe(&f.title),
             name_w = name_w
         );
         if !f.detail.is_empty() {
-            out!("{:>3} {:<name_w$}  {}", "", "", f.detail, name_w = name_w);
+            out!(
+                "{:>3} {:<name_w$}  {}",
+                "",
+                "",
+                safe(&f.detail),
+                name_w = name_w
+            );
         }
         for a in &f.actions {
             let line = match (&a.kind, &a.target) {
-                (ActionKind::Hint, _) => a.label.clone(),
-                (ActionKind::Command, Some(t)) => format!("{}: `{t}`", a.label),
-                (ActionKind::OpenFile, Some(t)) | (ActionKind::OpenUrl, Some(t)) => {
-                    format!("{}: {t}", a.label)
+                (ActionKind::Hint, _) => safe(&a.label),
+                (ActionKind::Command, Some(t)) => {
+                    format!("{}: `{}`", safe(&a.label), safe(t))
                 }
-                (_, None) => a.label.clone(),
+                (ActionKind::OpenFile, Some(t)) | (ActionKind::OpenUrl, Some(t)) => {
+                    format!("{}: {}", safe(&a.label), safe(t))
+                }
+                (_, None) => safe(&a.label),
             };
             out!("{:>3} {:<name_w$}  → {line}", "", "", name_w = name_w);
         }
@@ -224,6 +241,16 @@ fn sev_tag(s: Severity) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn control_characters_are_removed_from_human_lines() {
+        let line = "x\u{1b}]52;c;ZXZpbA==\u{7}y\r\nz";
+        let cleaned = safe(line);
+        assert!(!cleaned.contains('\u{1b}'), "{cleaned:?}");
+        assert!(!cleaned.contains('\r'));
+        assert!(!cleaned.contains('\n'));
+        assert!(cleaned.starts_with("x ]52"));
+    }
 
     #[test]
     fn no_subcommand_is_the_saved_list() {
