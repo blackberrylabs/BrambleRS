@@ -3,6 +3,15 @@
 
 ---
 
+## 2026-11-07, audit de sécurité : F5 et F6 corrigés
+
+- F6, CLI : `safe` remplace les caractères de contrôle par des espaces dans la liste humaine et dans les erreurs de lancement ; la sortie JSON n'est pas touchée, `serde_json` l'échappe déjà. Test avec une séquence OSC 52 dans un titre. Commit `6decda2`.
+- F5, sonde MCProster : environnement réduit (`env_clear`, puis `PATH`, `HOME`, `TMPDIR`, `LANG`, `LC_*`, `USER`, `LOGNAME`, `XDG_RUNTIME_DIR` et les variables déclarées), groupe de processus (`process_group(0)` puis `kill -KILL -- -pid`), stdout plafonné à 32 Mio, stderr jeté. La confirmation affiche un avertissement en anglais et en français. Commit `b646c9f`.
+- Preuves : `cargo test --workspace` passe 241 tests, `cargo clippy --workspace --all-targets` et `cargo fmt --check` propres. Les deux commits restent locaux.
+- Restent les constats F7 à F15 du rapport.
+
+---
+
 ## 2026-11-07, audit de sécurité : F3 et F4 corrigés
 
 - F3, masquage dans `bramblers-hostrules` : `PASSWORD=12345678` est masqué, `API_PORT=8080` reste lisible. `scrub_text` masque désormais les formes connues partout dans un texte, les affectations `KEY=value` et `KEY: value`, et les paramètres d'URL. Formes ajoutées : Stripe `sk_live_` et `rk_live_`, Slack `xapp-`, Shopify `shpat_`, SendGrid `SG.`, Twilio `SK…`. Commit `36bc3ed`.
