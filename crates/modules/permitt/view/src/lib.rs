@@ -420,34 +420,47 @@ impl View {
             .text_size(12)
             .padding([4, 8])
             .width(Length::Fixed(200.0));
-        row![
-            text_input(&s.t("filter.placeholder", &[]), &self.filter)
-                .on_input(Message::Filter)
-                .size(13)
-                .width(Length::Fill),
-            scope,
-            checkbox(s.t("filter.installed_only", &[]), self.installed_only)
-                .on_toggle(Message::ToggleInstalledOnly)
-                .size(16)
-                .text_size(12),
-            checkbox(s.t("filter.findings_only", &[]), self.findings_only)
-                .on_toggle(Message::ToggleFindingsOnly)
-                .size(16)
-                .text_size(12),
-            checkbox(s.t("filter.read_shell", &[]), self.read_shell)
-                .on_toggle(Message::ToggleReadShell)
-                .size(16)
-                .text_size(12),
-            if self.loading {
-                button(text(s.t("header.scanning", &[])).size(12)).style(button::secondary)
-            } else {
-                button(text(s.t("header.rescan", &[])).size(12))
-                    .style(button::secondary)
-                    .on_press(Message::Rescan)
-            },
+        let scan: Element<'_, Message> = if self.loading {
+            button(text(s.t("header.scanning", &[])).size(12))
+                .style(button::secondary)
+                .into()
+        } else {
+            button(text(s.t("header.rescan", &[])).size(12))
+                .style(button::secondary)
+                .on_press(Message::Rescan)
+                .into()
+        };
+        // The shell leaves less width than the old window: the search keeps a row of its own.
+        column![
+            row![
+                text_input(&s.t("filter.placeholder", &[]), &self.filter)
+                    .on_input(Message::Filter)
+                    .size(13)
+                    .width(Length::Fill),
+                scan,
+            ]
+            .spacing(10)
+            .align_y(Alignment::Center),
+            row![
+                scope,
+                checkbox(s.t("filter.installed_only", &[]), self.installed_only)
+                    .on_toggle(Message::ToggleInstalledOnly)
+                    .size(16)
+                    .text_size(12),
+                checkbox(s.t("filter.findings_only", &[]), self.findings_only)
+                    .on_toggle(Message::ToggleFindingsOnly)
+                    .size(16)
+                    .text_size(12),
+                checkbox(s.t("filter.read_shell", &[]), self.read_shell)
+                    .on_toggle(Message::ToggleReadShell)
+                    .size(16)
+                    .text_size(12),
+            ]
+            .spacing(10)
+            .align_y(Alignment::Center),
         ]
-        .spacing(10)
-        .align_y(Alignment::Center)
+        .spacing(8)
+        .width(Length::Fill)
         .into()
     }
 
