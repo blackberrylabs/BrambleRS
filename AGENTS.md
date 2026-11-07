@@ -1,28 +1,28 @@
 # AGENTS.md (BrambleRS, ex-Blackberrylabs)
 <!-- Règles de travail pour tout agent IA (OpenCode, Claude Code, autre). Source unique : CLAUDE.md n'est qu'un pointeur. Français : pilotage. Anglais : code, docs, commits, README. -->
 
-BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à la machine, le plus grave en premier. Un dépôt, une app, un paquet, six modules internes. Blackberrylabs reste le nom de l'organisation. Binaire `bramblers`. La restructuration est en cours : `BRIEF.md` rev. 2 et `PLAN.md` étape 8 font foi. Les faits de série du bloc commun (tableau des dépôts, dépendances `bbl-*`) sont antérieurs à la restructuration ; ils restent à mettre à jour partout ou nulle part.
+BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à la machine, le plus grave en premier. Un dépôt, une app, un paquet, six modules internes. Blackberrylabs reste le nom de l'organisation. Binaire `bramblers`. La restructuration est faite : `BRIEF.md` rev. 2 et `PLAN.md` étape 8 font foi, la 0.1.0 est publiée.
 
 ## Au démarrage de chaque session
 
 1. Lis `PLAN.md` (étape 8), `BRIEF.md` et les cinq premières entrées de `JOURNAL.md`.
-2. `git status -sb` et `git log --oneline -8` : la migration se fait sur la branche locale `bramble-rs`, pas sur `main`.
+2. `git status -sb` et `git log --oneline -8` : le travail se fait sur `main`. La branche `bramble-rs` a porté la migration et a été fusionnée.
 3. Le plan détaillé est dans `00_cadrage/2026-11-07_plan_restructuration.md`, hors git.
 
 ## État au 2026-11-07
 
-- `main` : décision validée (BRIEF rev. 2, PLAN étape 8). Un commit, pas poussé.
-- Branche `bramble-rs` : trois fondations importées et renommées `bramblers-*` ; six cores importés sous `crates/modules/<id>/core` avec leurs données ; registre interne et `runner` en processus ; schéma `bramblers-report/1` ; un seul binaire `bramblers` (app sans argument, CLI avec) ; paquet `bramblers` 0.1.0 construit et `.deb` installé. `cargo test --workspace` passe (207 tests), fmt et clippy propres. Derniers commits : `b133f27`, `7b3c115`, `57aedb2`, `a49babc`, `8d2c7e1`.
-- Reste : GitHub (renommer le dépôt, archiver les dix anciens, release 0.1.0), dossier local `BrambleRS`.
-- La 0.1.0 garde l'écran actuel. Les six apps détaillées ne sont pas dans la 0.1.0 ; leurs fonctionnalités reviennent en 0.x, une vue par une. La 1.0 est la parité.
-- L'ancien code de l'ancienne tour et les fichiers importés redondants ont été supprimés le 2026-11-07. `packaging/github_meta.sh` reste à retirer ou réécrire avec l'étape GitHub.
+- `main` : restructuration fusionnée et poussée. Dernier commit de code `a5ff493`, tag `bramblers-v0.1.0`, release publiée avec `.deb`, `.rpm`, AppImage et `SHA256SUMS`.
+- Le dépôt GitHub s'appelle `blackberrylabs/BrambleRS` ; le dossier local est `Logiciels/BrambleRS`. Les dix anciens dépôts (trois fondations, six modules, template) portent un bandeau et sont archivés, pas supprimés. Le profil de l'organisation présente BrambleRS.
+- Paquet `bramblers` 0.1.0 construit et `.deb` installé ; l'AppImage a été lancée. `cargo test --workspace` passe (207 tests), fmt et clippy propres.
+- Reste : portage des six vues détaillées en 0.x, test du `.rpm` sur une machine RPM, épinglage et aperçu social de BrambleRS (réglages GitHub manuels), nettoyage des anciennes captures et de `assets/blackberrylabs.desktop`.
+- La 0.1.0 garde l'écran de la tour, réorganisé avec les modules en onglet à gauche. Les six apps détaillées ne sont pas dans la 0.1.0 ; leurs fonctionnalités reviennent en 0.x, une vue par une. La 1.0 est la parité.
 - Interface du 2026-11-07 : en-tête, rail gauche de 210 px avec « All findings » et les six modules en onglets, quatre chiffres de gravité et liste/détail à droite. Les couleurs de gravité et les thèmes iced sont conservés ; la palette noire et violette de MiningControlRS n'a pas été reprise.
 
 ## Promesses
 
 - Read-only : rien n'est modifié ; actions affichées, jamais exécutées ; aucune sortie réseau.
-- Un seul logiciel : les six modules sont des crates internes, pas six binaires découverts sur le PATH (cible).
-- Rien d'écrit hors `~/.config/bramblers/` et `~/.local/state/bramblers/` (cible ; aujourd'hui encore les anciens chemins `blackberrylabs`, le shim viendra avec le paquet).
+- Un seul logiciel : les six modules sont des crates internes, pas six binaires découverts sur le PATH.
+- Rien d'écrit hors `~/.config/bramblers/` et `~/.local/state/bramblers/`.
 - Anglais par défaut, français en option.
 
 ## Repères
@@ -40,9 +40,9 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 - Tester : `cargo test --workspace` ; un crate : `cargo test -p bramblers-core`.
 - Avant un commit de code : `cargo fmt --check` puis `cargo clippy --all-targets`.
 - App : `cargo run -p bramblers --bin bramblers`. CLI : `cargo run -p bramblers -- report --json` (ou `report <module> --json`, `list`, `refresh`).
-- `packaging/build.sh` est réécrit pour le paquet unique (`bramblers`, `.desktop` et icônes `bramblers`, un seul binaire) ; il n'a pas encore été lancé. Ne pas publier de release avant validation du paquet.
+- `packaging/build.sh` construit le paquet unique (`bramblers`, `.desktop` et icônes `bramblers`, un seul binaire) et a produit les trois paquets 0.1.0. Il efface `target/appimage/bramblers.AppDir` et réécrit `dist/SHA256SUMS` : son lancement demande l'accord d'Alexandre.
 
-<!-- BLOC COMMUN v1, 2026-10-26. Identique dans les douze dépôts de la série. Le modifier partout ou nulle part (Logiciels/PASSATION.md, section « Maintenir »). -->
+<!-- BLOC COMMUN v1, 2026-10-26, conservé comme historique. La série est archivée depuis le 2026-11-07 ; BrambleRS la remplace. Les règles d'accord, de méthode et de style ci-dessous restent en vigueur. -->
 
 ## Pour qui tu travailles
 
@@ -108,6 +108,8 @@ Restent libres : lire, chercher, calculer par script, écrire dans le dépôt, `
 - Les dépendances `bbl-*` sont fixées par tag git dans `Cargo.toml`. Changer une fondation : la corriger à sa source, la tagger (avec accord), puis faire passer les modules à ce tag un par un, en vérifiant que leurs sorties restent identiques.
 
 ## La série en un coup d'œil
+
+> **Série archivée le 2026-11-07.** Les dépôts ci-dessous sont en lecture seule et leurs releases restent téléchargeables. Le tableau reste comme historique ; le produit est BrambleRS.
 
 Dépôts frères dans `/home/nushoko/Bureau/Logiciels/`, publics sous `github.com/blackberrylabs`. Rust, iced 0.13.1, licence MIT. Un outil, un verbe : un nouveau constat va dans l'outil existant, un nouveau verbe fait un nouvel outil. La tour rassemble sans absorber : elle lance les modules, lit leurs rapports `bbl-report/1`, assemble, trie, ouvre. Chaque module reste complet et installable seul.
 

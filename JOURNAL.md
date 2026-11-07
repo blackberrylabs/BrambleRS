@@ -3,6 +3,18 @@
 
 ---
 
+## 2026-11-07, 0.1.0 publiée, série archivée, dossier renommé
+
+- `main` poussé sur `blackberrylabs/blackberrylabs`, puis le dépôt renommé `blackberrylabs/BrambleRS` (le remote local pointe sur `git@github.com:blackberrylabs/BrambleRS.git`). Tag annoté `bramblers-v0.1.0` poussé.
+- Release `BrambleRS 0.1.0` publiée avec `bramblers_0.1.0-1_amd64.deb`, `bramblers-0.1.0-1.x86_64.rpm`, `bramblers-0.1.0-x86_64.AppImage` et `SHA256SUMS`. Vérification depuis l'extérieur : `gh release download` puis `sha256sum -c` passe sur les trois fichiers.
+- Les dix anciens dépôts (trois fondations, six modules, template) ont reçu un bandeau en tête de README, poussé sur `main`, puis ont été archivés. Ils ne sont pas supprimés et leurs releases restent téléchargeables.
+- Profil de l'organisation et dépôt `.github` réécrits pour BrambleRS ; description et blog de l'org mis à jour ; description et topics du dépôt `BrambleRS` mis à jour. `vibe-coding` retiré des topics. Restent deux réglages manuels : épingler BrambleRS sur le profil et choisir l'aperçu social.
+- `packaging/github_meta.sh`, écrit pour les douze dépôts, est supprimé. Son rôle est terminé.
+- Le dossier local `Logiciels/Blackberrylabs` est renommé `Logiciels/BrambleRS` ; la session a suivi. `git status`, le remote et `bramblers --version` vérifiés au nouvel emplacement.
+- Preuves : `gh repo view blackberrylabs/BrambleRS`, `gh release view bramblers-v0.1.0`, `gh repo view` des dix dépôts (`isArchived: true`), `sha256sum -c` sur les fichiers téléchargés.
+
+---
+
 ## 2026-11-07, interface à rail gauche
 
 - Demande d'Alexandre : la même structure que MiningControlRS, avec les modules en onglet à gauche. L'écran passe d'une pile de cartes à un en-tête, un rail de 210 px et un contenu à droite.

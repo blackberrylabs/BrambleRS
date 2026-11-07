@@ -88,7 +88,7 @@ module non plus.
 
 ## Etape 8. Restructuration BrambleRS (0.1.0) — décision du 2026-11-07
 
-> Branche de travail : `bramble-rs` (locale, pas poussée). `main` garde le commit de décision.
+> Restructuration faite et publiée le 2026-11-07 : `main` poussé, tag `bramblers-v0.1.0`, release et paquets en ligne.
 
 - [x] BRIEF rev. 2 validé (« Oui, je valide ») ; nom BrambleRS, radical technique `bramblers`, org Blackberrylabs — 2026-11-07
 - [x] Trois fondations importées (subtree) et renommées `bramblers-*` ; tour renommée `bramblers` ; `cargo test --workspace` passe (63 tests), fmt et clippy propres — 2026-11-07, commit `8190546`
@@ -104,12 +104,12 @@ module non plus.
 - [x] `README.md` et `CHANGELOG.md` réécrits pour BrambleRS 0.1.0 ; fichiers morts supprimés : 4 sources de l'ancienne tour, 6 fiches `modules/*.toml`, `docs/new-module.md`, `packaging/bundle.sh`, 27 fichiers de pilotage importés, `dist/` et `packaging/.bundle/` — 2026-11-07
 - [x] Interface à rail gauche, sur le modèle de MiningControlRS : en-tête, rail de 210 px avec « All findings » et les six modules en onglets, chiffres de gravité et liste/détail à droite ; les cartes de modules et les puces de filtre disparaissent — 2026-11-07
 - [ ] `.rpm` installé sur une machine RPM (rpm n'est pas installé ici ; le paquet est construit)
-- [ ] GitHub : renommer le dépôt en `BrambleRS`, archiver les dix anciens dépôts (pas supprimer), profil d'org, release 0.1.0, tag `bramblers-v0.1.0`
-- [ ] Nettoyage local : dossier `BrambleRS`, AGENTS/CLAUDE/PLAN/JOURNAL
+- [x] GitHub : dépôt renommé `blackberrylabs/BrambleRS`, dix anciens dépôts avec bandeau puis archivés (pas supprimés), profil d'org et métadonnées réécrits, release 0.1.0 avec tag `bramblers-v0.1.0` — 2026-11-07 ; `gh release download` et `sha256sum -c` vérifiés depuis l'extérieur
+- [x] Nettoyage local : dossier `Logiciels/BrambleRS`, AGENTS/CLAUDE/PLAN/JOURNAL mis à jour — 2026-11-07
 - [ ] 0.2.0+ : portage des six vues détaillées (Cleanator, MCProster, Permitt, Linstruct, Billfold, Lastrun)
 - [ ] 1.0.0 : parité, toutes les fonctionnalités des six apps dans BrambleRS
 
-> L'ancienne tour n'a plus de code mort sur disque. Le seul reliquat est `packaging/github_meta.sh`, écrit pour les douze dépôts, à retirer ou réécrire avec l'étape GitHub.
+> Réglages GitHub manuels restants : épingler BrambleRS sur le profil de l'organisation, aperçu social. Anciennes captures dans `docs/screenshots/` et `assets/blackberrylabs.desktop` à retirer ou remplacer.
 
 ## Historique — idees de la tour 0.x (remplacees par l'etape 8)
 
