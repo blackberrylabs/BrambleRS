@@ -5,6 +5,13 @@
 BrambleRS 0.1.6 brings Lastrun's screen into its tab. The six tabs now carry the detailed
 screens of the six old applications.
 
+### Names
+
+- The six tabs are named after what they do: Agent permissions, MCP servers, Instruction
+  files, Disk cleanup, Keys & spend and Activity. The internal ids (`permitt`, `mcproster`,
+  `linstruct`, `cleanator`, `billfold`, `lastrun`) do not change: saved reports, settings
+  and state paths keep working.
+
 ### Lastrun
 
 - Four tabs on the left: Sessions (per host, project, permission modes, pruning date),

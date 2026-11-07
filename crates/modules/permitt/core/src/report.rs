@@ -25,7 +25,7 @@ pub const CLI: &str = "permitt";
 pub fn module() -> Module {
     Module {
         id: "permitt".into(),
-        name: "Permitt".into(),
+        name: "Agent permissions".into(),
         version: env!("CARGO_PKG_VERSION").into(),
         verb: "inspect".into(),
         tagline: "What your AI agents may do on this machine without asking".into(),

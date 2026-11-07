@@ -28,7 +28,7 @@ pub const CLI: &str = "mcproster";
 pub fn module() -> Module {
     Module {
         id: "mcproster".into(),
-        name: "MCProster".into(),
+        name: "MCP servers".into(),
         version: env!("CARGO_PKG_VERSION").into(),
         verb: "inventory".into(),
         tagline: "Every MCP server declared on your machine, in one list".into(),

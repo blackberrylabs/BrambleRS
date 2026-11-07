@@ -17,7 +17,7 @@ pub const CLI: &str = "lastrun";
 pub fn module() -> Module {
     Module {
         id: "lastrun".into(),
-        name: "Lastrun".into(),
+        name: "Activity".into(),
         version: env!("CARGO_PKG_VERSION").into(),
         verb: "replay".into(),
         tagline: "What your AI agents actually did on this machine — commands, files, packages — session by session".into(),

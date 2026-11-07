@@ -68,5 +68,11 @@
   "subject.other": "",
   "status.summary": "{modules} modules · {reports} rapport(s) lu(s)",
   "theme.dark": "Sombre",
-  "theme.light": "Clair"
+  "theme.light": "Clair",
+  "module.permitt.name": "Permissions IA",
+  "module.mcproster.name": "Serveurs MCP",
+  "module.linstruct.name": "Fichiers d'instructions",
+  "module.cleanator.name": "Nettoyage du disque",
+  "module.billfold.name": "Clés et dépenses",
+  "module.lastrun.name": "Activité"
 }

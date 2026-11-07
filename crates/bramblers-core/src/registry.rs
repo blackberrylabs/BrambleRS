@@ -39,7 +39,7 @@ impl fmt::Debug for Provider {
 pub const PROVIDERS: &[Provider] = &[
     Provider {
         id: "billfold",
-        name: "Billfold",
+        name: "Keys & spend",
         verb: "tally",
         tagline: "What this machine spends on AI: accounts, keys, tokens",
         description: "The accounts each AI host is logged into and how each pays, the provider keys the machine holds and who can read them, the tokens each host burned in the last 30 days — priced at API rates from an embedded snapshot, never fetched. Twenty-one hosts, twenty-two providers, secrets masked.",
@@ -48,7 +48,7 @@ pub const PROVIDERS: &[Provider] = &[
     },
     Provider {
         id: "cleanator",
-        name: "Cleanator",
+        name: "Disk cleanup",
         verb: "clean",
         tagline: "Disk cleaner for developers who run AI on Linux — never deletes anything",
         description: "Scans a home directory, recognises what AI tooling leaves behind (model stores, caches, build outputs, abandoned environments) and proposes what could go — as a script you read and run yourself.",
@@ -57,7 +57,7 @@ pub const PROVIDERS: &[Provider] = &[
     },
     Provider {
         id: "lastrun",
-        name: "Lastrun",
+        name: "Activity",
         verb: "replay",
         tagline: "What your AI agents actually did on this machine — commands, files, packages — session by session",
         description: "For each AI host that records its actions, the sessions of the last 30 days and what they did — commands run, files created, edited and deleted, packages installed, MCP calls, refusals — read back from the transcripts the hosts already write. Their text is scanned in memory for credentials and never kept. Twenty-one hosts, every rule sourced.",
@@ -68,7 +68,7 @@ pub const PROVIDERS: &[Provider] = &[
     },
     Provider {
         id: "linstruct",
-        name: "Linstruct",
+        name: "Instruction files",
         verb: "lint",
         tagline: "Your AI instruction files, as each agent will actually read them",
         description: "For each AI host on the machine and each project, the stack of instruction files the host would load (CLAUDE.md, AGENTS.md, .cursor/rules…) — in its order, references expanded, budget simulated — and what it would cut, ignore or shadow. Nineteen hosts, every rule sourced.",
@@ -77,7 +77,7 @@ pub const PROVIDERS: &[Provider] = &[
     },
     Provider {
         id: "mcproster",
-        name: "MCProster",
+        name: "MCP servers",
         verb: "inventory",
         tagline: "Every MCP server declared on your machine, in one list",
         description: "Reads the MCP configuration of every AI host on the machine and lists the servers once, with the hosts and files that declare them, duplicates, secrets in clear, missing commands and skipped confirmations.",
@@ -86,7 +86,7 @@ pub const PROVIDERS: &[Provider] = &[
     },
     Provider {
         id: "permitt",
-        name: "Permitt",
+        name: "Agent permissions",
         verb: "inspect",
         tagline: "What your AI agents may do on this machine without asking",
         description: "One row per AI assistant, one column per capability (commands, files, network, MCP): what runs without asking, which setting says so, and the bypass flags hidden in shell start-up files.",

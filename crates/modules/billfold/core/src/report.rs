@@ -16,7 +16,7 @@ pub const CLI: &str = "billfold";
 pub fn module() -> Module {
     Module {
         id: "billfold".into(),
-        name: "Billfold".into(),
+        name: "Keys & spend".into(),
         version: env!("CARGO_PKG_VERSION").into(),
         verb: "tally".into(),
         tagline: "What this machine spends on AI — the accounts it is wired to, the keys it holds, the tokens it burned.".into(),

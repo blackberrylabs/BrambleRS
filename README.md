@@ -11,12 +11,12 @@ writes only its own settings and saved reports.
 
 | Module | Question |
 |---|---|
-| Permitt | What each AI assistant may do without asking, and which setting says so |
-| MCProster | Which MCP servers are declared, once per server, with duplicates, clear secrets and dead commands |
-| Linstruct | Which instruction files each host would load, in which order, and what it would drop |
-| Cleanator | What AI tooling left on the disk, and what could go |
-| Billfold | Which accounts and keys this machine holds, and how many tokens each host burned |
-| Lastrun | What the agents actually ran, created, edited or deleted, session by session |
+| Agent permissions | What each AI assistant may do without asking, and which setting says so |
+| MCP servers | Which MCP servers are declared, once per server, with duplicates, clear secrets and dead commands |
+| Instruction files | Which instruction files each host would load, in which order, and what it would drop |
+| Disk cleanup | What AI tooling left on the disk, and what could go |
+| Keys & spend | Which accounts and keys this machine holds, and how many tokens each host burned |
+| Activity | What the agents actually ran, created, edited or deleted, session by session |
 
 The four severities are act now, review, good to know and information. Each finding says
 where it comes from and what you could do.

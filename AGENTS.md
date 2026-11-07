@@ -33,6 +33,7 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 - `crates/modules/<id>/core` : la logique des six modules (`bramblers-<id>-core`) ; `run.rs` y expose `report()`, le point d'entrée du registre. Données embarquées : `crates/modules/<id>/{hosts,rules,providers,prices}`.
 - `crates/modules/<id>/view` : la vue iced du module (`bramblers-<id>-view`), avec ses `locales/`. L'app lie les six vues et les affiche dans leur onglet ; elle ne contient aucune vue de module.
 - `crates/bramblers-report`, `crates/bramblers-hostrules`, `crates/bramblers-ui` : les trois fondations.
+- Noms affichés : `permitt` = Agent permissions, `mcproster` = MCP servers, `linstruct` = Instruction files, `cleanator` = Disk cleanup, `billfold` = Keys & spend, `lastrun` = Activity. Les identifiants internes restent les anciens slugs (chemins d'état, préférences, rapports).
 - `crates/bramblers/` : l'app iced, paquet `bramblers`, binaire `bramblers` : en-tête, rail, routeur, langue et thème. `crates/bramblers-cli/` : `bramblers-cli`, une bibliothèque liée dans ce même binaire.
 - Tests : `cargo test --workspace`. Le registre et les rapports : `crates/bramblers-core/tests/tower.rs` et `fixtures/reports/`.
 - `00_cadrage/2026-11-07_plan_vues_modules.md` : l'inventaire des six vues, hors git. `00_cadrage/references/<id>/` : les sources des anciennes apps, hors git. `00_cadrage/2026-11-07_audit_securite.md` : l'audit statique, 15 constats, F1 à F15 corrigés.

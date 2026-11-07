@@ -68,5 +68,11 @@
   "subject.other": "",
   "status.summary": "{modules} modules · {reports} report(s) read",
   "theme.dark": "Dark",
-  "theme.light": "Light"
+  "theme.light": "Light",
+  "module.permitt.name": "Agent permissions",
+  "module.mcproster.name": "MCP servers",
+  "module.linstruct.name": "Instruction files",
+  "module.cleanator.name": "Disk cleanup",
+  "module.billfold.name": "Keys & spend",
+  "module.lastrun.name": "Activity"
 }

@@ -29,7 +29,7 @@ pub const LARGE: u64 = 1024 * 1024 * 1024;
 pub fn module() -> Module {
     Module {
         id: "cleanator".into(),
-        name: "Cleanator".into(),
+        name: "Disk cleanup".into(),
         version: env!("CARGO_PKG_VERSION").into(),
         verb: "clean".into(),
         tagline: "Disk cleaner for developers who run AI on Linux — never deletes anything".into(),

@@ -17,7 +17,7 @@ pub const CLI: &str = "linstruct";
 pub fn module() -> Module {
     Module {
         id: "linstruct".into(),
-        name: "Linstruct".into(),
+        name: "Instruction files".into(),
         version: env!("CARGO_PKG_VERSION").into(),
         verb: "lint".into(),
         tagline: "Your AI instruction files, as each agent will actually read them".into(),

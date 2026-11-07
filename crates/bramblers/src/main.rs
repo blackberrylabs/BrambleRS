@@ -509,7 +509,7 @@ impl App {
                     || l.finding.title.to_lowercase().contains(&q)
                     || l.finding.subject.label.to_lowercase().contains(&q)
                     || l.finding.detail.to_lowercase().contains(&q)
-                    || l.module_name.to_lowercase().contains(&q)
+                    || self.module_name(&l.module).to_lowercase().contains(&q)
             })
             .collect()
     }
@@ -643,7 +643,7 @@ impl App {
                 .filter(|l| l.module == m.provider.id)
                 .count();
             nav = nav.push(self.nav_item(
-                m.provider.name.to_string(),
+                self.module_name(m.provider.id),
                 Some(m.provider.id),
                 n,
                 self.worst(Some(m.provider.id)),
@@ -759,7 +759,12 @@ impl App {
                 let (name, tagline) = self
                     .dash
                     .module(id)
-                    .map(|m| (m.provider.name.to_string(), m.provider.tagline.to_string()))
+                    .map(|m| {
+                        (
+                            self.module_name(m.provider.id),
+                            m.provider.tagline.to_string(),
+                        )
+                    })
                     .unwrap_or_else(|| (id.to_string(), String::new()));
                 column![
                     text(name).size(22),
@@ -822,7 +827,11 @@ impl App {
             let names: Vec<String> = self
                 .running
                 .iter()
-                .filter_map(|id| self.dash.module(id).map(|m| m.provider.name.to_string()))
+                .filter_map(|id| {
+                    self.dash
+                        .module(id)
+                        .map(|m| self.module_name(m.provider.id))
+                })
                 .collect();
             s.t("when.refreshing", &[("list", &names.join(", "))])
         } else {
@@ -1058,21 +1067,36 @@ impl App {
         .into()
     }
 
+    /// The module's name in the interface language, from its stable id. The id stays
+    /// `permitt`, `cleanator`, … in paths and reports; only what the user reads changes.
+    fn module_name(&self, id: &str) -> String {
+        let name = self.strings.t(&format!("module.{id}.name"), &[]);
+        if name.starts_with('⟨') {
+            self.dash
+                .module(id)
+                .map(|m| m.provider.name.to_string())
+                .unwrap_or_else(|| id.to_string())
+        } else {
+            name
+        }
+    }
+
     fn view_row(&self, l: &bramblers_core::Line) -> Element<'_, Message> {
         let selected = self
             .selected
             .as_ref()
             .is_some_and(|(m, f)| m == &l.module && f == &l.finding.id);
         let color = self.sev_color(l.finding.severity);
+        let module_name = self.module_name(&l.module);
         let module_label = if selected {
-            text(l.module_name.clone())
+            text(module_name.clone())
                 .size(11)
-                .width(Length::Fixed(88.0))
+                .width(Length::Fixed(132.0))
         } else {
-            text(l.module_name.clone())
+            text(module_name.clone())
                 .size(11)
                 .style(text::secondary)
-                .width(Length::Fixed(88.0))
+                .width(Length::Fixed(132.0))
         };
         let r = row![
             swatch(color, 9),
@@ -1141,7 +1165,7 @@ impl App {
             text(s.t(
                 "detail.found_by",
                 &[
-                    ("module", &l.module_name),
+                    ("module", &self.module_name(&l.module)),
                     ("kind", &kind),
                     ("label", &f.subject.label)
                 ]
@@ -1230,7 +1254,7 @@ impl App {
     fn view_module_detail(&self, m: &ModuleStatus) -> Element<'_, Message> {
         let s = &self.strings;
         let mut col = column![
-            text(m.provider.name).size(16),
+            text(self.module_name(m.provider.id)).size(16),
             text(m.provider.tagline).size(12).style(text::secondary),
         ]
         .spacing(4);
@@ -1415,6 +1439,17 @@ mod tests {
     #[test]
     fn locales_have_the_same_keys() {
         bramblers_ui::i18n::same_keys(EN, FR).unwrap();
+    }
+
+    #[test]
+    fn every_module_has_a_name_in_both_languages() {
+        for lang in [Lang::En, Lang::Fr] {
+            let s = Strings::load(EN, FR, lang);
+            for p in bramblers_core::registry::all() {
+                let name = s.t(&format!("module.{}.name", p.id), &[]);
+                assert!(!name.starts_with('⟨'), "{} has no name in {:?}", p.id, lang);
+            }
+        }
     }
 
     #[test]
