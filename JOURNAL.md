@@ -3,6 +3,16 @@
 
 ---
 
+## 2026-11-07, un seul binaire `bramblers`
+
+- L'app et la ligne de commande sont désormais le même exécutable : sans argument, l'écran iced ; avec un argument, la CLI. `bramblers report --json` produit le rapport global (tableau de bord), `bramblers report <module> --json` le rapport d'un module, `list` lit les rapports enregistrés, `refresh` relance les six modules. `modules` disparaît, les six modules étant fixes. Commit `a49babc`.
+- `crates/cli` devient une bibliothèque (`bramblers-cli`, `src/lib.rs`) liée dans le binaire ; `src/main.rs` est déplacé, aucun contenu perdu (l'ancien fichier reste dans l'historique). Les métadonnées de paquet n'installent plus que `bramblers`.
+- Mesure sur la machine : Lastrun en processus met 128 s en compilation debug sur 201 Mo de transcriptions, contre 8 s pour le binaire release installé. Sa limite passe de 120 à 300 s, avec la mesure en commentaire ; les autres modules restent sous leurs limites (Billfold 5 s, Linstruct 15 s, MCProster et Permitt sous la seconde).
+- Preuves : `cargo test --workspace` (205 tests), fmt et clippy propres ; `bramblers --help` et `bramblers report --help` ; `report <module> --json` rendu conforme `bramblers-report/1` pour Billfold, Linstruct, MCProster et Permitt, un seul fichier d'état par module.
+- Reste : paquet `bramblers` (build.sh, shim des anciens chemins), archivage GitHub, renommage du dossier local. Rien n'a été poussé.
+
+---
+
 ## 2026-11-07, six cores internes, registre en processus
 
 - Les six cores (Billfold, Cleanator, Lastrun, Linstruct, MCProster, Permitt) entrent dans le workspace sous `crates/modules/<id>/core`, crates `bramblers-<id>-core`, avec leurs données `hosts/`, `rules/`, `providers/` et `prices/`. Import par `git subtree split` sur `crates/core` puis sur chaque dossier de données : l'historique des cores est conservé. Commits `b133f27` (import) et `7b3c115` (registre).
