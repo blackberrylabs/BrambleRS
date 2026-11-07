@@ -9,6 +9,7 @@ repository.workspace = true
 
 [dependencies]
 bramblers-report.workspace = true
+bramblers-hostrules.workspace = true
 bramblers-billfold-core.workspace = true
 bramblers-cleanator-core.workspace = true
 bramblers-lastrun-core.workspace = true

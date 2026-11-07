@@ -14,6 +14,7 @@ path = "src/main.rs"
 [dependencies]
 bramblers-core = { path = "../bramblers-core" }
 bramblers-cli = { path = "../bramblers-cli" }
+bramblers-hostrules.workspace = true
 bramblers-billfold-view.workspace = true
 bramblers-cleanator-view.workspace = true
 bramblers-lastrun-view.workspace = true

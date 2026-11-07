@@ -31,6 +31,12 @@ const EN: &str = include_str!("../../../locales/en.json");
 const FR: &str = include_str!("../../../locales/fr.json");
 
 fn main() {
+    if bramblers_hostrules::env::home_dir().is_none() {
+        eprintln!(
+            "bramblers: no home directory: HOME is unset or / and /etc/passwd has no entry; refusing to scan /"
+        );
+        std::process::exit(1);
+    }
     // One binary: arguments mean the command line, no arguments means the app.
     if std::env::args_os().len() > 1 {
         if let Err(e) = bramblers_cli::run(std::env::args()) {

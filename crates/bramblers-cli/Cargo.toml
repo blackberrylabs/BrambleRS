@@ -13,6 +13,7 @@ path = "src/lib.rs"
 
 [dependencies]
 bramblers-core = { path = "../bramblers-core" }
+bramblers-hostrules.workspace = true
 bramblers-report.workspace = true
 anyhow.workspace = true
 clap.workspace = true

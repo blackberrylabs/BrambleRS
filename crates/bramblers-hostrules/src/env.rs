@@ -26,15 +26,50 @@ pub struct Env {
     pub roots: Vec<PathBuf>,
 }
 
+/// The real home directory. `HOME` when it is set and is not `/`; otherwise the entry of
+/// `$USER` or `$LOGNAME` in `/etc/passwd`. `None` when neither gives a home: a caller that
+/// scans or writes must refuse to fall back to `/`.
+pub fn home_dir() -> Option<PathBuf> {
+    if let Some(home) = std::env::var_os("HOME")
+        .or_else(|| std::env::var_os("USERPROFILE"))
+        .map(PathBuf::from)
+    {
+        if !home.as_os_str().is_empty() && home != Path::new("/") {
+            return Some(home);
+        }
+    }
+    #[cfg(unix)]
+    {
+        let user = std::env::var_os("USER").or_else(|| std::env::var_os("LOGNAME"))?;
+        let text = std::fs::read_to_string("/etc/passwd").ok()?;
+        home_from_passwd(&user.to_string_lossy(), &text)
+    }
+    #[cfg(not(unix))]
+    {
+        None
+    }
+}
+
+/// The sixth field of the line for `user` in a passwd file, when it is not `/`.
+fn home_from_passwd(user: &str, text: &str) -> Option<PathBuf> {
+    text.lines().find_map(|line| {
+        let mut fields = line.split(':');
+        if fields.next() != Some(user) {
+            return None;
+        }
+        let home = fields.nth(4)?;
+        (!home.is_empty() && home != "/").then(|| PathBuf::from(home))
+    })
+}
+
 impl Env {
     /// The real environment of this process.
     pub fn current() -> Self {
-        let vars: BTreeMap<String, String> = std::env::vars().collect();
-        let home = vars
-            .get("HOME")
-            .or_else(|| vars.get("USERPROFILE"))
-            .map(PathBuf::from)
-            .unwrap_or_else(|| PathBuf::from("/"));
+        let mut vars: BTreeMap<String, String> = std::env::vars().collect();
+        let home = home_dir().unwrap_or_else(|| PathBuf::from("/"));
+        // `$HOME` must expand to the same directory as `~`, even when the variable was
+        // missing or pointed at `/` and `/etc/passwd gave the real home.
+        vars.insert("HOME".to_string(), home.display().to_string());
         let os = if cfg!(target_os = "windows") {
             Os::Windows
         } else if cfg!(target_os = "macos") {
@@ -137,6 +172,20 @@ impl Env {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn passwd_entry_gives_a_home_but_root_is_refused() {
+        let text = "root:x:0:0:root:/root:/bin/bash\n\
+                    alex:x:1000:1000:Alex:/home/alex:/bin/bash\n\
+                    nohome:x:1:1::/:/bin/false\n";
+        assert_eq!(
+            home_from_passwd("alex", text),
+            Some(PathBuf::from("/home/alex"))
+        );
+        assert_eq!(home_from_passwd("root", text), Some(PathBuf::from("/root")));
+        assert_eq!(home_from_passwd("nohome", text), None);
+        assert_eq!(home_from_passwd("missing", text), None);
+    }
 
     #[test]
     fn expands_home_and_variables() {

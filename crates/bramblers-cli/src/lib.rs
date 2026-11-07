@@ -65,6 +65,11 @@ where
     I: IntoIterator<Item = T>,
     T: Into<OsString> + Clone,
 {
+    if bramblers_hostrules::env::home_dir().is_none() {
+        bail!(
+            "no home directory: HOME is unset or / and /etc/passwd has no entry; refusing to scan /"
+        );
+    }
     let cli = Cli::parse_from(args);
     let cache = Cache::default_location();
     let mut dash = Dashboard::from_saved(&cache);

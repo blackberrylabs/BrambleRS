@@ -40,9 +40,7 @@ impl Cache {
                 dir: PathBuf::from(d).join("bramblers"),
             };
         }
-        let home = std::env::var_os("HOME")
-            .map(PathBuf::from)
-            .unwrap_or_else(|| PathBuf::from("/"));
+        let home = bramblers_hostrules::env::home_dir().unwrap_or_else(|| PathBuf::from("/"));
         Cache {
             dir: home.join(".local/state/bramblers"),
         }

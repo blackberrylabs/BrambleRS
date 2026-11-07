@@ -14,6 +14,12 @@ use crate::scan::{scan, ScanOptions};
 pub fn report() -> Result<Report, String> {
     let started = Instant::now();
     let env = Env::current();
+    if env.home == std::path::Path::new("/") {
+        return Err(
+            "no home directory: HOME is unset or / and /etc/passwd has no entry; refusing to scan /"
+                .into(),
+        );
+    }
     let rules = RuleSet::embedded().map_err(|e| e.to_string())?;
     let scan = scan(
         &env.home,
