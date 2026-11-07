@@ -3,6 +3,15 @@
 
 ---
 
+## 2026-11-07, audit de sécurité : F3 et F4 corrigés
+
+- F3, masquage dans `bramblers-hostrules` : `PASSWORD=12345678` est masqué, `API_PORT=8080` reste lisible. `scrub_text` masque désormais les formes connues partout dans un texte, les affectations `KEY=value` et `KEY: value`, et les paramètres d'URL. Formes ajoutées : Stripe `sk_live_` et `rk_live_`, Slack `xapp-`, Shopify `shpat_`, SendGrid `SG.`, Twilio `SK…`. Commit `36bc3ed`.
+- F4, MCProster : `command` passe par le masquage par drapeau, et chaque argument est classé avec le drapeau qui le précède. `--api-key VALUE` masque VALUE même sans forme connue. Test d'inventaire avec un jeton de 32 caractères hors formes connues. Commit `6a6cc20`.
+- Preuves : `cargo test --workspace` passe (240 tests, dont 3 dans `secrets` et 1 dans l'inventaire), `cargo clippy --workspace --all-targets` et `cargo fmt --check` propres. Les deux commits de ce lot restent locaux ; le lot précédent est sur `origin/main`.
+- Restent les constats F5 à F15 du rapport.
+
+---
+
 ## 2026-11-07, audit de sécurité : F1 et F2 corrigés
 
 - Audit statique des 18 crates (43 201 lignes) : rapport hors git dans `00_cadrage/2026-11-07_audit_securite.md`, 15 constats. Pas de faille critique ; en tête, les secrets de la sonde MCProster et le script généré par Cleanator.
