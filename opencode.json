@@ -36,7 +36,6 @@
       "gh repo view*": "allow",
       "gh run list*": "allow",
       "*packaging/build.sh*": "ask",
-      "*packaging/github_meta.sh*": "ask",
       "*rename.sh*": "ask",
       "cat *.env*": "deny",
       "head *.env*": "deny",
