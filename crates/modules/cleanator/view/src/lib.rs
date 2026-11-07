@@ -874,17 +874,13 @@ impl View {
         })
         .width(Length::Fill)
         .height(Length::Fill);
-        // The canvas owns the whole card: in iced 0.13 a canvas inside a padded container
-        // is drawn at the container's outer origin, so the head and the legend stay outside
-        // the card instead of being overlaid by the tiles.
-        column![
-            head,
-            card(map.into()).height(Length::Fill),
-            self.view_legend()
-        ]
-        .spacing(10)
-        .height(Length::Fill)
-        .into()
+        // iced 0.13 draws a canvas at the root of its layout tree, ignoring container
+        // padding. The head and the legend are therefore outside the canvas, and the
+        // treemap keeps its own margins (see `treemap::content`) so nothing overlaps.
+        column![head, map, self.view_legend()]
+            .spacing(10)
+            .height(Length::Fill)
+            .into()
     }
 
     fn view_legend(&self) -> Element<'_, Message> {
@@ -1411,9 +1407,9 @@ fn level_color(level: Level, dark: bool) -> Color {
 /// The tile colour of a folder nothing is classified under (not the family's grey).
 fn tile_neutral(dark: bool) -> Color {
     if dark {
-        hex(0x3a3d45)
+        hex(0x4b505b)
     } else {
-        hex(0xd9dce3)
+        hex(0xd2d6de)
     }
 }
 

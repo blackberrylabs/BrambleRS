@@ -137,9 +137,9 @@ const GAP: f32 = 3.0;
 /// The canvas is drawn at the root of its layout tree in iced 0.13: the card padding and
 /// the head above it do not shift it. The treemap therefore keeps its own margins, so the
 /// tiles never cover the title or the legend.
-const INSET_TOP: f32 = 48.0;
-const INSET_BOTTOM: f32 = 64.0;
-const INSET_SIDE: f32 = 14.0;
+const INSET_TOP: f32 = 64.0;
+const INSET_BOTTOM: f32 = 44.0;
+const INSET_SIDE: f32 = 20.0;
 
 fn content(bounds: Rectangle) -> Rectangle {
     Rectangle::new(
@@ -213,7 +213,7 @@ where
             frame.stroke(
                 &path,
                 Stroke::default()
-                    .with_color(with_alpha(palette.background.base.color, 0.9))
+                    .with_color(palette.background.strong.color)
                     .with_width(1.0),
             );
             if inner.width > 54.0 && inner.height > 30.0 {
