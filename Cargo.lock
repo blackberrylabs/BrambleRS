@@ -421,6 +421,7 @@ dependencies = [
  "bramblers-cleanator-view",
  "bramblers-cli",
  "bramblers-core",
+ "bramblers-hostrules",
  "bramblers-lastrun-view",
  "bramblers-linstruct-view",
  "bramblers-mcproster-view",
@@ -497,6 +498,7 @@ version = "0.1.6"
 dependencies = [
  "anyhow",
  "bramblers-core",
+ "bramblers-hostrules",
  "bramblers-report",
  "clap",
  "serde_json",
@@ -508,6 +510,7 @@ version = "0.1.6"
 dependencies = [
  "bramblers-billfold-core",
  "bramblers-cleanator-core",
+ "bramblers-hostrules",
  "bramblers-lastrun-core",
  "bramblers-linstruct-core",
  "bramblers-mcproster-core",
