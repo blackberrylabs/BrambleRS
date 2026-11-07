@@ -3,6 +3,16 @@
 
 ---
 
+## 2026-11-07, audit de sécurité : F1 et F2 corrigés
+
+- Audit statique des 18 crates (43 201 lignes) : rapport hors git dans `00_cadrage/2026-11-07_audit_securite.md`, 15 constats. Pas de faille critique ; en tête, les secrets de la sonde MCProster et le script généré par Cleanator.
+- F1, sonde MCProster : `ProbeResult` ne porte plus la ligne de commande ni `stderr`, qui pouvaient contenir un `${VAR}` développé ; l'erreur est masquée, et la commande n'est développée que pour le processus enfant. Tests : jeton dans un argument, commande en échec. Commit `18d8dee`.
+- F2, script Cleanator : `display` et `rule_id` passent par `one_line` (contrôles remplacés, une seule ligne), et tous les champs substitués sont cités. Tests : nom avec saut de ligne, nom avec `';`. Commit `059c1ce`.
+- Preuves : `cargo test --workspace` passe (236 tests, dont 2 dans la sonde et 1 dans le script), `cargo clippy -p bramblers --all-targets` et les deux cores propres, `cargo fmt --check` propre. Rien n'a été poussé.
+- Restent les constats F3 à F15 du rapport, dont le masquage des valeurs numériques et des jetons sans forme connue.
+
+---
+
 ## 2026-11-07, About du dépôt et profil .github à niveau
 
 - About de `blackberrylabs/BrambleRS` refait avec l'accord d'Alexandre (« go ») : description de 195 caractères (« Shows what AI coding agents do to a Linux machine, most serious first, on one screen: ... Read-only, one binary, six modules. Rust. »), page d'accueil vers la page des releases, topics curés à 18 (retirés `blackberrylabs`, `bramble-rs`, `bramblers` ; ajoutés `instruction-files`, `cost-tracking`, `session-history`). Preuve : `gh repo view blackberrylabs/BrambleRS --json description,homepageUrl,repositoryTopics`.
