@@ -14,8 +14,10 @@
 //! - [`open`]: one policy for opening a file or a link in the desktop session: files go to
 //!   the default application, links must be http or https.
 //!
-//! No business logic, no network, and the only file ever written is `~/.config/<app>/settings.json`
-//! through [`settings::Prefs::save`]. iced is pinned to `0.13.1` here; apps do not pin another.
+//! No business logic, no network request of its own, and the only file ever written is
+//! `~/.config/<app>/settings.json` through [`settings::Prefs::save`]. [`open`] launches the
+//! desktop's opener for a file or an http(s) link. iced is pinned to `0.13.1` here; apps do
+//! not pin another.
 #![forbid(unsafe_code)]
 
 pub mod i18n;

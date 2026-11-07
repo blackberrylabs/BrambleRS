@@ -1,6 +1,6 @@
-//! Where the projects come from (decision L5): the folders the user remembered in
-//! `~/.config/linstruct/settings.json` (`project_dirs`, written by the app or the CLI's
-//! `folders` command — the only file Linstruct writes), plus the projects Claude Code knows
+//! Where the projects come from (decision L5): the folders the user remembered, read from
+//! the old `~/.config/linstruct/settings.json` as a fallback (the view keeps its preferences
+//! under `~/.config/bramblers/linstruct/`), plus the projects Claude Code knows
 //! (`~/.claude.json`). A remembered folder is a project itself when it carries a marker, else
 //! each of its direct subfolders that does. Read-only here.
 
@@ -14,7 +14,8 @@ use serde_json::Value;
 
 use crate::rules::{Role, Sheets};
 
-/// `~/.config/linstruct/settings.json`, honouring `XDG_CONFIG_HOME`.
+/// `~/.config/linstruct/settings.json` (the old app's file), read as a fallback here;
+/// honours `XDG_CONFIG_HOME`.
 pub fn settings_path(env: &Env) -> PathBuf {
     env.vars
         .get("XDG_CONFIG_HOME")

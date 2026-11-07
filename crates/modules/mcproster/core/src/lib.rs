@@ -7,8 +7,8 @@
 //! skipped confirmations, unreadable files).
 //!
 //! Three promises, enforced here and tested:
-//! - no configuration file is ever written: the only writes are the probe results under
-//!   `~/.config/mcproster/` ([`probe::save_results`]);
+//! - no configuration file is ever written: the view saves the probe results under
+//!   `~/.config/bramblers/mcproster/probes.json` ([`probe::save_results_at`]);
 //! - nothing leaves the machine: no network code in this crate; remote servers are listed,
 //!   never contacted;
 //! - a secret is masked the moment it is read and never stored in clear.
