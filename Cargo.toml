@@ -1,9 +1,9 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/core",
-    "crates/cli",
-    "crates/app",
+    "crates/bramblers-core",
+    "crates/bramblers-cli",
+    "crates/bramblers",
     "crates/bramblers-hostrules",
     "crates/bramblers-report",
     "crates/bramblers-ui",

@@ -252,12 +252,24 @@ mod tests {
             "permitt",
         ] {
             let text = match name {
-                "billfold" => include_str!("../../core/tests/fixtures/reports/billfold.json"),
-                "cleanator" => include_str!("../../core/tests/fixtures/reports/cleanator.json"),
-                "lastrun" => include_str!("../../core/tests/fixtures/reports/lastrun.json"),
-                "linstruct" => include_str!("../../core/tests/fixtures/reports/linstruct.json"),
-                "mcproster" => include_str!("../../core/tests/fixtures/reports/mcproster.json"),
-                "permitt" => include_str!("../../core/tests/fixtures/reports/permitt.json"),
+                "billfold" => {
+                    include_str!("../../bramblers-core/tests/fixtures/reports/billfold.json")
+                }
+                "cleanator" => {
+                    include_str!("../../bramblers-core/tests/fixtures/reports/cleanator.json")
+                }
+                "lastrun" => {
+                    include_str!("../../bramblers-core/tests/fixtures/reports/lastrun.json")
+                }
+                "linstruct" => {
+                    include_str!("../../bramblers-core/tests/fixtures/reports/linstruct.json")
+                }
+                "mcproster" => {
+                    include_str!("../../bramblers-core/tests/fixtures/reports/mcproster.json")
+                }
+                "permitt" => {
+                    include_str!("../../bramblers-core/tests/fixtures/reports/permitt.json")
+                }
                 _ => unreachable!(),
             };
             let report = bramblers_report::conformance::check(text)

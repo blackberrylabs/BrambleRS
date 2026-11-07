@@ -12,8 +12,8 @@ name = "bramblers"
 path = "src/main.rs"
 
 [dependencies]
-bramblers-core = { path = "../core" }
-bramblers-cli = { path = "../cli" }
+bramblers-core = { path = "../bramblers-core" }
+bramblers-cli = { path = "../bramblers-cli" }
 bramblers-report.workspace = true
 iced = { version = "=0.13.1", features = ["tokio"] }
 bramblers-ui.workspace = true

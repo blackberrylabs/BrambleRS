@@ -12,7 +12,7 @@ name = "bramblers_cli"
 path = "src/lib.rs"
 
 [dependencies]
-bramblers-core = { path = "../core" }
+bramblers-core = { path = "../bramblers-core" }
 bramblers-report.workspace = true
 anyhow.workspace = true
 clap.workspace = true

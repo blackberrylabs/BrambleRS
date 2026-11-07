@@ -34,7 +34,7 @@ for t in "${targets[@]}"; do
       ;;
     rpm)
       echo "== .rpm"
-      cargo generate-rpm -p crates/app
+      cargo generate-rpm -p crates/bramblers
       cp target/generate-rpm/bramblers-"$VERSION"-*.rpm "$DIST/"
       ;;
     appimage)
