@@ -96,6 +96,7 @@ module non plus.
 - [x] Registre interne `registry` : six fournisseurs statiques, `runner` en processus avec limite de temps, plus de PATH ni de sous-processus pour les modules ; app et CLI adaptés ; `Dashboard::from_saved` sans découverte — 2026-11-07, commit `7b3c115`
 - [x] Preuve du registre : `cargo test --workspace` passe (202 tests), fmt et clippy propres ; `bramblers-cli refresh permitt` sur la machine : 16 constats en 0,1 s, un seul fichier écrit (`<state>/permitt/report.json`) — 2026-11-07
 - [x] Binaire et CLI `bramblers` : `report --json`, `report <module> --json`, `list`, `refresh` ; sans argument, l'app — 2026-11-07, commit `a49babc` ; `--help` et `report permitt --json` vérifiés
+- [x] `packaging/build.sh` réécrit pour le paquet unique : un binaire `bramblers`, `.desktop` et icônes `bramblers`, AppImage `bramblers-<version>-<arch>`, `Conflicts`/`Replaces`/`Provides` des anciens paquets dans les métadonnées deb et rpm — 2026-11-07 ; syntaxe et métadonnées vérifiées, pas encore lancé
 - [ ] Paquet `bramblers` : .deb/.rpm/AppImage, menu `BrambleRS`, icône `bramblers`, shim config/état
 - [ ] GitHub : renommer le dépôt en `BrambleRS`, archiver les dix anciens dépôts (pas supprimer), profil d'org, release 0.1.0, tag `bramblers-v0.1.0`
 - [ ] Nettoyage local : dossier `BrambleRS`, AGENTS/CLAUDE/PLAN/JOURNAL

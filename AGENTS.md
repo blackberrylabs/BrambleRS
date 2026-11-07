@@ -40,7 +40,7 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 - Tester : `cargo test --workspace` ; un crate : `cargo test -p bramblers-core`.
 - Avant un commit de code : `cargo fmt --check` puis `cargo clippy --all-targets`.
 - App : `cargo run -p bramblers --bin bramblers`. CLI : `cargo run -p bramblers -- report --json` (ou `report <module> --json`, `list`, `refresh`).
-- `packaging/build.sh` n'est pas encore réécrit pour le paquet unique ; ne pas lancer de release avant l'étape 8.
+- `packaging/build.sh` est réécrit pour le paquet unique (`bramblers`, `.desktop` et icônes `bramblers`, un seul binaire) ; il n'a pas encore été lancé. Ne pas publier de release avant validation du paquet.
 
 <!-- BLOC COMMUN v1, 2026-10-26. Identique dans les douze dépôts de la série. Le modifier partout ou nulle part (Logiciels/PASSATION.md, section « Maintenir »). -->
 

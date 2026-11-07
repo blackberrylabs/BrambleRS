@@ -3,6 +3,16 @@
 
 ---
 
+## 2026-11-07, `build.sh` réécrit pour le paquet unique
+
+- `packaging/build.sh` ne construit plus que `bramblers` : un binaire release, un `.deb`, un `.rpm`, une AppImage `bramblers-<version>-<arch>.AppImage`. Les variantes `full`, l'appel à `bundle.sh` et les chemins `bbl`/`blackberrylabs` ont disparu.
+- Les métadonnées de `crates/app/Cargo.toml` déclarent `Conflicts`, `Replaces` et `Provides` sur `blackberrylabs`, `blackberrylabs-full` et les six anciens paquets de modules ; côté RPM, `Conflicts`, `Obsoletes` et `Provides`. Le `.desktop` et les icônes sont ceux de `bramblers`.
+- Vérifié sans lancer : `bash -n packaging/build.sh`, `cargo metadata` et `cargo check --workspace`. Le script n'a pas été exécuté : il efface `target/appimage/bramblers.AppDir` et réécrit `dist/SHA256SUMS`, et son lancement demande l'accord d'Alexandre.
+- Reste avant la 0.1.0 : lancer le script, installer le paquet, écrire le shim des anciens chemins de config et d'état, réécrire le `README.md` racine encore écrit pour l'ancienne tour.
+- Rien n'a été poussé.
+
+---
+
 ## 2026-11-07, un seul binaire `bramblers`
 
 - L'app et la ligne de commande sont désormais le même exécutable : sans argument, l'écran iced ; avec un argument, la CLI. `bramblers report --json` produit le rapport global (tableau de bord), `bramblers report <module> --json` le rapport d'un module, `list` lit les rapports enregistrés, `refresh` relance les six modules. `modules` disparaît, les six modules étant fixes. Commit `a49babc`.
