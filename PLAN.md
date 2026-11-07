@@ -87,8 +87,12 @@ module non plus.
 > Suspendue par la restructuration du 2026-11-07 : le plan de promotion sera réécrit pour BrambleRS après la 0.1.0.
 
 ## Etape 8. Restructuration BrambleRS (0.1.0) — décision du 2026-11-07
+
+> Branche de travail : `bramble-rs` (locale, pas poussée). `main` garde le commit de décision.
+
 - [x] BRIEF rev. 2 validé (« Oui, je valide ») ; nom BrambleRS, radical technique `bramblers`, org Blackberrylabs — 2026-11-07
-- [ ] Monodépôt : importer les trois fondations et les six cores, dépendances par chemin, workspace `crates/bramblers-*` et `crates/modules/<id>/core`
+- [x] Trois fondations importées (subtree) et renommées `bramblers-*` ; tour renommée `bramblers` ; `cargo test --workspace` passe (66 tests), fmt et clippy propres — 2026-11-07, commit `8190546`
+- [ ] Six cores importés, registre interne, dépendances par chemin
 - [ ] Registre interne : plus de PATH ni de sous-processus, l'app appelle les six cores ; tests et rapports identiques
 - [ ] Binaire et CLI `bramblers` : `report --json`, `report <module> --json`
 - [ ] Paquet `bramblers` : .deb/.rpm/AppImage, menu `BrambleRS`, icône `bramblers`, shim config/état
