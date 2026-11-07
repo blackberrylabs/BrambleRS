@@ -3,6 +3,15 @@
 
 ---
 
+## 2026-11-07, audit de sécurité : F12 et F13 corrigés
+
+- F12, HOME : `home_dir()` rend `HOME` s'il est valide, sinon l'entrée de `$USER`/`$LOGNAME` dans `/etc/passwd`, et `None` si rien ne donne un dossier. `Env::current` s'en sert et aligne `$HOME` ; `Cache` aussi. L'app et le CLI refusent de démarrer sans dossier personnel, et Cleanator refuse de scanner `/` en appel direct. Test du lecteur de passwd. Commit `8c0a89d`, plus `7950c68` pour le lien `bramblers-hostrules` dans le coeur et le binaire.
+- F13, mutex : les quatre `lock().unwrap()` de Cleanator (`probes.rs`, `scan.rs`) deviennent `unwrap_or_else(|e| e.into_inner())` ; un thread paniqué ne fait plus tomber les suivants. Commit `5ecd710`.
+- Preuves : `cargo test --workspace` passe 246 tests, `cargo clippy --workspace --all-targets` et `cargo fmt --check` propres, `cargo check -p bramblers` compile. Les trois commits restent locaux.
+- Restent F14 (`xdg-open`) et F15 (textes).
+
+---
+
 ## 2026-11-07, audit de sécurité : F10 et F11 corrigés
 
 - F10, paquet AppImage : `build.sh` épingle `appimagetool` 1.9.1 et vérifie son SHA256 publié avant de l'exécuter ; un outil déjà présent dans `packaging/.tools/` est vérifié aussi et remplacé s'il ne correspond pas. Les sommes des quatre architectures sont dans le script. Commit `7c5d843`. `build.sh` n'a pas été lancé (accord requis) ; `bash -n` passe et la somme du fichier 1.9.1 téléchargé correspond.
