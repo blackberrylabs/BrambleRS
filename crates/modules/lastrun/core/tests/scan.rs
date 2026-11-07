@@ -6,11 +6,11 @@ mod common;
 
 use std::path::{Path, PathBuf};
 
-use bbl_hostrules::env::{Env, Os};
+use bramblers_hostrules::env::{Env, Os};
+use bramblers_lastrun_core::model::{ActKind, Decision, FileOp, Kind, Status};
+use bramblers_lastrun_core::{scan_with, Options};
 use chrono::Utc;
 use common::fixture;
-use lastrun_core::model::{ActKind, Decision, FileOp, Kind, Status};
-use lastrun_core::{scan_with, Options};
 
 fn env(home: &Path) -> Env {
     Env::fixture(home, Os::Linux)
@@ -23,8 +23,8 @@ fn one_finding_of_each_kind() {
     let home: PathBuf = tmp.path().to_path_buf();
     let (inv, _) = scan_with(
         &env(&home),
-        &lastrun_core::sheets::embedded(),
-        &lastrun_core::rules::Rules::embedded(),
+        &bramblers_lastrun_core::sheets::embedded(),
+        &bramblers_lastrun_core::rules::Rules::embedded(),
         &Options::default(),
     );
     let kinds: Vec<Kind> = inv.findings.iter().map(|f| f.kind).collect();
@@ -181,8 +181,8 @@ fn the_window_leaves_older_actions_out() {
     };
     let (inv, _) = scan_with(
         &env(tmp.path()),
-        &lastrun_core::sheets::embedded(),
-        &lastrun_core::rules::Rules::embedded(),
+        &bramblers_lastrun_core::sheets::embedded(),
+        &bramblers_lastrun_core::rules::Rules::embedded(),
         &opt,
     );
     assert!(

@@ -5,11 +5,11 @@
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
-use bbl_hostrules::env::Env;
-use bbl_hostrules::read::{dig, parse, read_tree};
-use bbl_hostrules::resolve::resolve;
-use bbl_hostrules::rules::{Format, Location};
-use bbl_hostrules::secrets;
+use bramblers_hostrules::env::Env;
+use bramblers_hostrules::read::{dig, parse, read_tree};
+use bramblers_hostrules::resolve::resolve;
+use bramblers_hostrules::rules::{Format, Location};
+use bramblers_hostrules::secrets;
 use serde_json::Value;
 
 use crate::gitstat;
@@ -240,7 +240,7 @@ fn collect(
                 }
                 _ => (name.to_string(), s.clone()),
             };
-            let line = bbl_hostrules::read::line_of(text, &v);
+            let line = bramblers_hostrules::read::line_of(text, &v);
             cands.push(Candidate {
                 name: n,
                 value: v,
@@ -347,7 +347,7 @@ pub fn keys(
         "/etc/environment.d/*.conf",
     ] {
         if let Some(p) = env.expand(spec) {
-            envd.extend(bbl_hostrules::resolve::expand_glob(&p));
+            envd.extend(bramblers_hostrules::resolve::expand_glob(&p));
         }
     }
     envd.push(PathBuf::from("/etc/environment"));

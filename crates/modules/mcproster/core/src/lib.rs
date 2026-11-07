@@ -24,7 +24,7 @@ pub mod report;
 
 // The common ground with the other Blackberrylabs tools lives in `bbl-hostrules`; these
 // re-exports keep the paths of 0.1 and 0.2 valid.
-pub use bbl_hostrules::{env, read, secrets};
+pub use bramblers_hostrules::{env, read, secrets};
 
 pub use env::Env;
 pub use hosts::{HostRule, Rules};

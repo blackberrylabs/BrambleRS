@@ -275,29 +275,26 @@ pub enum RuleError {
 pub const EMBEDDED: &[(&str, &str)] = &[
     (
         "assistants.toml",
-        include_str!("../../../rules/assistants.toml"),
+        include_str!("../../rules/assistants.toml"),
     ),
     (
         "backups-and-large-files.toml",
-        include_str!("../../../rules/backups-and-large-files.toml"),
+        include_str!("../../rules/backups-and-large-files.toml"),
     ),
-    ("builds.toml", include_str!("../../../rules/builds.toml")),
-    ("docker.toml", include_str!("../../../rules/docker.toml")),
-    ("models.toml", include_str!("../../../rules/models.toml")),
+    ("builds.toml", include_str!("../../rules/builds.toml")),
+    ("docker.toml", include_str!("../../rules/docker.toml")),
+    ("models.toml", include_str!("../../rules/models.toml")),
     (
         "package-caches.toml",
-        include_str!("../../../rules/package-caches.toml"),
+        include_str!("../../rules/package-caches.toml"),
     ),
     (
         "python-envs.toml",
-        include_str!("../../../rules/python-envs.toml"),
+        include_str!("../../rules/python-envs.toml"),
     ),
-    ("system.toml", include_str!("../../../rules/system.toml")),
-    ("tooling.toml", include_str!("../../../rules/tooling.toml")),
-    (
-        "training.toml",
-        include_str!("../../../rules/training.toml"),
-    ),
+    ("system.toml", include_str!("../../rules/system.toml")),
+    ("tooling.toml", include_str!("../../rules/tooling.toml")),
+    ("training.toml", include_str!("../../rules/training.toml")),
 ];
 
 /// A validated set of rules.

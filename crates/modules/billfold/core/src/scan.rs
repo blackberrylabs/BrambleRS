@@ -5,9 +5,9 @@
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 
-use bbl_hostrules::env::Env;
-use bbl_hostrules::read::{get, read_tree};
-use bbl_hostrules::resolve::{expand_glob, project_roots, resolve};
+use bramblers_hostrules::env::Env;
+use bramblers_hostrules::read::{get, read_tree};
+use bramblers_hostrules::resolve::{expand_glob, project_roots, resolve};
 use chrono::{DateTime, Duration, Local, Utc};
 use serde_json::Value;
 
@@ -301,7 +301,7 @@ fn retention_days(spec: &crate::sheets::UsageSpec, env: &Env) -> Option<i64> {
     let mut days = spec.retention_days;
     if let (Some(key), Some(file)) = (&spec.retention_setting, &spec.retention_file) {
         if let Some(p) = env.expand(file) {
-            if let Ok((_, tree)) = read_tree(&p, bbl_hostrules::rules::Format::Jsonc) {
+            if let Ok((_, tree)) = read_tree(&p, bramblers_hostrules::rules::Format::Jsonc) {
                 if let Some(v) = get(&tree, key) {
                     days = match v {
                         Value::Number(n) => n.as_i64(),

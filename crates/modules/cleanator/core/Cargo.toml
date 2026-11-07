@@ -1,5 +1,5 @@
 [package]
-name = "cleanator-core"
+name = "bramblers-cleanator-core"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -16,7 +16,7 @@ toml.workspace = true
 globset.workspace = true
 rayon.workspace = true
 chrono.workspace = true
-bbl-report = { git = "https://github.com/blackberrylabs/bbl-report", tag = "v0.1.0" }
+bramblers-report.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true

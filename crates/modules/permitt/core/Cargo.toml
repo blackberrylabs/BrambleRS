@@ -1,5 +1,5 @@
 [package]
-name = "permitt-core"
+name = "bramblers-permitt-core"
 description = "Read-only inventory of what each AI assistant on a machine may do without asking, and which setting says so"
 version.workspace = true
 edition.workspace = true
@@ -8,8 +8,8 @@ authors.workspace = true
 repository.workspace = true
 
 [dependencies]
-bbl-hostrules.workspace = true
-bbl-report.workspace = true
+bramblers-hostrules.workspace = true
+bramblers-report.workspace = true
 thiserror.workspace = true
 serde.workspace = true
 serde_json.workspace = true

@@ -5,8 +5,8 @@
 //! detected, where it keeps secrets, where its usage is shown. Schema in `docs/hosts.md`.
 //! Every claim names its source; the loader refuses a location without one.
 
-use bbl_hostrules::rules::{Location, Source};
-use bbl_hostrules::{Extension, HostExtension, HostRule, Rules};
+use bramblers_hostrules::rules::{Location, Source};
+use bramblers_hostrules::{Extension, HostExtension, HostRule, Rules};
 use serde::{Deserialize, Serialize};
 
 /// What the file is to Billfold (`kind` in the sheet — `role` is a common field).
@@ -209,54 +209,39 @@ pub type Sheets = Rules<BillLocation, BillHost>;
 
 /// The sheets shipped with Billfold, embedded at build time.
 pub const EMBEDDED: &[(&str, &str)] = &[
-    (
-        "_not-read.toml",
-        include_str!("../../../hosts/_not-read.toml"),
-    ),
-    ("aider.toml", include_str!("../../../hosts/aider.toml")),
-    ("amp.toml", include_str!("../../../hosts/amp.toml")),
+    ("_not-read.toml", include_str!("../../hosts/_not-read.toml")),
+    ("aider.toml", include_str!("../../hosts/aider.toml")),
+    ("amp.toml", include_str!("../../hosts/amp.toml")),
     (
         "claude-code.toml",
-        include_str!("../../../hosts/claude-code.toml"),
+        include_str!("../../hosts/claude-code.toml"),
     ),
     (
         "claude-desktop.toml",
-        include_str!("../../../hosts/claude-desktop.toml"),
+        include_str!("../../hosts/claude-desktop.toml"),
     ),
-    ("cline.toml", include_str!("../../../hosts/cline.toml")),
-    ("codex.toml", include_str!("../../../hosts/codex.toml")),
-    ("copilot.toml", include_str!("../../../hosts/copilot.toml")),
-    ("cursor.toml", include_str!("../../../hosts/cursor.toml")),
-    ("devin.toml", include_str!("../../../hosts/devin.toml")),
+    ("cline.toml", include_str!("../../hosts/cline.toml")),
+    ("codex.toml", include_str!("../../hosts/codex.toml")),
+    ("copilot.toml", include_str!("../../hosts/copilot.toml")),
+    ("cursor.toml", include_str!("../../hosts/cursor.toml")),
+    ("devin.toml", include_str!("../../hosts/devin.toml")),
     (
         "gemini-cli.toml",
-        include_str!("../../../hosts/gemini-cli.toml"),
+        include_str!("../../hosts/gemini-cli.toml"),
     ),
-    ("goose.toml", include_str!("../../../hosts/goose.toml")),
+    ("goose.toml", include_str!("../../hosts/goose.toml")),
     (
         "jetbrains-ai.toml",
-        include_str!("../../../hosts/jetbrains-ai.toml"),
+        include_str!("../../hosts/jetbrains-ai.toml"),
     ),
-    (
-        "kilo-code.toml",
-        include_str!("../../../hosts/kilo-code.toml"),
-    ),
-    ("kiro.toml", include_str!("../../../hosts/kiro.toml")),
-    (
-        "opencode.toml",
-        include_str!("../../../hosts/opencode.toml"),
-    ),
-    (
-        "qwen-code.toml",
-        include_str!("../../../hosts/qwen-code.toml"),
-    ),
-    (
-        "roo-code.toml",
-        include_str!("../../../hosts/roo-code.toml"),
-    ),
-    ("trae.toml", include_str!("../../../hosts/trae.toml")),
-    ("warp.toml", include_str!("../../../hosts/warp.toml")),
-    ("zed.toml", include_str!("../../../hosts/zed.toml")),
+    ("kilo-code.toml", include_str!("../../hosts/kilo-code.toml")),
+    ("kiro.toml", include_str!("../../hosts/kiro.toml")),
+    ("opencode.toml", include_str!("../../hosts/opencode.toml")),
+    ("qwen-code.toml", include_str!("../../hosts/qwen-code.toml")),
+    ("roo-code.toml", include_str!("../../hosts/roo-code.toml")),
+    ("trae.toml", include_str!("../../hosts/trae.toml")),
+    ("warp.toml", include_str!("../../hosts/warp.toml")),
+    ("zed.toml", include_str!("../../hosts/zed.toml")),
 ];
 
 /// Load the embedded sheets. A sheet that does not load is a bug, not a runtime condition.

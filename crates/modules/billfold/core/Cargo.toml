@@ -1,5 +1,5 @@
 [package]
-name = "billfold-core"
+name = "bramblers-billfold-core"
 description = "What Billfold reads and what it finds — no UI, no network"
 version.workspace = true
 edition.workspace = true
@@ -8,8 +8,8 @@ authors.workspace = true
 repository.workspace = true
 
 [dependencies]
-bbl-hostrules.workspace = true
-bbl-report.workspace = true
+bramblers-hostrules.workspace = true
+bramblers-report.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 toml.workspace = true
@@ -26,7 +26,7 @@ ignore.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
-bbl-report.workspace = true
+bramblers-report.workspace = true
 rusqlite.workspace = true
 chrono.workspace = true
 base64.workspace = true

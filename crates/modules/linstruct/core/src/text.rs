@@ -3,9 +3,9 @@
 
 use std::sync::OnceLock;
 
-use bbl_hostrules::read::parse;
-use bbl_hostrules::rules::Format;
-use bbl_hostrules::secrets;
+use bramblers_hostrules::read::parse;
+use bramblers_hostrules::rules::Format;
+use bramblers_hostrules::secrets;
 use regex::Regex;
 use serde_json::Value;
 

@@ -1,5 +1,5 @@
 [package]
-name = "lastrun-core"
+name = "bramblers-lastrun-core"
 description = "What the AI agents did on this machine, read back from the hosts' transcripts — no UI, no network"
 version.workspace = true
 edition.workspace = true
@@ -8,8 +8,8 @@ authors.workspace = true
 repository.workspace = true
 
 [dependencies]
-bbl-hostrules.workspace = true
-bbl-report.workspace = true
+bramblers-hostrules.workspace = true
+bramblers-report.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 toml.workspace = true
@@ -21,7 +21,7 @@ zstd.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
-bbl-report.workspace = true
+bramblers-report.workspace = true
 rusqlite.workspace = true
 chrono.workspace = true
 serde_json.workspace = true

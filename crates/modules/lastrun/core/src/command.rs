@@ -407,7 +407,7 @@ pub fn mask(text: &str) -> (String, Vec<Hit>) {
             if is_placeholder(v) {
                 v.to_string()
             } else {
-                let m = bbl_hostrules::secrets::mask(v);
+                let m = bramblers_hostrules::secrets::mask(v);
                 hits.push(Hit {
                     masked: m.clone(),
                     known: true,

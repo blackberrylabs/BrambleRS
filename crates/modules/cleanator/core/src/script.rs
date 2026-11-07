@@ -268,10 +268,16 @@ mod tests {
         let (text, n) = generate(&rep, &ScriptOptions::default());
         assert_eq!(n, 2);
         assert!(text.starts_with("#!/usr/bin/env bash"));
-        assert!(text.contains("set -uo pipefail"), "no -e: a failing block must not stop the rest");
+        assert!(
+            text.contains("set -uo pipefail"),
+            "no -e: a failing block must not stop the rest"
+        );
         assert!(text.contains("run 'pip-cache' rm -rf -- '/home/u/pip-cache'"));
         assert!(text.contains("run 'apt-archives' sudo apt-get clean"));
-        assert!(text.contains("block(s) failed"), "the balance names the failed blocks");
+        assert!(
+            text.contains("block(s) failed"),
+            "the balance names the failed blocks"
+        );
         assert!(text.contains("Free after"));
         assert!(
             !text.contains("gio trash"),

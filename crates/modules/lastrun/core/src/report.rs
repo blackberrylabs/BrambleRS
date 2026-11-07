@@ -2,7 +2,7 @@
 //! here is new: only what the CLI and the app already show — commands masked, no text of
 //! any exchange.
 
-use bbl_report::{
+use bramblers_report::{
     Action, ActionKind, Evidence, Finding, Module, Open, Report, Subject, SubjectKind, Summary,
     Tone,
 };

@@ -2,7 +2,7 @@
 //! here is new: only what the CLI and the app already show, secrets masked upstream.
 //! Findings of hosts absent from the machine (the app's "what if") are left out (L4).
 
-use bbl_report::{
+use bramblers_report::{
     Action, ActionKind, Evidence, Finding, Module, Open, Report, Subject, SubjectKind, Summary,
     Tone,
 };
@@ -41,7 +41,7 @@ pub fn build(inv: &Inventory, duration_ms: u64) -> Report {
         .max_by_key(|h| h.tokens_est);
     let act_now = present
         .iter()
-        .filter(|f| f.kind.severity() == bbl_report::Severity::ActNow)
+        .filter(|f| f.kind.severity() == bramblers_report::Severity::ActNow)
         .count();
     report.summary = vec![
         Summary {

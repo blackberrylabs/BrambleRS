@@ -4,8 +4,8 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use bbl_hostrules::env::{Env, Os};
-use linstruct_core::model::{Inventory, Kind};
+use bramblers_hostrules::env::{Env, Os};
+use bramblers_linstruct_core::model::{Inventory, Kind};
 
 fn write(p: &Path, s: &str) {
     fs::create_dir_all(p.parent().unwrap()).unwrap();
@@ -88,7 +88,7 @@ fn fixture() -> (tempfile::TempDir, PathBuf) {
 
 fn run(home: &Path, proj: &Path) -> Inventory {
     let env = Env::fixture(home, Os::Linux).with_roots(vec![proj.to_path_buf()]);
-    linstruct_core::scan(&env)
+    bramblers_linstruct_core::scan(&env)
 }
 
 fn kinds(inv: &Inventory, host: &str) -> Vec<(Kind, String)> {
@@ -142,7 +142,7 @@ fn claude_code_findings() {
         "Claude strips comments: {k:?}"
     );
     // dead imports: the missing file and the quoted path, not the existing one
-    let dead: Vec<&linstruct_core::Finding> = inv
+    let dead: Vec<&bramblers_linstruct_core::Finding> = inv
         .findings
         .iter()
         .filter(|f| f.host == "claude-code" && f.kind == Kind::DeadImport)
@@ -155,7 +155,7 @@ fn claude_code_findings() {
 fn codex_cuts_at_the_configured_budget() {
     let (tmp, proj) = fixture();
     let inv = run(tmp.path(), &proj);
-    let cut: Vec<&linstruct_core::Finding> = inv
+    let cut: Vec<&bramblers_linstruct_core::Finding> = inv
         .findings
         .iter()
         .filter(|f| f.host == "codex" && f.kind == Kind::Cut)
@@ -237,7 +237,7 @@ fn cursor_front_matter_cases() {
 fn absent_hosts_are_what_if_only() {
     let (tmp, proj) = fixture();
     let inv = run(tmp.path(), &proj);
-    let warp: Vec<&linstruct_core::Finding> =
+    let warp: Vec<&bramblers_linstruct_core::Finding> =
         inv.findings.iter().filter(|f| f.host == "warp").collect();
     assert!(
         warp.iter()
@@ -245,7 +245,7 @@ fn absent_hosts_are_what_if_only() {
         "{warp:#?}"
     );
     assert!(warp.iter().all(|f| !f.present));
-    let gemini: Vec<&linstruct_core::Finding> = inv
+    let gemini: Vec<&bramblers_linstruct_core::Finding> = inv
         .findings
         .iter()
         .filter(|f| f.host == "gemini-cli")
@@ -267,9 +267,9 @@ fn absent_hosts_are_what_if_only() {
     sorted.sort();
     assert_eq!(sev, sorted);
     // the report leaves the absent hosts out
-    let report = linstruct_core::report::build(&inv, 1);
+    let report = bramblers_linstruct_core::report::build(&inv, 1);
     assert_eq!(report.findings.len(), inv.present_findings().count());
-    bbl_report::conformance::check(&report.to_json()).unwrap();
+    bramblers_report::conformance::check(&report.to_json()).unwrap();
 }
 
 #[test]
@@ -279,8 +279,8 @@ fn two_projects_with_the_same_file_names_keep_distinct_findings() {
     fs::create_dir_all(&other).unwrap();
     fs::copy(proj.join("CLAUDE.md"), other.join("CLAUDE.md")).unwrap();
     let env = Env::fixture(tmp.path(), Os::Linux).with_roots(vec![proj.clone(), other.clone()]);
-    let inv = linstruct_core::scan(&env);
-    let long: Vec<&linstruct_core::Finding> = inv
+    let inv = bramblers_linstruct_core::scan(&env);
+    let long: Vec<&bramblers_linstruct_core::Finding> = inv
         .findings
         .iter()
         .filter(|f| f.host == "claude-code" && f.kind == Kind::OverLength)

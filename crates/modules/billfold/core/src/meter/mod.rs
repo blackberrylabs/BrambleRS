@@ -82,19 +82,19 @@ pub fn read(
 }
 
 pub(crate) fn u64_at(v: &Value, path: &str) -> u64 {
-    bbl_hostrules::read::get(v, path)
+    bramblers_hostrules::read::get(v, path)
         .and_then(|x| x.as_u64().or_else(|| x.as_f64().map(|f| f.max(0.0) as u64)))
         .unwrap_or(0)
 }
 
 pub(crate) fn str_at(v: &Value, path: &str) -> Option<String> {
-    bbl_hostrules::read::get(v, path)
+    bramblers_hostrules::read::get(v, path)
         .and_then(Value::as_str)
         .map(String::from)
 }
 
 pub(crate) fn time_at(v: &Value, path: &str, unit: &str) -> Option<DateTime<Utc>> {
-    bbl_hostrules::read::get(v, path).and_then(|x| crate::util::parse_time(x, unit))
+    bramblers_hostrules::read::get(v, path).and_then(|x| crate::util::parse_time(x, unit))
 }
 
 /// Read a text file, decompressing zstd by extension.

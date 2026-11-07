@@ -1330,9 +1330,16 @@ mod tests {
         let report = classify(&scan, &rules, &env, &copts);
         let doc = crate::report::build(&report, 3);
         let json = doc.to_json();
-        let back = bbl_report::conformance::check(&json).expect("the report conforms");
+        let back = bramblers_report::conformance::check(&json).expect("the report conforms");
         assert_eq!(back.module.id, "cleanator");
-        let figure = |k: &str| back.summary.iter().find(|s| s.key == k).unwrap().value.clone();
+        let figure = |k: &str| {
+            back.summary
+                .iter()
+                .find(|s| s.key == k)
+                .unwrap()
+                .value
+                .clone()
+        };
         assert_eq!(figure("safe"), crate::size::human(report.totals.safe));
         assert_eq!(figure("review"), crate::size::human(report.totals.review));
         // One finding per (rule, effective level) among the proposable items.
@@ -1352,13 +1359,17 @@ mod tests {
             assert_eq!(open.app, "cleanator");
             assert_eq!(open.args[0], home.display().to_string());
             assert_eq!(open.args[1], "--select");
-            assert!(rules.rules.iter().any(|r| r.id == open.args[2]), "{}", open.args[2]);
+            assert!(
+                rules.rules.iter().any(|r| r.id == open.args[2]),
+                "{}",
+                open.args[2]
+            );
             assert!(!f.evidence.is_empty());
         }
         // A `never` group is information; a large safe group is to review.
         for f in &back.findings {
             if f.kind == "never" {
-                assert_eq!(f.severity, bbl_report::Severity::Info);
+                assert_eq!(f.severity, bramblers_report::Severity::Info);
             }
         }
     }

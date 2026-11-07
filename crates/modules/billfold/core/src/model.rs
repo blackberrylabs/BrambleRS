@@ -6,7 +6,7 @@
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
-use bbl_report::Severity;
+use bramblers_report::Severity;
 use serde::Serialize;
 
 /// The kinds of finding. One slug each, one place on the four common severities.
@@ -391,7 +391,7 @@ pub struct Inventory {
     pub findings: Vec<Finding>,
     pub prices: PriceInfo,
     /// Hosts left out, with the reason.
-    pub not_read: Vec<bbl_hostrules::rules::NotRead>,
+    pub not_read: Vec<bramblers_hostrules::rules::NotRead>,
     pub notes: Vec<String>,
     pub errors: Vec<String>,
 }

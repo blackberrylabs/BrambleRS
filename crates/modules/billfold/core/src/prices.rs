@@ -14,7 +14,7 @@ use serde::Deserialize;
 use crate::model::{Billing, PriceInfo, Tokens};
 use crate::providers::{Provider, Providers};
 
-pub const EMBEDDED: &str = include_str!("../../../prices/apipriceindex.json");
+pub const EMBEDDED: &str = include_str!("../../prices/apipriceindex.json");
 
 #[derive(Debug, Clone, Deserialize)]
 struct Index {

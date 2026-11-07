@@ -4,9 +4,9 @@
 use std::path::Path;
 use std::time::{Duration, SystemTime};
 
-use bbl_hostrules::env::{Env, Os};
-use billfold_core::model::{Credit, GitState, Kind};
-use billfold_core::{scan_with, Options};
+use bramblers_billfold_core::model::{Credit, GitState, Kind};
+use bramblers_billfold_core::{scan_with, Options};
+use bramblers_hostrules::env::{Env, Os};
 
 fn write(p: &Path, text: &str) {
     std::fs::create_dir_all(p.parent().unwrap()).unwrap();
@@ -167,9 +167,9 @@ fn the_fixture_home_yields_every_kind_once_and_counts_right() {
     let env = Env::fixture(home, Os::Linux);
     let inv = scan_with(
         &env,
-        &billfold_core::sheets::embedded(),
-        &billfold_core::providers::embedded(),
-        billfold_core::prices::PriceTable::embedded(),
+        &bramblers_billfold_core::sheets::embedded(),
+        &bramblers_billfold_core::providers::embedded(),
+        bramblers_billfold_core::prices::PriceTable::embedded(),
         &Options::default(),
     );
     let kinds: Vec<Kind> = inv.findings.iter().map(|f| f.kind).collect();
@@ -344,8 +344,8 @@ fn the_fixture_home_yields_every_kind_once_and_counts_right() {
     assert_eq!(inv.quotas.len(), 2);
     assert_eq!(inv.quotas[0].used_percent, 91.0);
     // the report conforms and carries no secret
-    let report = billfold_core::report::build(&inv, 1).to_json();
-    assert!(bbl_report::conformance::check(&report).is_ok());
+    let report = bramblers_billfold_core::report::build(&inv, 1).to_json();
+    assert!(bramblers_report::conformance::check(&report).is_ok());
     assert!(!report.contains("SECRET"));
 }
 
@@ -369,9 +369,9 @@ fn an_old_qwen_chat_is_not_announced_as_pruned() {
     let env = Env::fixture(home, Os::Linux);
     let inv = scan_with(
         &env,
-        &billfold_core::sheets::embedded(),
-        &billfold_core::providers::embedded(),
-        billfold_core::prices::PriceTable::embedded(),
+        &bramblers_billfold_core::sheets::embedded(),
+        &bramblers_billfold_core::providers::embedded(),
+        bramblers_billfold_core::prices::PriceTable::embedded(),
         &Options::default(),
     );
     assert!(

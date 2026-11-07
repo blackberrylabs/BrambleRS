@@ -6,7 +6,7 @@ use std::collections::BTreeSet;
 use std::path::Path;
 use std::sync::OnceLock;
 
-use bbl_hostrules::rules::Source;
+use bramblers_hostrules::rules::Source;
 use regex::Regex;
 use serde::Deserialize;
 
@@ -95,14 +95,14 @@ fn rules_of(text: &str, file: &str) -> Vec<Rule> {
 impl Rules {
     pub fn embedded() -> Self {
         let pf: RuleFile =
-            toml::from_str(include_str!("../../../rules/packages.toml")).expect("packages.toml");
+            toml::from_str(include_str!("../../rules/packages.toml")).expect("packages.toml");
         Rules {
             destructive: rules_of(
-                include_str!("../../../rules/destructive.toml"),
+                include_str!("../../rules/destructive.toml"),
                 "destructive.toml",
             ),
             pipe: rules_of(
-                include_str!("../../../rules/pipe-to-shell.toml"),
+                include_str!("../../rules/pipe-to-shell.toml"),
                 "pipe-to-shell.toml",
             ),
             managers: pf

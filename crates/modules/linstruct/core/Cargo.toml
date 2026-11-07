@@ -1,5 +1,5 @@
 [package]
-name = "linstruct-core"
+name = "bramblers-linstruct-core"
 description = "What Linstruct reads and what it finds — no UI, no network"
 version.workspace = true
 edition.workspace = true
@@ -8,8 +8,8 @@ authors.workspace = true
 repository.workspace = true
 
 [dependencies]
-bbl-hostrules.workspace = true
-bbl-report.workspace = true
+bramblers-hostrules.workspace = true
+bramblers-report.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 regex.workspace = true
@@ -17,5 +17,5 @@ glob.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
-bbl-report.workspace = true
-bbl-hostrules.workspace = true
+bramblers-report.workspace = true
+bramblers-hostrules.workspace = true

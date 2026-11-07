@@ -1,7 +1,7 @@
 //! The `bbl-report/1` view of an inventory, for the Blackberrylabs control tower. Nothing
 //! here is new: only what the CLI and the app already show, secrets masked upstream.
 
-use bbl_report::{
+use bramblers_report::{
     Action, ActionKind, Evidence, Finding, Module, Open, Report, Subject, SubjectKind, Summary,
     Tone,
 };
@@ -49,7 +49,7 @@ pub fn build(inv: &Inventory, duration_ms: u64) -> Report {
     let act = inv
         .findings
         .iter()
-        .filter(|f| f.kind.severity() == bbl_report::Severity::ActNow)
+        .filter(|f| f.kind.severity() == bramblers_report::Severity::ActNow)
         .count();
     let tokens = inv.total_tokens();
     let usd = inv.total_usd();

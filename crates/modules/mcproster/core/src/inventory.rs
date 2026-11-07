@@ -8,8 +8,8 @@ use regex::Regex;
 use serde::Serialize;
 use serde_json::Value;
 
-use bbl_hostrules::resolve::{project_roots, resolve};
-use bbl_hostrules::Env;
+use bramblers_hostrules::resolve::{project_roots, resolve};
+use bramblers_hostrules::Env;
 
 use crate::hosts::{Entry, HostRule, Location, Rules};
 use crate::model::{Declaration, FileStatus, Finding, FindingKind, Server, Transport};
@@ -58,7 +58,7 @@ pub fn run(rules: &Rules, env: &Env) -> Inventory {
         let mut files_found = 0;
         let mut decls = 0;
         for (li, loc) in host.locations.iter().enumerate() {
-            for bbl_hostrules::resolve::Resolved {
+            for bramblers_hostrules::resolve::Resolved {
                 path: file,
                 project,
             } in resolve(loc, env, &roots)
@@ -199,7 +199,7 @@ pub fn package_cached(env: &Env, command: &str, package: &str) -> Option<bool> {
                 .join(package)
                 .join("package.json");
             Some(
-                bbl_hostrules::resolve::expand_glob(&pattern)
+                bramblers_hostrules::resolve::expand_glob(&pattern)
                     .into_iter()
                     .any(|p| p.is_file()),
             )
@@ -212,7 +212,7 @@ pub fn package_cached(env: &Env, command: &str, package: &str) -> Option<bool> {
                 .join(&name);
             let pattern2 = env.home.join(".local/pipx/venvs").join(package);
             Some(
-                bbl_hostrules::resolve::expand_glob(&pattern)
+                bramblers_hostrules::resolve::expand_glob(&pattern)
                     .into_iter()
                     .any(|p| p.is_dir())
                     || pattern2.is_dir(),

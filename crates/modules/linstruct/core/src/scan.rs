@@ -6,10 +6,10 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
-use bbl_hostrules::env::Env;
-use bbl_hostrules::read::{get, read_tree};
-use bbl_hostrules::resolve::{expand_glob, resolve};
-use bbl_hostrules::rules::{Scope, Source};
+use bramblers_hostrules::env::Env;
+use bramblers_hostrules::read::{get, read_tree};
+use bramblers_hostrules::resolve::{expand_glob, resolve};
+use bramblers_hostrules::rules::{Scope, Source};
 use serde_json::Value;
 
 use crate::model::{
@@ -64,7 +64,7 @@ pub fn scan_with(env: &Env, sheets: &Sheets) -> Inventory {
 
 struct Candidate<'a> {
     loc_index: usize,
-    loc: &'a bbl_hostrules::rules::Location<InstrLocation>,
+    loc: &'a bramblers_hostrules::rules::Location<InstrLocation>,
     path: PathBuf,
     /// Directory the file was looked for in (project root, a nested directory, or the
     /// user directory), for `only_if_absent` and depth.
@@ -783,7 +783,7 @@ impl<'a> Scanner<'a> {
         present: bool,
         project: Option<&Path>,
         f: usize,
-        loc: Option<&bbl_hostrules::rules::Location<InstrLocation>>,
+        loc: Option<&bramblers_hostrules::rules::Location<InstrLocation>>,
         slots: &mut Vec<Slot>,
     ) {
         let Some(text) = self.texts[f].clone() else {
@@ -1048,7 +1048,7 @@ impl<'a> Scanner<'a> {
         host: &HostSheet,
         present: bool,
         project: Option<&Path>,
-        loc: &bbl_hostrules::rules::Location<InstrLocation>,
+        loc: &bramblers_hostrules::rules::Location<InstrLocation>,
         f: usize,
         fm: &rules::FrontMatter,
     ) -> Option<(SlotState, String)> {
@@ -1168,7 +1168,7 @@ impl<'a> Scanner<'a> {
         host: &HostSheet,
         present: bool,
         project: Option<&Path>,
-        loc: &bbl_hostrules::rules::Location<InstrLocation>,
+        loc: &bramblers_hostrules::rules::Location<InstrLocation>,
         f: usize,
         fm: &rules::FrontMatter,
         shown: &str,
@@ -1902,8 +1902,11 @@ fn role_name(r: Role) -> String {
 }
 
 /// The path specs of a location for this OS, as written in the sheet.
-fn spec_strings(loc: &bbl_hostrules::rules::Location<InstrLocation>, env: &Env) -> Vec<String> {
-    use bbl_hostrules::env::Os;
+fn spec_strings(
+    loc: &bramblers_hostrules::rules::Location<InstrLocation>,
+    env: &Env,
+) -> Vec<String> {
+    use bramblers_hostrules::env::Os;
     let mut v: Vec<String> = Vec::new();
     if let Some(a) = &loc.path.any {
         v.extend(a.iter().map(String::from));

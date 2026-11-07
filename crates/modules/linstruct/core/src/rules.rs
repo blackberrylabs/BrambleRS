@@ -4,8 +4,8 @@
 //! its recommended length, how it is detected. Schema documented in `docs/hosts.md`.
 //! Every claim in a sheet names its source; the loader refuses a location without one.
 
-use bbl_hostrules::rules::{Format, Location, Scope, Source};
-use bbl_hostrules::{Extension, HostExtension, HostRule, Rules};
+use bramblers_hostrules::rules::{Format, Location, Scope, Source};
+use bramblers_hostrules::{Extension, HostExtension, HostRule, Rules};
 use serde::{Deserialize, Serialize};
 
 /// What the file is to the host (`kind` in the sheet — `role` is a common field of
@@ -294,7 +294,7 @@ pub struct Sourced {
 
 impl HostExtension for InstrHost {
     fn validate<X: Extension>(rule: &HostRule<X, Self>) -> Result<(), String> {
-        if rule.status == bbl_hostrules::rules::Status::Active
+        if rule.status == bramblers_hostrules::rules::Status::Active
             && rule.ext.detect.paths.is_empty()
             && rule.ext.detect.binaries.is_empty()
         {
@@ -323,54 +323,39 @@ pub type Sheets = Rules<InstrLocation, InstrHost>;
 
 /// The sheets embedded in the binary, one per host.
 pub const EMBEDDED: &[(&str, &str)] = &[
-    (
-        "_not-read.toml",
-        include_str!("../../../hosts/_not-read.toml"),
-    ),
-    ("aider.toml", include_str!("../../../hosts/aider.toml")),
-    ("amp.toml", include_str!("../../../hosts/amp.toml")),
+    ("_not-read.toml", include_str!("../../hosts/_not-read.toml")),
+    ("aider.toml", include_str!("../../hosts/aider.toml")),
+    ("amp.toml", include_str!("../../hosts/amp.toml")),
     (
         "claude-code.toml",
-        include_str!("../../../hosts/claude-code.toml"),
+        include_str!("../../hosts/claude-code.toml"),
     ),
-    ("cline.toml", include_str!("../../../hosts/cline.toml")),
-    ("codex.toml", include_str!("../../../hosts/codex.toml")),
-    ("copilot.toml", include_str!("../../../hosts/copilot.toml")),
-    ("cursor.toml", include_str!("../../../hosts/cursor.toml")),
+    ("cline.toml", include_str!("../../hosts/cline.toml")),
+    ("codex.toml", include_str!("../../hosts/codex.toml")),
+    ("copilot.toml", include_str!("../../hosts/copilot.toml")),
+    ("cursor.toml", include_str!("../../hosts/cursor.toml")),
     (
         "devin-desktop.toml",
-        include_str!("../../../hosts/devin-desktop.toml"),
+        include_str!("../../hosts/devin-desktop.toml"),
     ),
     (
         "gemini-cli.toml",
-        include_str!("../../../hosts/gemini-cli.toml"),
+        include_str!("../../hosts/gemini-cli.toml"),
     ),
-    ("goose.toml", include_str!("../../../hosts/goose.toml")),
+    ("goose.toml", include_str!("../../hosts/goose.toml")),
     (
         "jetbrains-ai.toml",
-        include_str!("../../../hosts/jetbrains-ai.toml"),
+        include_str!("../../hosts/jetbrains-ai.toml"),
     ),
-    ("junie.toml", include_str!("../../../hosts/junie.toml")),
-    (
-        "kilo-code.toml",
-        include_str!("../../../hosts/kilo-code.toml"),
-    ),
-    ("kiro.toml", include_str!("../../../hosts/kiro.toml")),
-    (
-        "opencode.toml",
-        include_str!("../../../hosts/opencode.toml"),
-    ),
-    (
-        "qwen-code.toml",
-        include_str!("../../../hosts/qwen-code.toml"),
-    ),
-    (
-        "roo-code.toml",
-        include_str!("../../../hosts/roo-code.toml"),
-    ),
-    ("trae.toml", include_str!("../../../hosts/trae.toml")),
-    ("warp.toml", include_str!("../../../hosts/warp.toml")),
-    ("zed.toml", include_str!("../../../hosts/zed.toml")),
+    ("junie.toml", include_str!("../../hosts/junie.toml")),
+    ("kilo-code.toml", include_str!("../../hosts/kilo-code.toml")),
+    ("kiro.toml", include_str!("../../hosts/kiro.toml")),
+    ("opencode.toml", include_str!("../../hosts/opencode.toml")),
+    ("qwen-code.toml", include_str!("../../hosts/qwen-code.toml")),
+    ("roo-code.toml", include_str!("../../hosts/roo-code.toml")),
+    ("trae.toml", include_str!("../../hosts/trae.toml")),
+    ("warp.toml", include_str!("../../hosts/warp.toml")),
+    ("zed.toml", include_str!("../../hosts/zed.toml")),
 ];
 
 /// The embedded sheets, validated. A sheet that does not load is a bug in the binary.

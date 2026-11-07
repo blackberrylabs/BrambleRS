@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use bbl_hostrules::env::{Env, Os};
+use bramblers_hostrules::env::{Env, Os};
 
 #[test]
 fn the_core_never_writes_and_never_reaches_the_network() {
@@ -40,10 +40,11 @@ fn the_core_never_writes_and_never_reaches_the_network() {
 fn the_report_conforms() {
     let tmp = tempfile::tempdir().unwrap();
     let env = Env::fixture(tmp.path(), Os::Linux);
-    let inv = billfold_core::scan(&env);
-    let report = billfold_core::report::build(&inv, 1);
+    let inv = bramblers_billfold_core::scan(&env);
+    let report = bramblers_billfold_core::report::build(&inv, 1);
     let json = report.to_json();
-    let back = bbl_report::conformance::check(&json).expect("the report conforms to bbl-report/1");
+    let back =
+        bramblers_report::conformance::check(&json).expect("the report conforms to bbl-report/1");
     assert_eq!(back.module.id, "billfold");
     assert_eq!(back.module.verb, "tally");
     assert_eq!(back.findings.len(), inv.findings.len());
@@ -74,7 +75,7 @@ fn a_planted_key_never_leaves_the_machine_and_nothing_is_written() {
     std::fs::write(home.join(".claude/.credentials.json"), r#"{"claudeAiOauth":{"accessToken":"sk-ant-oat01-SECRETSECRETSECRETSECRET","refreshToken":"r","expiresAt":1890000000000,"subscriptionType":"max","rateLimitTier":"default_claude_max_5x"}}"#).unwrap();
     let before = walk(home);
     let env = Env::fixture(home, Os::Linux);
-    let inv = billfold_core::scan(&env);
+    let inv = bramblers_billfold_core::scan(&env);
     let json = serde_json::to_string(&inv).unwrap();
     assert!(
         !json.contains(&secret),
@@ -82,7 +83,7 @@ fn a_planted_key_never_leaves_the_machine_and_nothing_is_written() {
     );
     assert!(!json.contains("QQQQQQQQ"));
     assert!(!json.contains("SECRETSECRET"));
-    let report = billfold_core::report::build(&inv, 1).to_json();
+    let report = bramblers_billfold_core::report::build(&inv, 1).to_json();
     assert!(!report.contains("QQQQQQQQ") && !report.contains("SECRETSECRET"));
     assert_eq!(walk(home), before);
     // and the facts are there
@@ -92,11 +93,11 @@ fn a_planted_key_never_leaves_the_machine_and_nothing_is_written() {
     assert!(inv
         .findings
         .iter()
-        .any(|f| f.kind == billfold_core::Kind::ClearSecret));
+        .any(|f| f.kind == bramblers_billfold_core::Kind::ClearSecret));
     assert!(
         inv.findings
             .iter()
-            .any(|f| f.kind == billfold_core::Kind::DoubleCredit),
+            .any(|f| f.kind == bramblers_billfold_core::Kind::DoubleCredit),
         "{:?}",
         inv.findings.iter().map(|f| &f.id).collect::<Vec<_>>()
     );
@@ -107,7 +108,7 @@ fn a_planted_key_never_leaves_the_machine_and_nothing_is_written() {
         .expect("a Claude Code account");
     assert_eq!(
         claude.credit,
-        billfold_core::model::Credit::Subscription {
+        bramblers_billfold_core::model::Credit::Subscription {
             plan: Some("max".into())
         }
     );

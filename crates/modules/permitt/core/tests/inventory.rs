@@ -4,9 +4,9 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use permitt_core::env::Os;
-use permitt_core::model::{Capability, FindingKind, Level, State};
-use permitt_core::{inventory, rules, Env, Options};
+use bramblers_permitt_core::env::Os;
+use bramblers_permitt_core::model::{Capability, FindingKind, Level, State};
+use bramblers_permitt_core::{inventory, rules, Env, Options};
 
 fn copy_fixture(home: &Path) {
     let src = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/home");
@@ -333,12 +333,19 @@ fn report_conforms() {
     let (tmp, inv) = run();
     let env = Env::fixture(tmp.path(), Os::Linux);
     let rules = rules::embedded();
-    let report = permitt_core::report::build(&inv, &rules, &env, 7);
+    let report = bramblers_permitt_core::report::build(&inv, &rules, &env, 7);
     let json = report.to_json();
-    let back = bbl_report::conformance::check(&json).expect("the report conforms");
+    let back = bramblers_report::conformance::check(&json).expect("the report conforms");
     assert_eq!(back.module.id, "permitt");
     assert_eq!(back.duration_ms, 7);
-    let figure = |k: &str| back.summary.iter().find(|s| s.key == k).unwrap().value.clone();
+    let figure = |k: &str| {
+        back.summary
+            .iter()
+            .find(|s| s.key == k)
+            .unwrap()
+            .value
+            .clone()
+    };
     assert_eq!(figure("hosts"), inv.hosts.len().to_string());
     assert_eq!(figure("findings"), inv.findings.len().to_string());
     let shell_hits: usize = inv.hosts.iter().map(|h| h.shell.len()).sum();
@@ -350,15 +357,30 @@ fn report_conforms() {
         .filter(|h| h.capabilities.iter().any(|c| c.state == State::Unknown))
         .count();
     assert_eq!(back.findings.len(), inv.findings.len() + unknown_hosts);
-    assert!(back.findings.iter().any(|f| f.kind == "shell-bypass" && f.severity == bbl_report::Severity::ActNow));
-    assert!(back.findings.iter().any(|f| f.kind == "runs-without-asking" && f.severity == bbl_report::Severity::Review));
-    assert!(back.findings.iter().any(|f| f.kind == "unknown" && f.severity == bbl_report::Severity::Info));
+    assert!(back
+        .findings
+        .iter()
+        .any(|f| f.kind == "shell-bypass" && f.severity == bramblers_report::Severity::ActNow));
+    assert!(back.findings.iter().any(
+        |f| f.kind == "runs-without-asking" && f.severity == bramblers_report::Severity::Review
+    ));
+    assert!(back
+        .findings
+        .iter()
+        .any(|f| f.kind == "unknown" && f.severity == bramblers_report::Severity::Info));
     // Every finding opens the app at a cell, and secrets never leak.
     for f in &back.findings {
         let open = f.open.as_ref().unwrap();
         assert_eq!(open.app, "permitt-app");
         assert_eq!(open.args[0], "--select");
-        assert!(inv.hosts.iter().any(|h| open.args[1].starts_with(&h.host)), "{}", open.args[1]);
+        assert!(
+            inv.hosts.iter().any(|h| open.args[1].starts_with(&h.host)),
+            "{}",
+            open.args[1]
+        );
     }
-    assert!(!json.contains("SHOULDNEVERSHOW") && !json.contains("SHOULD-NEVER-SHOW"), "a masked secret stays masked");
+    assert!(
+        !json.contains("SHOULDNEVERSHOW") && !json.contains("SHOULD-NEVER-SHOW"),
+        "a masked secret stays masked"
+    );
 }

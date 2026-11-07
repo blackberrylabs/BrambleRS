@@ -32,12 +32,14 @@ fn the_core_never_writes_and_never_reaches_the_network() {
 #[test]
 fn the_report_conforms() {
     let tmp = tempfile::tempdir().unwrap();
-    let env = bbl_hostrules::env::Env::fixture(tmp.path(), bbl_hostrules::env::Os::Linux)
-        .with_roots(vec![tmp.path().to_path_buf()]);
-    let inv = linstruct_core::scan(&env);
-    let report = linstruct_core::report::build(&inv, 1);
+    let env =
+        bramblers_hostrules::env::Env::fixture(tmp.path(), bramblers_hostrules::env::Os::Linux)
+            .with_roots(vec![tmp.path().to_path_buf()]);
+    let inv = bramblers_linstruct_core::scan(&env);
+    let report = bramblers_linstruct_core::report::build(&inv, 1);
     let json = report.to_json();
-    let back = bbl_report::conformance::check(&json).expect("the report conforms to bbl-report/1");
+    let back =
+        bramblers_report::conformance::check(&json).expect("the report conforms to bbl-report/1");
     assert_eq!(back.module.id, "linstruct");
     assert_eq!(back.findings.len(), inv.findings.len());
     for f in &back.findings {
@@ -55,16 +57,17 @@ fn a_scan_writes_nothing() {
     )
     .unwrap();
     let before: Vec<_> = walk(tmp.path());
-    let env = bbl_hostrules::env::Env::fixture(tmp.path(), bbl_hostrules::env::Os::Linux)
-        .with_roots(vec![tmp.path().to_path_buf()]);
-    let inv = linstruct_core::scan(&env);
+    let env =
+        bramblers_hostrules::env::Env::fixture(tmp.path(), bramblers_hostrules::env::Os::Linux)
+            .with_roots(vec![tmp.path().to_path_buf()]);
+    let inv = bramblers_linstruct_core::scan(&env);
     // the secret never appears in clear in the inventory
     let json = serde_json::to_string(&inv).unwrap();
     assert!(!json.contains("abcdefghijklmnopqrstuvwxyz0123456789"));
     assert!(inv
         .findings
         .iter()
-        .any(|f| f.kind == linstruct_core::Kind::Secret));
+        .any(|f| f.kind == bramblers_linstruct_core::Kind::Secret));
     assert_eq!(walk(tmp.path()), before);
 }
 

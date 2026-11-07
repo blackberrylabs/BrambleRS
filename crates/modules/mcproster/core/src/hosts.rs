@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-pub use bbl_hostrules::rules::{
+pub use bramblers_hostrules::rules::{
     Format, NotRead, OneOrMany, PathSpec, RuleError, Scope, Source, SourceKind, Status,
 };
 
@@ -53,7 +53,7 @@ impl McpLocation {
     }
 }
 
-impl bbl_hostrules::Extension for McpLocation {
+impl bramblers_hostrules::Extension for McpLocation {
     fn validate(loc: &Location) -> Result<(), String> {
         if loc.ext.servers_key.trim().is_empty() && loc.role.as_deref() != Some("settings") {
             return Err("empty servers_key".into());
@@ -65,69 +65,48 @@ impl bbl_hostrules::Extension for McpLocation {
     }
 }
 
-pub type Location = bbl_hostrules::Location<McpLocation>;
-pub type HostRule = bbl_hostrules::HostRule<McpLocation>;
-pub type Rules = bbl_hostrules::Rules<McpLocation>;
+pub type Location = bramblers_hostrules::Location<McpLocation>;
+pub type HostRule = bramblers_hostrules::HostRule<McpLocation>;
+pub type Rules = bramblers_hostrules::Rules<McpLocation>;
 
 /// The rule files shipped inside the binary, so the tool works without a `hosts/`
 /// directory next to it. Kept in sync with the repository by `include_str!`.
 pub const EMBEDDED: &[(&str, &str)] = &[
-    (
-        "_not-read.toml",
-        include_str!("../../../hosts/_not-read.toml"),
-    ),
-    ("amp.toml", include_str!("../../../hosts/amp.toml")),
+    ("_not-read.toml", include_str!("../../hosts/_not-read.toml")),
+    ("amp.toml", include_str!("../../hosts/amp.toml")),
     (
         "claude-code.toml",
-        include_str!("../../../hosts/claude-code.toml"),
+        include_str!("../../hosts/claude-code.toml"),
     ),
     (
         "claude-desktop-extensions.toml",
-        include_str!("../../../hosts/claude-desktop-extensions.toml"),
+        include_str!("../../hosts/claude-desktop-extensions.toml"),
     ),
     (
         "claude-desktop.toml",
-        include_str!("../../../hosts/claude-desktop.toml"),
+        include_str!("../../hosts/claude-desktop.toml"),
     ),
-    ("cline.toml", include_str!("../../../hosts/cline.toml")),
-    ("codex.toml", include_str!("../../../hosts/codex.toml")),
-    (
-        "continue.toml",
-        include_str!("../../../hosts/continue.toml"),
-    ),
+    ("cline.toml", include_str!("../../hosts/cline.toml")),
+    ("codex.toml", include_str!("../../hosts/codex.toml")),
+    ("continue.toml", include_str!("../../hosts/continue.toml")),
     (
         "copilot-cli.toml",
-        include_str!("../../../hosts/copilot-cli.toml"),
+        include_str!("../../hosts/copilot-cli.toml"),
     ),
-    ("cursor.toml", include_str!("../../../hosts/cursor.toml")),
+    ("cursor.toml", include_str!("../../hosts/cursor.toml")),
     (
         "gemini-cli.toml",
-        include_str!("../../../hosts/gemini-cli.toml"),
+        include_str!("../../hosts/gemini-cli.toml"),
     ),
-    ("goose.toml", include_str!("../../../hosts/goose.toml")),
-    ("kiro.toml", include_str!("../../../hosts/kiro.toml")),
-    (
-        "lm-studio.toml",
-        include_str!("../../../hosts/lm-studio.toml"),
-    ),
-    (
-        "opencode.toml",
-        include_str!("../../../hosts/opencode.toml"),
-    ),
-    (
-        "qwen-code.toml",
-        include_str!("../../../hosts/qwen-code.toml"),
-    ),
-    (
-        "roo-code.toml",
-        include_str!("../../../hosts/roo-code.toml"),
-    ),
-    ("vscode.toml", include_str!("../../../hosts/vscode.toml")),
-    (
-        "windsurf.toml",
-        include_str!("../../../hosts/windsurf.toml"),
-    ),
-    ("zed.toml", include_str!("../../../hosts/zed.toml")),
+    ("goose.toml", include_str!("../../hosts/goose.toml")),
+    ("kiro.toml", include_str!("../../hosts/kiro.toml")),
+    ("lm-studio.toml", include_str!("../../hosts/lm-studio.toml")),
+    ("opencode.toml", include_str!("../../hosts/opencode.toml")),
+    ("qwen-code.toml", include_str!("../../hosts/qwen-code.toml")),
+    ("roo-code.toml", include_str!("../../hosts/roo-code.toml")),
+    ("vscode.toml", include_str!("../../hosts/vscode.toml")),
+    ("windsurf.toml", include_str!("../../hosts/windsurf.toml")),
+    ("zed.toml", include_str!("../../hosts/zed.toml")),
 ];
 
 /// The embedded rules, validated. Panics only if the repository ships an invalid rule,

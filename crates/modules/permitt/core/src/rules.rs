@@ -5,8 +5,8 @@
 
 use std::collections::BTreeMap;
 
-use bbl_hostrules::rules::{Source, Status};
-use bbl_hostrules::{Extension, HostExtension};
+use bramblers_hostrules::rules::{Source, Status};
+use bramblers_hostrules::{Extension, HostExtension};
 use serde::{Deserialize, Serialize};
 
 use crate::model::{Capability, Level, PrecedenceStatus, State};
@@ -18,8 +18,8 @@ pub struct PermLocation {
 }
 
 impl Extension for PermLocation {
-    fn validate(loc: &bbl_hostrules::Location<Self>) -> Result<(), String> {
-        use bbl_hostrules::Scope;
+    fn validate(loc: &bramblers_hostrules::Location<Self>) -> Result<(), String> {
+        use bramblers_hostrules::Scope;
         let ok = match loc.ext.level {
             Level::Managed => loc.scope == Scope::System,
             Level::User => loc.scope == Scope::User,
@@ -181,7 +181,7 @@ pub struct PermHost {
 }
 
 impl HostExtension for PermHost {
-    fn validate<X: Extension>(rule: &bbl_hostrules::HostRule<X, Self>) -> Result<(), String> {
+    fn validate<X: Extension>(rule: &bramblers_hostrules::HostRule<X, Self>) -> Result<(), String> {
         if rule.status != Status::Active {
             return Ok(());
         }
@@ -220,7 +220,8 @@ impl HostExtension for PermHost {
             if s.source.quote.trim().is_empty() {
                 return Err(at("source needs a quote".into()));
             }
-            if s.source.kind != bbl_hostrules::SourceKind::Observed && s.source.url.is_none() {
+            if s.source.kind != bramblers_hostrules::SourceKind::Observed && s.source.url.is_none()
+            {
                 return Err(at(
                     "a documentation or source-code source needs a URL".into()
                 ));
@@ -303,9 +304,9 @@ impl HostExtension for PermHost {
     }
 }
 
-pub type Location = bbl_hostrules::Location<PermLocation>;
-pub type HostRule = bbl_hostrules::HostRule<PermLocation, PermHost>;
-pub type Rules = bbl_hostrules::Rules<PermLocation, PermHost>;
+pub type Location = bramblers_hostrules::Location<PermLocation>;
+pub type HostRule = bramblers_hostrules::HostRule<PermLocation, PermHost>;
+pub type Rules = bramblers_hostrules::Rules<PermLocation, PermHost>;
 
 /// A bypass flag or variable to look for in shell start-up files (D2): a closed, sourced list.
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -339,50 +340,41 @@ impl ShellRules {
 
 /// The rule files shipped inside the binary.
 pub const EMBEDDED: &[(&str, &str)] = &[
-    (
-        "_not-read.toml",
-        include_str!("../../../hosts/_not-read.toml"),
-    ),
-    ("aider.toml", include_str!("../../../hosts/aider.toml")),
-    ("amp.toml", include_str!("../../../hosts/amp.toml")),
+    ("_not-read.toml", include_str!("../../hosts/_not-read.toml")),
+    ("aider.toml", include_str!("../../hosts/aider.toml")),
+    ("amp.toml", include_str!("../../hosts/amp.toml")),
     (
         "claude-code.toml",
-        include_str!("../../../hosts/claude-code.toml"),
+        include_str!("../../hosts/claude-code.toml"),
     ),
-    ("cline.toml", include_str!("../../../hosts/cline.toml")),
-    ("codex.toml", include_str!("../../../hosts/codex.toml")),
+    ("cline.toml", include_str!("../../hosts/cline.toml")),
+    ("codex.toml", include_str!("../../hosts/codex.toml")),
     (
         "copilot-cli.toml",
-        include_str!("../../../hosts/copilot-cli.toml"),
+        include_str!("../../hosts/copilot-cli.toml"),
     ),
-    ("cursor.toml", include_str!("../../../hosts/cursor.toml")),
+    ("cursor.toml", include_str!("../../hosts/cursor.toml")),
     (
         "cursor-cli.toml",
-        include_str!("../../../hosts/cursor-cli.toml"),
+        include_str!("../../hosts/cursor-cli.toml"),
     ),
     (
         "devin-desktop.toml",
-        include_str!("../../../hosts/devin-desktop.toml"),
+        include_str!("../../hosts/devin-desktop.toml"),
     ),
     (
         "gemini-cli.toml",
-        include_str!("../../../hosts/gemini-cli.toml"),
+        include_str!("../../hosts/gemini-cli.toml"),
     ),
-    ("goose.toml", include_str!("../../../hosts/goose.toml")),
-    ("kiro.toml", include_str!("../../../hosts/kiro.toml")),
-    (
-        "opencode.toml",
-        include_str!("../../../hosts/opencode.toml"),
-    ),
-    (
-        "qwen-code.toml",
-        include_str!("../../../hosts/qwen-code.toml"),
-    ),
-    ("vscode.toml", include_str!("../../../hosts/vscode.toml")),
-    ("zed.toml", include_str!("../../../hosts/zed.toml")),
+    ("goose.toml", include_str!("../../hosts/goose.toml")),
+    ("kiro.toml", include_str!("../../hosts/kiro.toml")),
+    ("opencode.toml", include_str!("../../hosts/opencode.toml")),
+    ("qwen-code.toml", include_str!("../../hosts/qwen-code.toml")),
+    ("vscode.toml", include_str!("../../hosts/vscode.toml")),
+    ("zed.toml", include_str!("../../hosts/zed.toml")),
 ];
 
-pub const EMBEDDED_SHELL: &str = include_str!("../../../hosts/_shell.toml");
+pub const EMBEDDED_SHELL: &str = include_str!("../../hosts/_shell.toml");
 
 /// The embedded rules, validated. Panics only if the repository ships an invalid rule, which
 /// the test suite prevents.

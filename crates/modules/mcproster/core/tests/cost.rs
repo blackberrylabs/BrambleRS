@@ -4,11 +4,11 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use mcproster_core::cost::{self, HOST_THRESHOLD, SERVER_THRESHOLD};
-use mcproster_core::env::Os;
-use mcproster_core::model::FindingKind;
-use mcproster_core::probe::{ProbeResult, ToolInfo};
-use mcproster_core::{hosts, inventory, Env};
+use bramblers_mcproster_core::cost::{self, HOST_THRESHOLD, SERVER_THRESHOLD};
+use bramblers_mcproster_core::env::Os;
+use bramblers_mcproster_core::model::FindingKind;
+use bramblers_mcproster_core::probe::{ProbeResult, ToolInfo};
+use bramblers_mcproster_core::{hosts, inventory, Env};
 
 fn copy_fixture(home: &Path) {
     let src = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/home");

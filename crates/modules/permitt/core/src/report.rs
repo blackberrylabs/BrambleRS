@@ -6,7 +6,10 @@
 
 use std::collections::BTreeSet;
 
-use bbl_report::{Action, ActionKind, Evidence, Finding, Module, Open, Report, Severity, Subject, SubjectKind, Summary, Tone};
+use bramblers_report::{
+    Action, ActionKind, Evidence, Finding, Module, Open, Report, Severity, Subject, SubjectKind,
+    Summary, Tone,
+};
 
 use crate::model::{Capability, FindingKind, HostSheet, Level, State};
 use crate::rules::Rules;
@@ -73,10 +76,30 @@ pub fn build(inv: &Inventory, rules: &Rules, env: &Env, duration_ms: u64) -> Rep
     let shell: usize = inv.hosts.iter().map(|h| h.shell.len()).sum();
     let zero_is_good = |n: usize| if n == 0 { Tone::Good } else { Tone::Alert };
     report.summary = vec![
-        Summary { key: "hosts".into(), label: "Hosts installed".into(), value: inv.hosts.len().to_string(), tone: Tone::Neutral },
-        Summary { key: "auto".into(), label: "Run without asking".into(), value: auto.to_string(), tone: zero_is_good(auto) },
-        Summary { key: "findings".into(), label: "Findings".into(), value: inv.findings.len().to_string(), tone: zero_is_good(inv.findings.len()) },
-        Summary { key: "shell".into(), label: "Bypass flags in shell files".into(), value: shell.to_string(), tone: zero_is_good(shell) },
+        Summary {
+            key: "hosts".into(),
+            label: "Hosts installed".into(),
+            value: inv.hosts.len().to_string(),
+            tone: Tone::Neutral,
+        },
+        Summary {
+            key: "auto".into(),
+            label: "Run without asking".into(),
+            value: auto.to_string(),
+            tone: zero_is_good(auto),
+        },
+        Summary {
+            key: "findings".into(),
+            label: "Findings".into(),
+            value: inv.findings.len().to_string(),
+            tone: zero_is_good(inv.findings.len()),
+        },
+        Summary {
+            key: "shell".into(),
+            label: "Bypass flags in shell files".into(),
+            value: shell.to_string(),
+            tone: zero_is_good(shell),
+        },
     ];
 
     let mut ids = BTreeSet::new();
@@ -113,12 +136,20 @@ pub fn build(inv: &Inventory, rules: &Rules, env: &Env, duration_ms: u64) -> Rep
             if doc_url.is_none() {
                 doc_url = e.source.url.clone();
             }
-            evidence.push(Evidence { label, path: e.file.as_ref().map(|p| p.display().to_string()), line: e.line.map(|l| l as u32) });
+            evidence.push(Evidence {
+                label,
+                path: e.file.as_ref().map(|p| p.display().to_string()),
+                line: e.line.map(|l| l as u32),
+            });
         }
         // A shell finding carries no evidence of its own: the hit it comes from has the
         // file, the line and the matching text (secrets masked).
         if f.kind == FindingKind::ShellBypass {
-            let hits = inv.hosts.iter().filter(|h| h.host == f.host).flat_map(|h| &h.shell);
+            let hits = inv
+                .hosts
+                .iter()
+                .filter(|h| h.host == f.host)
+                .flat_map(|h| &h.shell);
             for hit in hits {
                 let at = format!("`{}` in {}:{}", hit.flag, short(&hit.file, env), hit.line);
                 if f.message.starts_with(&at) {
@@ -136,20 +167,35 @@ pub fn build(inv: &Inventory, rules: &Rules, env: &Env, duration_ms: u64) -> Rep
         }
         let mut actions = Vec::new();
         if let Some(act) = rules.host(&f.host).and_then(|r| r.hint("act")) {
-            actions.push(Action { kind: ActionKind::Hint, label: act.to_string(), target: None });
+            actions.push(Action {
+                kind: ActionKind::Hint,
+                label: act.to_string(),
+                target: None,
+            });
         }
         for p in &files {
-            actions.push(Action { kind: ActionKind::OpenFile, label: format!("Open {}", short(p, env)), target: Some(p.display().to_string()) });
+            actions.push(Action {
+                kind: ActionKind::OpenFile,
+                label: format!("Open {}", short(p, env)),
+                target: Some(p.display().to_string()),
+            });
         }
         if let Some(url) = doc_url {
-            actions.push(Action { kind: ActionKind::OpenUrl, label: "Documentation".into(), target: Some(url) });
+            actions.push(Action {
+                kind: ActionKind::OpenUrl,
+                label: "Documentation".into(),
+                target: Some(url),
+            });
         }
         report.findings.push(Finding {
             id,
             severity: severity_of(f.kind),
             kind: kind_slug(f.kind).into(),
             title,
-            subject: Subject { kind: SubjectKind::Host, label: subject_label },
+            subject: Subject {
+                kind: SubjectKind::Host,
+                label: subject_label,
+            },
             detail,
             evidence,
             actions,
@@ -162,21 +208,43 @@ pub fn build(inv: &Inventory, rules: &Rules, env: &Env, duration_ms: u64) -> Rep
         push_unknown(&mut report, &mut ids, h, rules, env);
     }
 
-    report.notes.push(format!("{} shell file(s) read", inv.shell_files.len()));
+    report
+        .notes
+        .push(format!("{} shell file(s) read", inv.shell_files.len()));
     if !inv.roots.is_empty() {
-        report.notes.push(format!("{} project root(s) looked at", inv.roots.len()));
+        report
+            .notes
+            .push(format!("{} project root(s) looked at", inv.roots.len()));
     }
     if !inv.not_read.is_empty() {
-        report.notes.push(format!("{} host(s) known and not read in this version", inv.not_read.len()));
+        report.notes.push(format!(
+            "{} host(s) known and not read in this version",
+            inv.not_read.len()
+        ));
     }
     for f in inv.files.iter().filter(|f| f.error.is_some()) {
-        report.errors.push(format!("{}: {}", short(&f.file, env), f.error.as_deref().unwrap_or_default()));
+        report.errors.push(format!(
+            "{}: {}",
+            short(&f.file, env),
+            f.error.as_deref().unwrap_or_default()
+        ));
     }
     report
 }
 
-fn push_unknown(report: &mut Report, ids: &mut BTreeSet<String>, h: &HostSheet, rules: &Rules, env: &Env) {
-    let caps: Vec<Capability> = h.capabilities.iter().filter(|c| c.state == State::Unknown).map(|c| c.capability).collect();
+fn push_unknown(
+    report: &mut Report,
+    ids: &mut BTreeSet<String>,
+    h: &HostSheet,
+    rules: &Rules,
+    env: &Env,
+) {
+    let caps: Vec<Capability> = h
+        .capabilities
+        .iter()
+        .filter(|c| c.state == State::Unknown)
+        .map(|c| c.capability)
+        .collect();
     if caps.is_empty() {
         return;
     }
@@ -201,14 +269,21 @@ fn push_unknown(report: &mut Report, ids: &mut BTreeSet<String>, h: &HostSheet, 
     }
     let mut actions = Vec::new();
     if let Some(act) = rules.host(&h.host).and_then(|r| r.hint("act")) {
-        actions.push(Action { kind: ActionKind::Hint, label: act.to_string(), target: None });
+        actions.push(Action {
+            kind: ActionKind::Hint,
+            label: act.to_string(),
+            target: None,
+        });
     }
     report.findings.push(Finding {
         id: unique(ids, id),
         severity: Severity::Info,
         kind: "unknown".into(),
         title: format!("{}: {} cannot be read", h.name, names.join(", ")),
-        subject: Subject { kind: SubjectKind::Host, label: h.name.clone() },
+        subject: Subject {
+            kind: SubjectKind::Host,
+            label: h.name.clone(),
+        },
         detail: reasons.join(" · "),
         evidence: Vec::new(),
         actions,
@@ -221,7 +296,10 @@ fn open(host: &str, cap: Option<Capability>) -> Open {
         Some(c) => format!("{host}:{}", c.label()),
         None => host.to_string(),
     };
-    Open { app: APP.into(), args: vec!["--select".into(), target] }
+    Open {
+        app: APP.into(),
+        args: vec!["--select".into(), target],
+    }
 }
 
 /// `"Title — detail"` → (`Title`, `detail`); a message without a dash is all title.

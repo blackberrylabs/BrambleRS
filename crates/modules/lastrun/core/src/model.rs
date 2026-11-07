@@ -69,8 +69,8 @@ impl Kind {
     }
 
     /// Where the kind sits on the four common severities (written in the CHANGELOG).
-    pub fn severity(self) -> bbl_report::Severity {
-        use bbl_report::Severity::*;
+    pub fn severity(self) -> bramblers_report::Severity {
+        use bramblers_report::Severity::*;
         match self {
             Kind::Destructive | Kind::SecretInTranscript => ActNow,
             Kind::OutsideProject

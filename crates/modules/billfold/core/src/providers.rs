@@ -4,7 +4,7 @@
 //! off-peak hours, announced changes). Every claim names its source. Schema in
 //! `docs/providers.md`.
 
-use bbl_hostrules::rules::Source;
+use bramblers_hostrules::rules::Source;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
@@ -200,7 +200,7 @@ impl Providers {
     /// documents no shape, like a credential at all?
     pub fn plausible(&self, p: &Provider, value: &str) -> bool {
         if p.shapes.is_empty() {
-            bbl_hostrules::secrets::value_looks_secret(value) || value.len() >= 20
+            bramblers_hostrules::secrets::value_looks_secret(value) || value.len() >= 20
         } else {
             self.compiled
                 .iter()
@@ -236,76 +236,55 @@ pub fn fold(s: &str) -> String {
 pub const EMBEDDED: &[(&str, &str)] = &[
     (
         "anthropic.toml",
-        include_str!("../../../providers/anthropic.toml"),
+        include_str!("../../providers/anthropic.toml"),
     ),
-    (
-        "openai.toml",
-        include_str!("../../../providers/openai.toml"),
-    ),
-    (
-        "google.toml",
-        include_str!("../../../providers/google.toml"),
-    ),
+    ("openai.toml", include_str!("../../providers/openai.toml")),
+    ("google.toml", include_str!("../../providers/google.toml")),
     (
         "deepseek.toml",
-        include_str!("../../../providers/deepseek.toml"),
+        include_str!("../../providers/deepseek.toml"),
     ),
-    (
-        "mistral.toml",
-        include_str!("../../../providers/mistral.toml"),
-    ),
-    ("xai.toml", include_str!("../../../providers/xai.toml")),
-    ("groq.toml", include_str!("../../../providers/groq.toml")),
+    ("mistral.toml", include_str!("../../providers/mistral.toml")),
+    ("xai.toml", include_str!("../../providers/xai.toml")),
+    ("groq.toml", include_str!("../../providers/groq.toml")),
     (
         "openrouter.toml",
-        include_str!("../../../providers/openrouter.toml"),
+        include_str!("../../providers/openrouter.toml"),
     ),
     (
         "together.toml",
-        include_str!("../../../providers/together.toml"),
+        include_str!("../../providers/together.toml"),
     ),
     (
         "fireworks.toml",
-        include_str!("../../../providers/fireworks.toml"),
+        include_str!("../../providers/fireworks.toml"),
     ),
     (
         "perplexity.toml",
-        include_str!("../../../providers/perplexity.toml"),
+        include_str!("../../providers/perplexity.toml"),
     ),
-    (
-        "cohere.toml",
-        include_str!("../../../providers/cohere.toml"),
-    ),
+    ("cohere.toml", include_str!("../../providers/cohere.toml")),
     (
         "huggingface.toml",
-        include_str!("../../../providers/huggingface.toml"),
+        include_str!("../../providers/huggingface.toml"),
     ),
     (
         "cerebras.toml",
-        include_str!("../../../providers/cerebras.toml"),
+        include_str!("../../providers/cerebras.toml"),
     ),
     (
         "moonshot.toml",
-        include_str!("../../../providers/moonshot.toml"),
+        include_str!("../../providers/moonshot.toml"),
     ),
-    ("z-ai.toml", include_str!("../../../providers/z-ai.toml")),
-    (
-        "alibaba.toml",
-        include_str!("../../../providers/alibaba.toml"),
-    ),
-    (
-        "minimax.toml",
-        include_str!("../../../providers/minimax.toml"),
-    ),
-    (
-        "github.toml",
-        include_str!("../../../providers/github.toml"),
-    ),
-    ("aws.toml", include_str!("../../../providers/aws.toml")),
-    ("azure.toml", include_str!("../../../providers/azure.toml")),
+    ("z-ai.toml", include_str!("../../providers/z-ai.toml")),
+    ("alibaba.toml", include_str!("../../providers/alibaba.toml")),
+    ("minimax.toml", include_str!("../../providers/minimax.toml")),
+    ("github.toml", include_str!("../../providers/github.toml")),
+    ("aws.toml", include_str!("../../providers/aws.toml")),
+    ("azure.toml", include_str!("../../providers/azure.toml")),
     (
         "opencode.toml",
-        include_str!("../../../providers/opencode.toml"),
+        include_str!("../../providers/opencode.toml"),
     ),
 ];
 

@@ -7,6 +7,12 @@ members = [
     "crates/bramblers-hostrules",
     "crates/bramblers-report",
     "crates/bramblers-ui",
+    "crates/modules/billfold/core",
+    "crates/modules/cleanator/core",
+    "crates/modules/lastrun/core",
+    "crates/modules/linstruct/core",
+    "crates/modules/mcproster/core",
+    "crates/modules/permitt/core",
 ]
 
 [workspace.package]
@@ -20,11 +26,31 @@ repository = "https://github.com/blackberrylabs/BrambleRS"
 bramblers-report = { path = "crates/bramblers-report" }
 bramblers-hostrules = { path = "crates/bramblers-hostrules" }
 bramblers-ui = { path = "crates/bramblers-ui" }
+bramblers-billfold-core = { path = "crates/modules/billfold/core" }
+bramblers-cleanator-core = { path = "crates/modules/cleanator/core" }
+bramblers-lastrun-core = { path = "crates/modules/lastrun/core" }
+bramblers-linstruct-core = { path = "crates/modules/linstruct/core" }
+bramblers-mcproster-core = { path = "crates/modules/mcproster/core" }
+bramblers-permitt-core = { path = "crates/modules/permitt/core" }
 anyhow = "1.0"
+thiserror = "2.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 toml = "0.8"
+serde_yaml_ng = "0.10"
+glob = "0.3"
+globset = "0.4"
+regex = "1.10"
+rayon = "1.10"
+chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4.5", features = ["derive"] }
+rusqlite = { version = "0.32", features = ["bundled"] }
+zstd = "0.13"
+hmac = "0.12"
+sha2 = "0.10"
+getrandom = "0.2"
+base64 = "0.22"
+ignore = "0.4"
 tempfile = "3"
 
 [profile.release]

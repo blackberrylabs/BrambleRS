@@ -7,7 +7,10 @@
 use std::collections::BTreeSet;
 use std::path::Path;
 
-use bbl_report::{Action, ActionKind, Evidence, Finding, Module, Open, Report, Severity, Subject, SubjectKind, Summary, Tone};
+use bramblers_report::{
+    Action, ActionKind, Evidence, Finding, Module, Open, Report, Severity, Subject, SubjectKind,
+    Summary, Tone,
+};
 
 use crate::actions::{self, Action as Act};
 use crate::cost;
@@ -44,11 +47,14 @@ pub fn severity_of(kind: FindingKind) -> Severity {
         FindingKind::WideAccess | FindingKind::ConfirmationsSkipped => Severity::Review,
         // Worth tidying: declared twice, versions that differ, a command that is not there,
         // tool definitions that weigh on every request.
-        FindingKind::Duplicate | FindingKind::VersionMismatch | FindingKind::CommandNotFound | FindingKind::ContextCost => {
-            Severity::GoodToKnow
-        }
+        FindingKind::Duplicate
+        | FindingKind::VersionMismatch
+        | FindingKind::CommandNotFound
+        | FindingKind::ContextCost => Severity::GoodToKnow,
         // Nothing to do, good to know it is there.
-        FindingKind::Unreadable | FindingKind::Disabled | FindingKind::PackageNotCached => Severity::Info,
+        FindingKind::Unreadable | FindingKind::Disabled | FindingKind::PackageNotCached => {
+            Severity::Info
+        }
     }
 }
 
@@ -84,24 +90,71 @@ pub fn build(
     let cost_report = cost::report(inv, probes);
     let with_config = inv.hosts.iter().filter(|h| h.files_found > 0).count();
     // The app's "Findings" card leaves disabled servers out, like its list by default.
-    let n_findings = inv.findings.iter().filter(|f| f.kind != FindingKind::Disabled).count() + cost_report.findings.len();
+    let n_findings = inv
+        .findings
+        .iter()
+        .filter(|f| f.kind != FindingKind::Disabled)
+        .count()
+        + cost_report.findings.len();
     let secrets = inv.count(FindingKind::PlainSecret);
     let zero_is_good = |n: usize| if n == 0 { Tone::Good } else { Tone::Alert };
     report.summary = vec![
-        Summary { key: "servers".into(), label: "Servers".into(), value: inv.servers.len().to_string(), tone: Tone::Neutral },
-        Summary { key: "hosts".into(), label: "Hosts with a configuration".into(), value: with_config.to_string(), tone: Tone::Neutral },
-        Summary { key: "findings".into(), label: "Findings".into(), value: n_findings.to_string(), tone: zero_is_good(n_findings) },
-        Summary { key: "secrets".into(), label: "Secrets in clear".into(), value: secrets.to_string(), tone: zero_is_good(secrets) },
+        Summary {
+            key: "servers".into(),
+            label: "Servers".into(),
+            value: inv.servers.len().to_string(),
+            tone: Tone::Neutral,
+        },
+        Summary {
+            key: "hosts".into(),
+            label: "Hosts with a configuration".into(),
+            value: with_config.to_string(),
+            tone: Tone::Neutral,
+        },
+        Summary {
+            key: "findings".into(),
+            label: "Findings".into(),
+            value: n_findings.to_string(),
+            tone: zero_is_good(n_findings),
+        },
+        Summary {
+            key: "secrets".into(),
+            label: "Secrets in clear".into(),
+            value: secrets.to_string(),
+            tone: zero_is_good(secrets),
+        },
     ];
 
     let mut ids = BTreeSet::new();
     for f in inv.findings.iter().chain(cost_report.findings.iter()) {
-        let decls: Vec<&crate::model::Declaration> = f.declarations.iter().filter_map(|&i| inv.declarations.get(i)).collect();
+        let decls: Vec<&crate::model::Declaration> = f
+            .declarations
+            .iter()
+            .filter_map(|&i| inv.declarations.get(i))
+            .collect();
         let identity = decls.first().map(|d| d.identity());
         let (subject, third) = match (&identity, &f.file) {
-            (Some(id), _) => (Subject { kind: SubjectKind::Server, label: short_text(id, env) }, slug(&short_text(id, env))),
-            (None, Some(p)) => (Subject { kind: SubjectKind::File, label: short(p, env) }, slug(&short(p, env))),
-            (None, None) => (Subject { kind: SubjectKind::Other, label: f.message.clone() }, slug(&f.message)),
+            (Some(id), _) => (
+                Subject {
+                    kind: SubjectKind::Server,
+                    label: short_text(id, env),
+                },
+                slug(&short_text(id, env)),
+            ),
+            (None, Some(p)) => (
+                Subject {
+                    kind: SubjectKind::File,
+                    label: short(p, env),
+                },
+                slug(&short(p, env)),
+            ),
+            (None, None) => (
+                Subject {
+                    kind: SubjectKind::Other,
+                    label: f.message.clone(),
+                },
+                slug(&f.message),
+            ),
         };
         let id = unique(&mut ids, format!("{}/{third}", kind_slug(f.kind)));
 
@@ -128,16 +181,22 @@ pub fn build(
             files.insert(d.file.clone());
         }
         if let (Some(p), true) = (&f.file, decls.is_empty()) {
-            evidence.push(Evidence { label: short(p, env), path: Some(p.display().to_string()), line: None });
+            evidence.push(Evidence {
+                label: short(p, env),
+                path: Some(p.display().to_string()),
+                line: None,
+            });
             files.insert(p.clone());
         }
 
         let mut acts = Vec::new();
         for a in actions::actions_for(rules, inv, f) {
             match a {
-                Act::HostCommand { host, command } => {
-                    acts.push(Action { kind: ActionKind::Command, label: format!("{host}: run"), target: Some(command) })
-                }
+                Act::HostCommand { host, command } => acts.push(Action {
+                    kind: ActionKind::Command,
+                    label: format!("{host}: run"),
+                    target: Some(command),
+                }),
                 Act::EditInHost { host } => acts.push(Action {
                     kind: ActionKind::Hint,
                     label: format!("{host}: edit the entry in its own settings, then restart it"),
@@ -145,14 +204,22 @@ pub fn build(
                 }),
                 Act::OpenFile => {
                     for p in &files {
-                        acts.push(Action { kind: ActionKind::OpenFile, label: format!("Open {}", short(p, env)), target: Some(p.display().to_string()) });
+                        acts.push(Action {
+                            kind: ActionKind::OpenFile,
+                            label: format!("Open {}", short(p, env)),
+                            target: Some(p.display().to_string()),
+                        });
                     }
                 }
                 Act::ReduceContext { host, may_defer } => acts.push(Action {
                     kind: ActionKind::Hint,
                     label: format!(
                         "{host}: disable the servers you do not use in this host{}",
-                        if may_defer { "; or rely on its on-demand tool loading" } else { "" }
+                        if may_defer {
+                            "; or rely on its on-demand tool loading"
+                        } else {
+                            ""
+                        }
                     ),
                     target: None,
                 }),
@@ -169,19 +236,34 @@ pub fn build(
             detail: String::new(),
             evidence,
             actions: acts,
-            open: identity.map(|id| Open { app: APP.into(), args: vec!["--select".into(), id] }),
+            open: identity.map(|id| Open {
+                app: APP.into(),
+                args: vec!["--select".into(), id],
+            }),
         });
     }
 
-    report.notes.push(format!("{} declaration(s) in {} file(s)", inv.declarations.len(), inv.files.iter().filter(|f| f.exists).count()));
+    report.notes.push(format!(
+        "{} declaration(s) in {} file(s)",
+        inv.declarations.len(),
+        inv.files.iter().filter(|f| f.exists).count()
+    ));
     if !inv.roots.is_empty() {
-        report.notes.push(format!("{} project root(s) looked at", inv.roots.len()));
+        report
+            .notes
+            .push(format!("{} project root(s) looked at", inv.roots.len()));
     }
     if !probes.is_empty() {
-        report.notes.push(format!("{} saved probe result(s)", probes.len()));
+        report
+            .notes
+            .push(format!("{} saved probe result(s)", probes.len()));
     }
     for f in inv.files.iter().filter(|f| f.error.is_some()) {
-        report.errors.push(format!("{}: {}", short(&f.file, env), f.error.as_deref().unwrap_or_default()));
+        report.errors.push(format!(
+            "{}: {}",
+            short(&f.file, env),
+            f.error.as_deref().unwrap_or_default()
+        ));
     }
     report
 }

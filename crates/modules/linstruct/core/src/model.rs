@@ -4,7 +4,7 @@
 
 use std::path::PathBuf;
 
-use bbl_report::Severity;
+use bramblers_report::Severity;
 use serde::Serialize;
 
 /// The kinds of finding. One slug each, one place on the four common severities — the
@@ -251,7 +251,7 @@ pub struct Inventory {
     pub hosts: Vec<HostStatus>,
     /// Most serious first; present hosts before absent ones.
     pub findings: Vec<Finding>,
-    pub not_read: Vec<bbl_hostrules::rules::NotRead>,
+    pub not_read: Vec<bramblers_hostrules::rules::NotRead>,
     /// What was read and what was not followed (remote instructions, config overrides).
     pub notes: Vec<String>,
     pub errors: Vec<String>,

@@ -2,8 +2,8 @@
 
 use std::path::{Path, PathBuf};
 
-use bbl_hostrules::env::{Env, Os};
-use lastrun_core::{scan_with, Options};
+use bramblers_hostrules::env::{Env, Os};
+use bramblers_lastrun_core::{scan_with, Options};
 
 mod common;
 use common as fixture_home;
@@ -54,14 +54,14 @@ fn the_core_never_writes_and_never_reaches_the_network() {
     }
 }
 
-fn scanned() -> (tempfile::TempDir, lastrun_core::Inventory) {
+fn scanned() -> (tempfile::TempDir, bramblers_lastrun_core::Inventory) {
     let tmp = tempfile::tempdir().unwrap();
     fixture_home::fixture(tmp.path());
     let env = Env::fixture(tmp.path(), Os::Linux);
     let (inv, _) = scan_with(
         &env,
-        &lastrun_core::sheets::embedded(),
-        &lastrun_core::rules::Rules::embedded(),
+        &bramblers_lastrun_core::sheets::embedded(),
+        &bramblers_lastrun_core::rules::Rules::embedded(),
         &Options::default(),
     );
     (tmp, inv)
@@ -70,9 +70,10 @@ fn scanned() -> (tempfile::TempDir, lastrun_core::Inventory) {
 #[test]
 fn the_report_conforms() {
     let (_tmp, inv) = scanned();
-    let report = lastrun_core::report::build(&inv, 1);
+    let report = bramblers_lastrun_core::report::build(&inv, 1);
     let json = report.to_json();
-    let back = bbl_report::conformance::check(&json).expect("the report conforms to bbl-report/1");
+    let back =
+        bramblers_report::conformance::check(&json).expect("the report conforms to bbl-report/1");
     assert_eq!(back.module.id, "lastrun");
     assert_eq!(back.findings.len(), inv.findings.len());
     assert_eq!(
@@ -96,7 +97,7 @@ fn the_report_conforms() {
 fn no_text_of_an_exchange_and_no_secret_ever_comes_out() {
     let (_tmp, inv) = scanned();
     let inventory = serde_json::to_string(&inv).unwrap();
-    let report = lastrun_core::report::build(&inv, 1).to_json();
+    let report = bramblers_lastrun_core::report::build(&inv, 1).to_json();
     let key = fixture_home::fake_key();
     let pw = fixture_home::fake_password();
     for out in [&inventory, &report] {
@@ -113,12 +114,12 @@ fn no_text_of_an_exchange_and_no_secret_ever_comes_out() {
     let f = inv
         .findings
         .iter()
-        .find(|f| f.kind == lastrun_core::Kind::SecretInTranscript)
+        .find(|f| f.kind == bramblers_lastrun_core::Kind::SecretInTranscript)
         .unwrap();
     assert!(
         f.evidence
             .iter()
-            .all(|e| e.contains('…') || e.contains(lastrun_core::command::DOTS)),
+            .all(|e| e.contains('…') || e.contains(bramblers_lastrun_core::command::DOTS)),
         "{:?}",
         f.evidence
     );
@@ -132,8 +133,8 @@ fn a_scan_writes_nothing() {
     let env = Env::fixture(tmp.path(), Os::Linux);
     let _ = scan_with(
         &env,
-        &lastrun_core::sheets::embedded(),
-        &lastrun_core::rules::Rules::embedded(),
+        &bramblers_lastrun_core::sheets::embedded(),
+        &bramblers_lastrun_core::rules::Rules::embedded(),
         &Options::default(),
     );
     assert_eq!(

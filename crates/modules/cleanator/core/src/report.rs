@@ -8,7 +8,10 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use bbl_report::{Action, ActionKind, Evidence, Finding, Module, Open, Report, Severity, Subject, SubjectKind, Summary, Tone};
+use bramblers_report::{
+    Action, ActionKind, Evidence, Finding, Module, Open, Report, Severity, Subject, SubjectKind,
+    Summary, Tone,
+};
 
 use crate::classify::{Recommendation, Report as Classified};
 use crate::rules::Level;
@@ -65,10 +68,38 @@ pub fn build(classified: &Classified, duration_ms: u64) -> Report {
     let t = &classified.totals;
     // The cards' colours: safe is green, review is orange, as in the app.
     report.summary = vec![
-        Summary { key: "scanned".into(), label: "Scanned".into(), value: human(classified.scan.total_size), tone: Tone::Neutral },
-        Summary { key: "safe".into(), label: "Safe to free".into(), value: human(t.safe), tone: if t.safe == 0 { Tone::Neutral } else { Tone::Good } },
-        Summary { key: "review".into(), label: "To review".into(), value: human(t.review), tone: if t.review == 0 { Tone::Neutral } else { Tone::Amber } },
-        Summary { key: "in_use".into(), label: "In use".into(), value: human(t.in_use), tone: Tone::Neutral },
+        Summary {
+            key: "scanned".into(),
+            label: "Scanned".into(),
+            value: human(classified.scan.total_size),
+            tone: Tone::Neutral,
+        },
+        Summary {
+            key: "safe".into(),
+            label: "Safe to free".into(),
+            value: human(t.safe),
+            tone: if t.safe == 0 {
+                Tone::Neutral
+            } else {
+                Tone::Good
+            },
+        },
+        Summary {
+            key: "review".into(),
+            label: "To review".into(),
+            value: human(t.review),
+            tone: if t.review == 0 {
+                Tone::Neutral
+            } else {
+                Tone::Amber
+            },
+        },
+        Summary {
+            key: "in_use".into(),
+            label: "In use".into(),
+            value: human(t.in_use),
+            tone: Tone::Neutral,
+        },
     ];
 
     // Group the proposable recommendations by rule and effective level, as the panel does.
@@ -77,19 +108,29 @@ pub fn build(classified: &Classified, duration_ms: u64) -> Report {
         if r.recent || r.negligible || r.in_use.is_some() {
             continue;
         }
-        let g = groups.entry((r.rule_id.clone(), r.effective_level)).or_insert_with(|| Group {
-            rule_id: &r.rule_id,
-            rule_name: &r.rule_name,
-            category: &r.category,
-            level: r.effective_level,
-            items: Vec::new(),
-            reclaimable: 0,
-        });
+        let g = groups
+            .entry((r.rule_id.clone(), r.effective_level))
+            .or_insert_with(|| Group {
+                rule_id: &r.rule_id,
+                rule_name: &r.rule_name,
+                category: &r.category,
+                level: r.effective_level,
+                items: Vec::new(),
+                reclaimable: 0,
+            });
         g.items.push(r);
-        g.reclaimable += if r.effective_level == Level::Never { r.size } else { r.reclaimable };
+        g.reclaimable += if r.effective_level == Level::Never {
+            r.size
+        } else {
+            r.reclaimable
+        };
     }
     let mut groups: Vec<Group> = groups.into_values().collect();
-    groups.sort_by(|a, b| a.level.cmp(&b.level).then_with(|| b.reclaimable.cmp(&a.reclaimable)));
+    groups.sort_by(|a, b| {
+        a.level
+            .cmp(&b.level)
+            .then_with(|| b.reclaimable.cmp(&a.reclaimable))
+    });
 
     let root = classified.root.display().to_string();
     for g in &groups {
@@ -103,7 +144,11 @@ pub fn build(classified: &Classified, duration_ms: u64) -> Report {
         let title = if n == 1 {
             format!("{}: {} {what}", g.rule_name, human(g.reclaimable))
         } else {
-            format!("{}: {} {what} in {n} items", g.rule_name, human(g.reclaimable))
+            format!(
+                "{}: {} {what} in {n} items",
+                g.rule_name,
+                human(g.reclaimable)
+            )
         };
         let mut detail = first.why.clone();
         if !first.regenerate.is_empty() {
@@ -119,13 +164,25 @@ pub fn build(classified: &Classified, duration_ms: u64) -> Report {
             .iter()
             .take(10)
             .map(|r| Evidence {
-                label: format!("{} — {}", r.display, human(if g.level == Level::Never { r.size } else { r.reclaimable })),
+                label: format!(
+                    "{} — {}",
+                    r.display,
+                    human(if g.level == Level::Never {
+                        r.size
+                    } else {
+                        r.reclaimable
+                    })
+                ),
                 path: r.path.clone(),
                 line: None,
             })
             .collect();
         if n > 10 {
-            evidence.push(Evidence { label: format!("… and {} more", n - 10), path: None, line: None });
+            evidence.push(Evidence {
+                label: format!("… and {} more", n - 10),
+                path: None,
+                line: None,
+            });
         }
         let mut actions = vec![Action {
             kind: ActionKind::Hint,
@@ -137,57 +194,100 @@ pub fn build(classified: &Classified, duration_ms: u64) -> Report {
         }];
         if n == 1 {
             if let Some(cmd) = &first.command {
-                actions.push(Action { kind: ActionKind::Command, label: "The script would run".into(), target: Some(cmd.clone()) });
+                actions.push(Action {
+                    kind: ActionKind::Command,
+                    label: "The script would run".into(),
+                    target: Some(cmd.clone()),
+                });
             }
         }
         // The folder: the item itself when it is one, its parent otherwise.
         if let Some(p) = first.path.as_deref().map(Path::new) {
             let folder = if p.is_dir() { Some(p) } else { p.parent() };
             if let Some(f) = folder {
-                actions.push(Action { kind: ActionKind::OpenFile, label: format!("Open {}", f.display()), target: Some(f.display().to_string()) });
+                actions.push(Action {
+                    kind: ActionKind::OpenFile,
+                    label: format!("Open {}", f.display()),
+                    target: Some(f.display().to_string()),
+                });
             }
         }
         // A rule's source is a URL most of the time; when it is a sentence, it is a hint.
         if first.source_url.starts_with("http") {
-            actions.push(Action { kind: ActionKind::OpenUrl, label: "Why it is regenerable".into(), target: Some(first.source_url.clone()) });
+            actions.push(Action {
+                kind: ActionKind::OpenUrl,
+                label: "Why it is regenerable".into(),
+                target: Some(first.source_url.clone()),
+            });
         } else if !first.source_url.is_empty() {
-            actions.push(Action { kind: ActionKind::Hint, label: format!("Source: {}", first.source_url), target: None });
+            actions.push(Action {
+                kind: ActionKind::Hint,
+                label: format!("Source: {}", first.source_url),
+                target: None,
+            });
         }
         report.findings.push(Finding {
             id: format!("{}/{}", g.level, g.rule_id),
             severity: severity_of(g.level, g.reclaimable),
             kind: g.level.to_string(),
             title,
-            subject: Subject { kind: SubjectKind::Path, label: format!("{} · {}", g.category, g.rule_name) },
+            subject: Subject {
+                kind: SubjectKind::Path,
+                label: format!("{} · {}", g.category, g.rule_name),
+            },
             detail,
             evidence,
             actions,
-            open: Some(Open { app: APP.into(), args: vec![root.clone(), "--select".into(), g.rule_id.to_string()] }),
+            open: Some(Open {
+                app: APP.into(),
+                args: vec![root.clone(), "--select".into(), g.rule_id.to_string()],
+            }),
         });
     }
 
     let s = &classified.scan;
-    report.notes.push(format!("{} files in {} dirs, {} rules, dormancy {} days", s.files, s.dirs, classified.rule_count, classified.dormancy_days));
+    report.notes.push(format!(
+        "{} files in {} dirs, {} rules, dormancy {} days",
+        s.files, s.dirs, classified.rule_count, classified.dormancy_days
+    ));
     let recent = t.counts.get("recent").copied().unwrap_or(0);
     if recent > 0 {
-        report.notes.push(format!("{recent} item(s) used within the window, shown and not proposed"));
+        report.notes.push(format!(
+            "{recent} item(s) used within the window, shown and not proposed"
+        ));
     }
     if !s.other_filesystems.is_empty() {
-        report.notes.push(format!("{} other filesystem(s) not entered", s.other_filesystems.len()));
+        report.notes.push(format!(
+            "{} other filesystem(s) not entered",
+            s.other_filesystems.len()
+        ));
     }
     if !classified.atime.noatime_mounts.is_empty() {
-        report.notes.push(format!("last use unknown on {} (noatime)", classified.atime.noatime_mounts.join(", ")));
+        report.notes.push(format!(
+            "last use unknown on {} (noatime)",
+            classified.atime.noatime_mounts.join(", ")
+        ));
     }
     for p in &classified.probes {
         match &p.status {
             crate::probes::ProbeStatus::Ok => {}
-            crate::probes::ProbeStatus::ToolMissing(t) => report.notes.push(format!("{}: {t} not installed, not probed", p.probe)),
-            crate::probes::ProbeStatus::Failed(e) => report.errors.push(format!("{}: {e}", p.probe)),
-            crate::probes::ProbeStatus::NotImplemented(w) => report.notes.push(format!("{}: {w}", p.probe)),
+            crate::probes::ProbeStatus::ToolMissing(t) => report
+                .notes
+                .push(format!("{}: {t} not installed, not probed", p.probe)),
+            crate::probes::ProbeStatus::Failed(e) => {
+                report.errors.push(format!("{}: {e}", p.probe))
+            }
+            crate::probes::ProbeStatus::NotImplemented(w) => {
+                report.notes.push(format!("{}: {w}", p.probe))
+            }
         }
     }
     if s.errors > 0 {
-        report.errors.push(format!("{} unreadable director{}", s.errors, if s.errors == 1 { "y" } else { "ies" }));
+        report.errors.push(format!(
+            "{} unreadable director{}",
+            s.errors,
+            if s.errors == 1 { "y" } else { "ies" }
+        ));
     }
     report
 }

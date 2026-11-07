@@ -7,9 +7,9 @@
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
-use bbl_hostrules::env::Env;
-use bbl_hostrules::resolve::project_roots;
-use bbl_hostrules::rules::Scope;
+use bramblers_hostrules::env::Env;
+use bramblers_hostrules::resolve::project_roots;
+use bramblers_hostrules::rules::Scope;
 use serde_json::Value;
 
 use crate::rules::{Role, Sheets};
@@ -111,7 +111,7 @@ pub fn default_roots(env: &Env, sheets: &Sheets) -> Vec<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bbl_hostrules::env::Os;
+    use bramblers_hostrules::env::Os;
 
     #[test]
     fn markers_come_from_the_sheets() {

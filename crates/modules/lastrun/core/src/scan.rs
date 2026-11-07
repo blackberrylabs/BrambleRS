@@ -5,10 +5,10 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
-use bbl_hostrules::env::Env;
-use bbl_hostrules::read::{get, read_tree};
-use bbl_hostrules::resolve::{expand_glob, project_roots, resolve};
-use bbl_hostrules::rules::Format;
+use bramblers_hostrules::env::Env;
+use bramblers_hostrules::read::{get, read_tree};
+use bramblers_hostrules::resolve::{expand_glob, project_roots, resolve};
+use bramblers_hostrules::rules::Format;
 use chrono::{DateTime, Duration, Local, Utc};
 use serde_json::Value;
 
@@ -324,7 +324,7 @@ fn project_of(infos: &[(String, SessionInfo)], a: &Action) -> Option<PathBuf> {
 /// The host's retention in days, its setting read when the file says otherwise. `None` when
 /// the host does not prune, or the setting turns pruning off.
 fn retention_days(
-    loc: &bbl_hostrules::rules::Location<crate::sheets::RunLocation>,
+    loc: &bramblers_hostrules::rules::Location<crate::sheets::RunLocation>,
     env: &Env,
 ) -> Option<i64> {
     let default = loc.ext.retention_days?;

@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::path::Path;
 use std::time::Duration;
 
-use mcproster_core::probe::{probe_stdio, PROTOCOL_VERSION};
+use bramblers_mcproster_core::probe::{probe_stdio, PROTOCOL_VERSION};
 
 fn server() -> String {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -121,7 +121,7 @@ fn tool_sizes_are_estimated_and_descriptions_never_saved() {
     assert!(r.ok, "{r:#?}");
     assert_eq!(r.tools.len(), 14);
     assert!(
-        r.estimated_tokens > mcproster_core::cost::SERVER_THRESHOLD,
+        r.estimated_tokens > bramblers_mcproster_core::cost::SERVER_THRESHOLD,
         "{}",
         r.estimated_tokens
     );

@@ -19,6 +19,6 @@ pub mod rules;
 pub mod sheet;
 pub mod shell;
 
-pub use bbl_hostrules::{env, read, secrets, Env};
+pub use bramblers_hostrules::{env, read, secrets, Env};
 pub use inventory::{Inventory, Options};
 pub use rules::{HostRule, Rules};

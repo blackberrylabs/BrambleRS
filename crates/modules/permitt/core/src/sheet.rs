@@ -4,10 +4,10 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use bbl_hostrules::read::{dig, line_of, read_tree};
-use bbl_hostrules::resolve::{resolve, Resolved};
-use bbl_hostrules::secrets;
-use bbl_hostrules::Env;
+use bramblers_hostrules::read::{dig, line_of, read_tree};
+use bramblers_hostrules::resolve::{resolve, Resolved};
+use bramblers_hostrules::secrets;
+use bramblers_hostrules::Env;
 use serde_json::Value;
 
 use crate::model::{
@@ -841,7 +841,7 @@ fn truncate(s: &str, n: usize) -> String {
 }
 
 fn last_key(key: &str) -> String {
-    bbl_hostrules::read::split_path(key)
+    bramblers_hostrules::read::split_path(key)
         .last()
         .cloned()
         .unwrap_or_else(|| key.to_string())
@@ -850,7 +850,10 @@ fn last_key(key: &str) -> String {
 fn expand_key(key: &str, wild: &[String]) -> String {
     let mut out = String::new();
     let mut w = wild.iter();
-    for (i, part) in bbl_hostrules::read::split_path(key).iter().enumerate() {
+    for (i, part) in bramblers_hostrules::read::split_path(key)
+        .iter()
+        .enumerate()
+    {
         if i > 0 {
             out.push('.');
         }
@@ -876,7 +879,7 @@ fn is_empty_value(v: &Value) -> bool {
 
 fn observed(reason: &str) -> SourceRef {
     SourceRef {
-        kind: bbl_hostrules::SourceKind::Observed,
+        kind: bramblers_hostrules::SourceKind::Observed,
         url: None,
         quote: reason.to_string(),
     }

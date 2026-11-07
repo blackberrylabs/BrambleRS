@@ -3,9 +3,9 @@
 
 use std::path::{Path, PathBuf};
 
-use mcproster_core::env::Os;
-use mcproster_core::model::FindingKind;
-use mcproster_core::{hosts, inventory, Env};
+use bramblers_mcproster_core::env::Os;
+use bramblers_mcproster_core::model::FindingKind;
+use bramblers_mcproster_core::{hosts, inventory, Env};
 
 fn copy_fixture(home: &Path) {
     let src = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/home");
@@ -210,27 +210,59 @@ fn report_conforms() {
     let env = Env::fixture(tmp.path(), Os::Linux);
     let rules = hosts::embedded();
     let probes = std::collections::BTreeMap::new();
-    let report = mcproster_core::report::build(&inv, &rules, &env, &probes, 5);
+    let report = bramblers_mcproster_core::report::build(&inv, &rules, &env, &probes, 5);
     let json = report.to_json();
-    let back = bbl_report::conformance::check(&json).expect("the report conforms");
+    let back = bramblers_report::conformance::check(&json).expect("the report conforms");
     assert_eq!(back.module.id, "mcproster");
-    let figure = |k: &str| back.summary.iter().find(|s| s.key == k).unwrap().value.clone();
+    let figure = |k: &str| {
+        back.summary
+            .iter()
+            .find(|s| s.key == k)
+            .unwrap()
+            .value
+            .clone()
+    };
     assert_eq!(figure("servers"), inv.servers.len().to_string());
-    assert_eq!(figure("secrets"), inv.count(FindingKind::PlainSecret).to_string());
-    let shown = inv.findings.iter().filter(|f| f.kind != FindingKind::Disabled).count();
+    assert_eq!(
+        figure("secrets"),
+        inv.count(FindingKind::PlainSecret).to_string()
+    );
+    let shown = inv
+        .findings
+        .iter()
+        .filter(|f| f.kind != FindingKind::Disabled)
+        .count();
     assert_eq!(figure("findings"), shown.to_string());
     // Every finding is there, disabled servers included (as information).
     assert_eq!(back.findings.len(), inv.findings.len());
-    assert!(back.findings.iter().any(|f| f.kind == "plain-secret" && f.severity == bbl_report::Severity::ActNow));
-    assert!(back.findings.iter().any(|f| f.kind == "duplicate" && f.severity == bbl_report::Severity::GoodToKnow));
+    assert!(back
+        .findings
+        .iter()
+        .any(|f| f.kind == "plain-secret" && f.severity == bramblers_report::Severity::ActNow));
+    assert!(back
+        .findings
+        .iter()
+        .any(|f| f.kind == "duplicate" && f.severity == bramblers_report::Severity::GoodToKnow));
     for f in &back.findings {
         if let Some(open) = &f.open {
             assert_eq!(open.app, "mcproster-app");
-            assert!(inv.servers.iter().any(|s| s.identity == open.args[1]), "{}", open.args[1]);
+            assert!(
+                inv.servers.iter().any(|s| s.identity == open.args[1]),
+                "{}",
+                open.args[1]
+            );
         }
-        assert!(!f.title.contains(&tmp.path().display().to_string()), "home in a title: {}", f.title);
+        assert!(
+            !f.title.contains(&tmp.path().display().to_string()),
+            "home in a title: {}",
+            f.title
+        );
     }
-    for clear in ["sk-proj-abcdefghij", "ghp_abcdefghij", "0123456789abcdef0123456789abcdef"] {
+    for clear in [
+        "sk-proj-abcdefghij",
+        "ghp_abcdefghij",
+        "0123456789abcdef0123456789abcdef",
+    ] {
         assert!(!json.contains(clear), "clear secret in the report: {clear}");
     }
 }
