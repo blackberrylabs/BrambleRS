@@ -115,7 +115,7 @@ module non plus.
 
 > Objectif : chaque onglet retrouve **toutes** les fonctionnalités de son ancienne app. Le plan détaillé, avec l'inventaire écran par écran, est dans `00_cadrage/2026-11-07_plan_vues_modules.md` (hors git). Les sources des anciennes apps sont dans `00_cadrage/references/<id>/` (hors git).
 
-- [ ] 0.2.0 : Permitt — tableau hôtes × capacités, filtres, détail, preuves, constats
+- [ ] 0.2.0 : Permitt — tableau hôtes × capacités, filtres, détail, preuves, constats. Vue portée et branchée le 2026-11-07 (commit `aa8670e`, 5 tests dans la vue) ; restent la vérification écran par écran, la capture sur un jeu de démonstration et la suppression du checkout.
 - [ ] 0.3.0 : MCProster — tableau des serveurs, filtres, détail, sondes, coût en contexte
 - [ ] 0.4.0 : Linstruct — dossiers, hôtes, piles de fichiers, détail, constats
 - [ ] 0.5.0 : Cleanator — arborescence, assistants, projets, explorateur, recommandations, script

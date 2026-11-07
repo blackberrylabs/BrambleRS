@@ -3,6 +3,18 @@
 
 ---
 
+## 2026-11-07, la vue Permitt portée dans son onglet
+
+- La crate `crates/modules/permitt/view` (`bramblers-permitt-view`) reprend l'écran de l'ancienne app (1 023 lignes) sans fenêtre ni `iced::application` : `View::new` rend l'état et la tâche de lecture, puis `update`, `view`, `set_lang`, `set_dark`, `refresh`. L'ancienne app n'est plus qu'une référence dans `00_cadrage/references/permitt/`.
+- Contenu retrouvé : quatre chiffres d'en-tête, recherche, portée utilisateur/projet, « installés seulement », « constats seulement », case « fichiers shell », tableau hôtes × quatre capacités avec ligne de contexte, volet de détail (précédence, preuves de la plus forte à la plus faible, preuves ignorées, lignes de shell, conseil « ce que vous pouvez faire », autres capacités cliquables), liste des constats, copie et ouverture de fichier ou de lien. Le statut (« 12 fichiers lus, … ») reste au bas de la vue : la coquille n'a pas de pied de page.
+- Branchement : la vue est construite à la première ouverture de l'onglet, garde son état ensuite, et reçoit la langue et le thème de la coquille (`set_lang`, `set_dark`). `Message::Permitt` délègue ; « Refresh » en en-tête relance aussi la vue quand son onglet est ouvert. `BRAMBLERS_MODULE=permitt` l'ouvre dès le démarrage, même avec `BRAMBLERS_NO_REFRESH=1`.
+- Écarté : `--select` et `PERMITT_SELECT` (le choix d'onglet revient à `BRAMBLERS_MODULE`) ; `app.title`, `theme.dark` et `theme.light` sortent des `locales` de la vue, la coquille les porte. Les textes vivent dans `crates/modules/permitt/locales/` ; tous les autres sont repris mot pour mot.
+- Réglages : `Prefs::load_with_fallback("bramblers/permitt", "permitt")` lit une fois l'ancien `~/.config/permitt/settings.json` ; `read_shell` est réécrit dans `~/.config/bramblers/permitt/settings.json`. La langue et le thème ne sont plus enregistrés par la vue.
+- Preuves : `cargo test --workspace` passe (212 tests, dont 5 dans la vue : clés des locales, combinaison des filtres, portée d'un constat de projet, choix de la preuve affichée, chaque type de constat a son texte), `cargo fmt --check` et `cargo clippy --all-targets` propres. App lancée 10 s sur `BRAMBLERS_MODULE=permitt BRAMBLERS_NO_REFRESH=1` sans panique ; la vérification écran par écran et la capture restent à faire sur l'écran d'Alexandre.
+- Commit `aa8670e`. Rien n'a été poussé.
+
+---
+
 ## 2026-11-07, un dossier par module, plan des six vues
 
 - Décision d'Alexandre : tout le produit vit dans `BrambleRS/`, avec un dossier par module, et chaque onglet doit retrouver toutes les fonctionnalités de son ancienne app. L'app devient une coquille (en-tête, rail, routeur) ; chaque module reçoit un `view/` à côté de son `core/`.
