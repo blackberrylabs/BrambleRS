@@ -3,6 +3,16 @@
 
 ---
 
+## 2026-11-07, la vue Linstruct portée dans son onglet
+
+- La crate `crates/modules/linstruct/view` (`bramblers-linstruct-view`) reprend l'écran de l'ancienne app (1 423 lignes) sans fenêtre : `View::new`, `update`, `view`, `set_lang`, `set_dark`, `refresh`. Trois colonnes : les cartes d'hôtes (fichiers dans l'ordre de l'hôte, jauge de budget, tailles, états `loaded`, `on demand`, `cut`, `skipped`, `shadowed`, `ignored`, section « et si » pour les hôtes absents), la liste des constats (gravités, puces d'hôtes, recherche, informations) et le détail (sens, chemin, commande de vérification de l'hôte, source).
+- Les dossiers de projets viennent des préférences de la vue, passées en mémoire au scan : `projects::roots_from_dirs` est ajouté au core, et `default_roots` s'appuie dessus. L'ancien `~/.config/linstruct/settings.json` est lu une fois par `Prefs::load_with_fallback("bramblers/linstruct", "linstruct")`.
+- Écarté : `--select` et les racines passées en arguments (le choix d'onglet revient à `BRAMBLERS_MODULE`), `app.title` et `theme.*` (portés par la coquille). Les trois colonnes passent en 6/5/4 au lieu de 4/4/4 : à 1280 px, le rail laisse 1 042 px et les 340 px par colonne cassaient les libellés d'état.
+- Preuves : `cargo test --workspace` passe (222 tests, dont 4 dans la vue), fmt et clippy propres ; capture `docs/screenshots/linstruct.png` (1280x820) sur le HOME factice, avec `~/.claude/CLAUDE.md` (import manquant, clé en clair), le `CLAUDE.md` et l'`AGENTS.md` du projet, `.cursor/rules/style.mdc` et `.github/copilot-instructions.md` ; `BRAMBLERS_MODULE=linstruct` lancé sans panique.
+- Version du workspace passée à 0.1.3. Commit `1add611` pour la vue. Rien n'a été poussé.
+
+---
+
 ## 2026-11-07, la vue MCProster portée dans son onglet
 
 - La crate `crates/modules/mcproster/view` (`bramblers-mcproster-view`) reprend l'écran de l'ancienne app (1 367 lignes) sans fenêtre : `View::new`, `update`, `view`, `set_lang`, `set_dark`, `refresh`. Contenu : quatre chiffres, filtres (recherche nom, paquet, URL ou fichier ; hôte ; constats ; désactivés et anciens), tableau serveurs × hôtes (une colonne par hôte jusqu'à six, sinon une colonne « déclaré dans »), détail des déclarations (fichier, commande, environnement, en-têtes, secrets masqués), sonde avec confirmation, coût en contexte par hôte, constats et actions.

@@ -117,7 +117,7 @@ module non plus.
 
 - [ ] 0.1.1 : Permitt — tableau hôtes × capacités, filtres, détail, preuves, constats. Vue portée, branchée, testée et capturée le 2026-11-07 (commits `aa8670e`, `5750408`, `1c2040a` ; capture `docs/screenshots/permitt.png` ; 212 tests) ; version du workspace passée à 0.1.1. Restent la vérification par Alexandre, la suppression du checkout et les paquets (accord requis).
 - [ ] 0.1.2 : MCProster — tableau des serveurs, filtres, détail, sondes, coût en contexte. Vue portée, branchée, testée et capturée le 2026-11-07 (commit `aa98290` ; capture `docs/screenshots/mcproster.png` ; 218 tests) ; version du workspace passée à 0.1.2. Restent la vérification par Alexandre, la suppression du checkout et les paquets (accord requis).
-- [ ] 0.1.3 : Linstruct — dossiers, hôtes, piles de fichiers, détail, constats
+- [ ] 0.1.3 : Linstruct — dossiers, hôtes, piles de fichiers, détail, constats. Vue portée, branchée, testée et capturée le 2026-11-07 (commit `1add611` ; capture `docs/screenshots/linstruct.png` ; 222 tests) ; version du workspace passée à 0.1.3. Restent la vérification par Alexandre, la suppression du checkout et les paquets (accord requis).
 - [ ] 0.1.4 : Cleanator — arborescence, assistants, projets, explorateur, recommandations, script
 - [ ] 0.1.5 : Billfold — comptes, câblage, clés, compteur, constats
 - [ ] 0.1.6 : Lastrun — sessions, actions, suppressions, paquets, refus, diffs

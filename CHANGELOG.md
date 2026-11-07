@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.1.3] - 2026-11-07
+
+BrambleRS 0.1.3 brings Linstruct's screen into its tab.
+
+### Linstruct
+
+- One card per host present on the machine: what it loads, in its own order, with its budget
+  gauge, the size and line count of each file, and the state of each slot (loaded, on demand,
+  cut, skipped, shadowed, ignored). A click on a host filters the findings.
+- Projects: the folders you remember, added and removed in place; a project filter; the
+  user-level files above them. Hosts that are not installed appear under "what if".
+- The findings list keeps the four severities, the host chips, the search and the information
+  toggle. The detail gives the meaning, the path, the host's own check command and the source.
+- Project folders move to `~/.config/bramblers/linstruct/settings.json`; the old
+  `~/.config/linstruct/settings.json` is read once.
+
+### Still to come
+
+- The three other module tabs still show the shared finding list. Their detailed screens come
+  in 0.1.4 to 0.1.6.
+- No website, no telemetry, no network request.
+
+### Promises
+
+- Read-only: nothing on the machine is modified. Every corrective action is displayed, never
+  executed.
+- The only writes are the settings files, the probe results and the saved reports.
+- `#![forbid(unsafe_code)]` across the workspace.
+
 ## [0.1.2] - 2026-11-07
 
 BrambleRS 0.1.2 brings MCProster's screen into its tab.
