@@ -106,10 +106,29 @@ module non plus.
 - [ ] `.rpm` installé sur une machine RPM (rpm n'est pas installé ici ; le paquet est construit)
 - [x] GitHub : dépôt renommé `blackberrylabs/BrambleRS`, dix anciens dépôts avec bandeau puis archivés (pas supprimés), profil d'org et métadonnées réécrits, release 0.1.0 avec tag `bramblers-v0.1.0` — 2026-11-07 ; `gh release download` et `sha256sum -c` vérifiés depuis l'extérieur
 - [x] Nettoyage local : dossier `Logiciels/BrambleRS`, AGENTS/CLAUDE/PLAN/JOURNAL mis à jour — 2026-11-07
-- [ ] 0.2.0+ : portage des six vues détaillées (Cleanator, MCProster, Permitt, Linstruct, Billfold, Lastrun)
-- [ ] 1.0.0 : parité, toutes les fonctionnalités des six apps dans BrambleRS
+- [x] Arborescence : `crates/bramblers`, `crates/bramblers-core`, `crates/bramblers-cli`, un dossier par module — 2026-11-07
+- [ ] Étape 9 : les six vues détaillées, une par onglet, voir ci-dessous
 
 > Réglages GitHub manuels restants : épingler BrambleRS sur le profil de l'organisation, aperçu social. Anciennes captures dans `docs/screenshots/` et `assets/blackberrylabs.desktop` à retirer ou remplacer.
+
+## Étape 9. Les six vues détaillées (0.2.0 à 1.0) — décision du 2026-11-07
+
+> Objectif : chaque onglet retrouve **toutes** les fonctionnalités de son ancienne app. Le plan détaillé, avec l'inventaire écran par écran, est dans `00_cadrage/2026-11-07_plan_vues_modules.md` (hors git). Les sources des anciennes apps sont dans `00_cadrage/references/<id>/` (hors git).
+
+- [ ] 0.2.0 : Permitt — tableau hôtes × capacités, filtres, détail, preuves, constats
+- [ ] 0.3.0 : MCProster — tableau des serveurs, filtres, détail, sondes, coût en contexte
+- [ ] 0.4.0 : Linstruct — dossiers, hôtes, piles de fichiers, détail, constats
+- [ ] 0.5.0 : Cleanator — arborescence, assistants, projets, explorateur, recommandations, script
+- [ ] 0.6.0 : Billfold — comptes, câblage, clés, compteur, constats
+- [ ] 0.7.0 : Lastrun — sessions, actions, suppressions, paquets, refus, diffs
+- [ ] 1.0.0 : parité, aucune fonctionnalité des six apps ne manque
+
+Une vue est finie quand :
+
+- son dossier `crates/modules/<id>/view` existe et l'app l'affiche dans son onglet ;
+- chaque écran et chaque action de l'ancienne app est présent, ou explicitement abandonné par Alexandre ;
+- les tests de la vue passent et une capture sur un jeu de démonstration est ajoutée ;
+- l'ancien checkout `Logiciels/<Module>` est supprimé (avec accord).
 
 ## Historique — idees de la tour 0.x (remplacees par l'etape 8)
 

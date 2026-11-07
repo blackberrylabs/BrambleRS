@@ -75,7 +75,7 @@ One Cargo workspace, one version, one binary.
 - `crates/bramblers-hostrules`: the host sheets and the readers that never write.
 - `crates/bramblers-ui`: the palette and the iced building blocks.
 - `crates/bramblers-cli`: the command line, linked into the binary.
-- `crates/app`: the iced screen, package and binary `bramblers`.
+- `crates/bramblers`: the iced shell, package and binary `bramblers`.
 - `crates/modules/<id>/core`: the six modules, each a crate, with its embedded rules and host sheets.
 
 `packaging/build.sh` builds the `.deb`, `.rpm` and AppImage into `dist/`. The whole workspace

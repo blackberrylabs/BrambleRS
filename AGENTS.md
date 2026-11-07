@@ -5,17 +5,19 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 
 ## Au démarrage de chaque session
 
-1. Lis `PLAN.md` (étape 8), `BRIEF.md` et les cinq premières entrées de `JOURNAL.md`.
+1. Lis `PLAN.md` (étape 9), `BRIEF.md` et les cinq premières entrées de `JOURNAL.md`.
 2. `git status -sb` et `git log --oneline -8` : le travail se fait sur `main`. La branche `bramble-rs` a porté la migration et a été fusionnée.
-3. Le plan détaillé est dans `00_cadrage/2026-11-07_plan_restructuration.md`, hors git.
+3. Le plan des six vues est dans `00_cadrage/2026-11-07_plan_vues_modules.md`, hors git. Les sources des anciennes apps sont dans `00_cadrage/references/<id>/`.
 
 ## État au 2026-11-07
 
 - `main` : restructuration fusionnée et poussée. Dernier commit de code `a5ff493`, tag `bramblers-v0.1.0`, release publiée avec `.deb`, `.rpm`, AppImage et `SHA256SUMS`.
 - Le dépôt GitHub s'appelle `blackberrylabs/BrambleRS` ; le dossier local est `Logiciels/BrambleRS`. Les dix anciens dépôts (trois fondations, six modules, template) portent un bandeau et sont archivés, pas supprimés. Le profil de l'organisation présente BrambleRS.
+- Arborescence du 2026-11-07 : `crates/bramblers` (app), `crates/bramblers-core`, `crates/bramblers-cli`, les trois fondations, et `crates/modules/<id>/core` pour les six modules. Un `view/` par module est la cible de l'étape 9.
 - Paquet `bramblers` 0.1.0 construit et `.deb` installé ; l'AppImage a été lancée. `cargo test --workspace` passe (207 tests), fmt et clippy propres.
-- Reste : portage des six vues détaillées en 0.x, test du `.rpm` sur une machine RPM, épinglage et aperçu social de BrambleRS (réglages GitHub manuels), nettoyage des anciennes captures et de `assets/blackberrylabs.desktop`.
-- La 0.1.0 garde l'écran de la tour, réorganisé avec les modules en onglet à gauche. Les six apps détaillées ne sont pas dans la 0.1.0 ; leurs fonctionnalités reviennent en 0.x, une vue par une. La 1.0 est la parité.
+- **Les six vues détaillées ne sont pas portées.** Les onglets montrent les constats et les chiffres de chaque module, pas les tableaux, sessions, arborescences ou matrices des anciennes apps. La prochaine étape est Permitt en 0.2.0.
+- Reste : les six vues (étape 9), test du `.rpm` sur une machine RPM, épinglage et aperçu social de BrambleRS (réglages GitHub manuels), nettoyage des anciennes captures et de `assets/blackberrylabs.desktop`.
+- La 0.1.0 garde l'écran de la tour, réorganisé avec les modules en onglet à gauche. La 1.0 est la parité.
 - Interface du 2026-11-07 : en-tête, rail gauche de 210 px avec « All findings » et les six modules en onglets, quatre chiffres de gravité et liste/détail à droite. Les couleurs de gravité et les thèmes iced sont conservés ; la palette noire et violette de MiningControlRS n'a pas été reprise.
 
 ## Promesses
@@ -29,10 +31,11 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 
 - `crates/bramblers-core/src/` : `registry.rs` (les six fournisseurs statiques), `runner.rs` (appel en processus, limite de temps), `cache.rs` (rapports enregistrés, anciens `bbl-report/1` ignorés), `dashboard.rs` (assemblage et tri).
 - `crates/modules/<id>/core` : la logique des six modules (`bramblers-<id>-core`) ; `run.rs` y expose `report()`, le point d'entrée du registre. Données embarquées : `crates/modules/<id>/{hosts,rules,providers,prices}`.
+- `crates/modules/<id>/view` (à créer en 0.x) : la vue iced du module (`bramblers-<id>-view`), avec ses `locales/`. L'app ne contient aucune vue de module.
 - `crates/bramblers-report`, `crates/bramblers-hostrules`, `crates/bramblers-ui` : les trois fondations.
-- `crates/app/` : l'app iced, paquet `bramblers`, binaire `bramblers`. `crates/cli/` : `bramblers-cli`, une bibliothèque liée dans ce même binaire (arguments = ligne de commande, aucun argument = app).
-- Tests : `cargo test --workspace`. Le registre et les rapports : `crates/core/tests/tower.rs` et `fixtures/reports/`.
-- `00_cadrage/2026-11-07_plan_restructuration.md` : le plan détaillé, hors git.
+- `crates/bramblers/` : l'app iced, paquet `bramblers`, binaire `bramblers` : en-tête, rail, routeur, langue et thème. `crates/bramblers-cli/` : `bramblers-cli`, une bibliothèque liée dans ce même binaire.
+- Tests : `cargo test --workspace`. Le registre et les rapports : `crates/bramblers-core/tests/tower.rs` et `fixtures/reports/`.
+- `00_cadrage/2026-11-07_plan_vues_modules.md` : l'inventaire des six vues, hors git. `00_cadrage/references/<id>/` : les sources des anciennes apps, hors git.
 - `README.md` et `CHANGELOG.md` sont à jour pour la 0.1.0 ; le BRIEF, le PLAN et ce fichier restent en français.
 
 ## Commandes (sur le PC d'Alexandre, depuis la racine du dépôt)

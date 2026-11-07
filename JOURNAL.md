@@ -3,6 +3,17 @@
 
 ---
 
+## 2026-11-07, un dossier par module, plan des six vues
+
+- Décision d'Alexandre : tout le produit vit dans `BrambleRS/`, avec un dossier par module, et chaque onglet doit retrouver toutes les fonctionnalités de son ancienne app. L'app devient une coquille (en-tête, rail, routeur) ; chaque module reçoit un `view/` à côté de son `core/`.
+- Arborescence renommée pour que chaque dossier porte le nom de son paquet : `crates/bramblers` (app), `crates/bramblers-core`, `crates/bramblers-cli`. Les trois fondations et les six dossiers de modules ne bougent pas. Les chemins de dépendance, les fixtures du CLI et `packaging/build.sh` suivent.
+- Les sources des six anciennes apps et leurs `locales` sont copiées dans `00_cadrage/references/<id>/` (hors git) avant tout ménage. Les anciens checkouts restent dans `Logiciels/` jusqu'au portage de leur vue, puis seront supprimés un par un, avec accord.
+- Le plan des six vues est écrit dans `00_cadrage/2026-11-07_plan_vues_modules.md` : contrat d'une vue, ordre (Permitt, MCProster, Linstruct, Cleanator, Billfold, Lastrun), inventaire écran par écran et critères de fin. `PLAN.md` gagne l'étape 9.
+- Aucun changement de comportement pour la 0.1.0 : `cargo test --workspace` passe (207 tests), fmt et clippy propres. Le binaire installé et la release restent la 0.1.0.
+- Rien n'a été poussé pour ce lot.
+
+---
+
 ## 2026-11-07, 0.1.0 publiée, série archivée, dossier renommé
 
 - `main` poussé sur `blackberrylabs/blackberrylabs`, puis le dépôt renommé `blackberrylabs/BrambleRS` (le remote local pointe sur `git@github.com:blackberrylabs/BrambleRS.git`). Tag annoté `bramblers-v0.1.0` poussé.
