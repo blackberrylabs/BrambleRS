@@ -17,7 +17,7 @@ screens of the six old applications.
   commands and paths, and the diff of an edit read on demand.
 - The 30 or 90 day window is saved in `~/.config/bramblers/lastrun/settings.json`; the old
   `~/.config/lastrun/settings.json` is read once.
-- Prompts, replies and command output are never read. Only the actions are.
+- Prompts, replies and command output are never stored or shown; the text is scanned in memory for credentials and only masked forms are kept.
 
 ### Parity
 

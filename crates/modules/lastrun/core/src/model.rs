@@ -1,7 +1,8 @@
 //! What Lastrun finds: the actions the agents took, the sessions they belong to, and the
 //! findings. An action is never the text of an exchange — no prompt, no reply, no command
 //! output — only what was done: a command (secrets masked), a file and what happened to it,
-//! a tool of an MCP server, with its approval and how it ended.
+//! a tool of an MCP server, with its approval and how it ended. The scanner reads the text
+//! in memory to look for credentials; no text enters an action.
 
 use std::path::PathBuf;
 
