@@ -35,7 +35,7 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 - `crates/bramblers-report`, `crates/bramblers-hostrules`, `crates/bramblers-ui` : les trois fondations.
 - `crates/bramblers/` : l'app iced, paquet `bramblers`, binaire `bramblers` : en-tête, rail, routeur, langue et thème. `crates/bramblers-cli/` : `bramblers-cli`, une bibliothèque liée dans ce même binaire.
 - Tests : `cargo test --workspace`. Le registre et les rapports : `crates/bramblers-core/tests/tower.rs` et `fixtures/reports/`.
-- `00_cadrage/2026-11-07_plan_vues_modules.md` : l'inventaire des six vues, hors git. `00_cadrage/references/<id>/` : les sources des anciennes apps, hors git. `00_cadrage/2026-11-07_audit_securite.md` : l'audit statique, 15 constats, F1 à F14 corrigés.
+- `00_cadrage/2026-11-07_plan_vues_modules.md` : l'inventaire des six vues, hors git. `00_cadrage/references/<id>/` : les sources des anciennes apps, hors git. `00_cadrage/2026-11-07_audit_securite.md` : l'audit statique, 15 constats, F1 à F15 corrigés.
 - `README.md` décrit l'architecture, sans numéro de version ; `CHANGELOG.md` est à jour pour la 0.1.6. Le BRIEF, le PLAN et ce fichier restent en français.
 
 ## Commandes (sur le PC d'Alexandre, depuis la racine du dépôt)

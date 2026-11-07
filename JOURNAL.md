@@ -3,6 +3,15 @@
 
 ---
 
+## 2026-11-07, audit de sécurité : F15 corrigé, audit clos
+
+- Textes alignés sur le code : `lastrun/core/src/lib.rs`, `linstruct/core/src/lib.rs`, `mcproster/core/src/lib.rs`, `linstruct/core/src/projects.rs` et `bramblers-ui/src/lib.rs` disent les chemins réels (`~/.config/bramblers/<module>/`) et que le coeur n'écrit rien. Commit `23052cd`.
+- Profil `.github` : « links are shown, never followed » devient « No network of its own. Nothing is sent anywhere; a link opens in your browser only when you click it. » Commit `cb485cc` dans `Blackberrylabs_github`, non poussé.
+- Preuves : `cargo test --workspace` passe 247 tests, clippy et fmt propres. Les quinze constats du rapport sont corrigés ; F1 à F14 l'avaient été dans les commits précédents.
+- Reste à pousser : BrambleRS et `.github`.
+
+---
+
 ## 2026-11-07, audit de sécurité : F14 corrigé
 
 - Décision d'Alexandre (« oui ») : garder `xdg-open` pour les fichiers et les liens, et filtrer seulement le schéma des liens. Remplacer l'ouvreur pour les fichiers aurait changé ses associations et pouvait ouvrir un éditeur terminal sans terminal.
