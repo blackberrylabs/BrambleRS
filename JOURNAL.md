@@ -3,6 +3,16 @@
 
 ---
 
+## 2026-11-07, audit de sécurité : F14 corrigé
+
+- Décision d'Alexandre (« oui ») : garder `xdg-open` pour les fichiers et les liens, et filtrer seulement le schéma des liens. Remplacer l'ouvreur pour les fichiers aurait changé ses associations et pouvait ouvrir un éditeur terminal sans terminal.
+- `bramblers_ui::open` : `url` n'accepte que `http://` et `https://` (casse ignorée), `file` passe le chemin à `xdg-open`. Les six vues et la coquille passent par ce module ; les anciens appels directs à `xdg-open` disparaissent.
+- Test : `https` et `HTTP` acceptés, `file:`, `smb:`, `javascript:`, `ftp:` et `mailto:` refusés. Commit `1e4d7a3`.
+- Preuves : `cargo test --workspace` passe 247 tests, clippy et fmt propres, `cargo check -p bramblers` compile. Le commit reste local.
+- Reste le constat F15 (textes qui ne décrivent plus le code).
+
+---
+
 ## 2026-11-07, audit de sécurité : F12 et F13 corrigés
 
 - F12, HOME : `home_dir()` rend `HOME` s'il est valide, sinon l'entrée de `$USER`/`$LOGNAME` dans `/etc/passwd`, et `None` si rien ne donne un dossier. `Env::current` s'en sert et aligne `$HOME` ; `Cache` aussi. L'app et le CLI refusent de démarrer sans dossier personnel, et Cleanator refuse de scanner `/` en appel direct. Test du lecteur de passwd. Commit `8c0a89d`, plus `7950c68` pour le lien `bramblers-hostrules` dans le coeur et le binaire.
