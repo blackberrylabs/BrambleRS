@@ -14,6 +14,7 @@ use iced::widget::{
 };
 use iced::{Alignment, Background, Border, Color, Element, Length, Subscription, Task, Theme};
 
+use bramblers_billfold_view as billfold_view;
 use bramblers_cleanator_view as cleanator_view;
 use bramblers_core::dashboard::ReportState;
 use bramblers_core::{Cache, Dashboard, ModuleStatus, Run, RunError};
@@ -72,6 +73,7 @@ enum Message {
     Mcproster(mcproster_view::Message),
     Linstruct(linstruct_view::Message),
     Cleanator(cleanator_view::Message),
+    Billfold(billfold_view::Message),
 }
 
 struct App {
@@ -98,6 +100,8 @@ struct App {
     linstruct: Option<linstruct_view::View>,
     /// Same for Cleanator.
     cleanator: Option<cleanator_view::View>,
+    /// Same for Billfold.
+    billfold: Option<billfold_view::View>,
 }
 
 impl App {
@@ -125,6 +129,7 @@ impl App {
             mcproster: None,
             linstruct: None,
             cleanator: None,
+            billfold: None,
         };
         // `BRAMBLERS_MODULE=permitt` opens on a module tab (documentation screenshots);
         // `BRAMBLERS_SELECT=module:finding-id` preselects a finding; `BRAMBLERS_NO_REFRESH=1`
@@ -188,6 +193,13 @@ impl App {
                 view.set_dark(self.dark);
                 self.cleanator = Some(view);
                 Some(task.map(Message::Cleanator))
+            }
+            "billfold" if self.billfold.is_none() => {
+                let (mut view, task) = billfold_view::View::new();
+                view.set_lang(self.lang);
+                view.set_dark(self.dark);
+                self.billfold = Some(view);
+                Some(task.map(Message::Billfold))
             }
             _ => None,
         }
@@ -303,6 +315,11 @@ impl App {
                             tasks.push(v.refresh().map(Message::Cleanator));
                         }
                     }
+                    Some("billfold") => {
+                        if let Some(v) = &mut self.billfold {
+                            tasks.push(v.refresh().map(Message::Billfold));
+                        }
+                    }
                     _ => {}
                 }
                 return Task::batch(tasks);
@@ -323,6 +340,9 @@ impl App {
                 if let Some(v) = &mut self.cleanator {
                     v.set_lang(l);
                 }
+                if let Some(v) = &mut self.billfold {
+                    v.set_lang(l);
+                }
                 self.remember();
             }
             Message::ToggleTheme => {
@@ -337,6 +357,9 @@ impl App {
                     v.set_dark(self.dark);
                 }
                 if let Some(v) = &mut self.cleanator {
+                    v.set_dark(self.dark);
+                }
+                if let Some(v) = &mut self.billfold {
                     v.set_dark(self.dark);
                 }
                 self.remember();
@@ -381,6 +404,11 @@ impl App {
             Message::Cleanator(m) => {
                 if let Some(v) = &mut self.cleanator {
                     return v.update(m).map(Message::Cleanator);
+                }
+            }
+            Message::Billfold(m) => {
+                if let Some(v) = &mut self.billfold {
+                    return v.update(m).map(Message::Billfold);
                 }
             }
             Message::OpenFile(p) | Message::OpenUrl(p) => {
@@ -475,6 +503,10 @@ impl App {
             },
             Some("cleanator") => match &self.cleanator {
                 Some(v) => self.view_module(v.view().map(Message::Cleanator)),
+                None => self.view_overview(),
+            },
+            Some("billfold") => match &self.billfold {
+                Some(v) => self.view_module(v.view().map(Message::Billfold)),
                 None => self.view_overview(),
             },
             _ => self.view_overview(),

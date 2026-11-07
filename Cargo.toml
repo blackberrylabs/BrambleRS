@@ -8,6 +8,7 @@ members = [
     "crates/bramblers-report",
     "crates/bramblers-ui",
     "crates/modules/billfold/core",
+    "crates/modules/billfold/view",
     "crates/modules/cleanator/core",
     "crates/modules/cleanator/view",
     "crates/modules/lastrun/core",
@@ -20,7 +21,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 license = "MIT"
 authors = ["Alexandre Do"]
@@ -31,6 +32,7 @@ bramblers-report = { path = "crates/bramblers-report" }
 bramblers-hostrules = { path = "crates/bramblers-hostrules" }
 bramblers-ui = { path = "crates/bramblers-ui" }
 bramblers-billfold-core = { path = "crates/modules/billfold/core" }
+bramblers-billfold-view = { path = "crates/modules/billfold/view" }
 bramblers-cleanator-core = { path = "crates/modules/cleanator/core" }
 bramblers-cleanator-view = { path = "crates/modules/cleanator/view" }
 bramblers-lastrun-core = { path = "crates/modules/lastrun/core" }
