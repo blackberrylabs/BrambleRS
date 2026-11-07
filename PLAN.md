@@ -114,6 +114,8 @@ module non plus.
 ## Étape 9. Les six vues détaillées (0.1.1 à 1.0) — décision du 2026-11-07
 
 > Objectif : chaque onglet retrouve **toutes** les fonctionnalités de son ancienne app. Le plan détaillé, avec l'inventaire écran par écran, est dans `00_cadrage/2026-11-07_plan_vues_modules.md` (hors git). Les sources des anciennes apps sont dans `00_cadrage/references/<id>/` (hors git).
+>
+> Noms affichés depuis le 2026-11-07 : Permitt = Agent permissions, MCProster = MCP servers, Linstruct = Instruction files, Cleanator = Disk cleanup, Billfold = Keys & spend, Lastrun = Activity. Les identifiants internes ne changent pas.
 
 - [ ] 0.1.1 : Permitt — tableau hôtes × capacités, filtres, détail, preuves, constats. Vue portée, branchée, testée et capturée le 2026-11-07 (commits `aa8670e`, `5750408`, `1c2040a` ; capture `docs/screenshots/permitt.png` ; 212 tests) ; version du workspace passée à 0.1.1. Le checkout a été supprimé le 2026-11-07 ; restent la vérification par Alexandre et les paquets (accord requis).
 - [ ] 0.1.2 : MCProster — tableau des serveurs, filtres, détail, sondes, coût en contexte. Vue portée, branchée, testée et capturée le 2026-11-07 (commit `aa98290` ; capture `docs/screenshots/mcproster.png` ; 218 tests) ; version du workspace passée à 0.1.2. Le checkout a été supprimé le 2026-11-07 ; restent la vérification par Alexandre et les paquets (accord requis).
@@ -123,7 +125,16 @@ module non plus.
 - [ ] 0.1.6 : Lastrun — sessions, actions, suppressions, paquets, refus, diffs. Vue portée, branchée, testée et capturée le 2026-11-07 (commit `0c46011` ; capture `docs/screenshots/lastrun.png` ; 233 tests) ; version du workspace passée à 0.1.6. Le checkout a été supprimé le 2026-11-07 ; restent la vérification par Alexandre et les paquets (accord requis).
 - [ ] 1.0.0 : parité, aucune fonctionnalité des six apps ne manque
 
-> Au 2026-11-07, les six vues sont portées, testées, capturées et leurs anciens checkouts sont supprimés. La 1.0 reste à constater : vérification écran par écran par Alexandre, puis parité.
+> Au 2026-11-07, les six vues sont portées, testées, capturées et leurs anciens checkouts sont supprimés. Cleanator et Lastrun ont été vus à l'écran ; Permitt, MCProster, Linstruct et Billfold restent. La 1.0 reste à constater : vérification écran par écran par Alexandre, puis parité.
+
+## Étape 10. Audit de sécurité et noms fonctionnels — fait le 2026-11-07
+
+- [x] Audit statique des 18 crates (43 201 lignes), rapport hors git `00_cadrage/2026-11-07_audit_securite.md` : 15 constats, F1 à F15 corrigés (commits `18d8dee` à `23052cd`). 248 tests, clippy et fmt propres.
+- [x] Noms fonctionnels des six onglets, EN et FR, identifiants internes conservés : commit `74c2ea1`. Profil `.github` aligné (`cbbf10e`).
+- [x] Diagnostic du rendu : le bug visuel de Cleanator venait du backend GL, pas du treemap ; le rendu matériel AMD part en reset. Lavapipe pour la vérification (commits `650bb6d`, `0c99e48`).
+- [x] Vérification à l'écran : Cleanator et Lastrun le 2026-11-07.
+- [ ] Permitt, MCProster, Linstruct, Billfold à vérifier à l'écran.
+- [ ] Parité 1.0 et paquets/tag/release.
 
 Une vue est finie quand :
 

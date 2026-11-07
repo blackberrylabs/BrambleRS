@@ -3,6 +3,18 @@
 
 ---
 
+## 2026-11-07, passation
+
+- État : workspace 0.1.6, six vues portées, 248 tests, clippy et fmt propres. Le binaire release est construit (`target/release/bramblers`) ; `target/` n'est plus vide, le prochain build sera court.
+- Noms affichés : Agent permissions, MCP servers, Instruction files, Disk cleanup, Keys & spend, Activity (français : Permissions IA, Serveurs MCP, Fichiers d'instructions, Nettoyage du disque, Clés et dépenses, Activité). Identifiants internes inchangés.
+- Audit de sécurité clos : 15 constats, F1 à F15 corrigés ; rapport hors git `00_cadrage/2026-11-07_audit_securite.md`.
+- Vérifié à l'écran : Cleanator et Lastrun. Restent Permitt, MCProster, Linstruct et Billfold.
+- Rendu : Vulkan matériel AMD instable (reset du pilote, X et OpenCode emportés). Utiliser lavapipe : `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json WGPU_BACKEND=vulkan`. Ne pas utiliser `WGPU_BACKEND=gl` (canvas faux).
+- Publié : seulement la 0.1.0 (`bramblers-v0.1.0`). Les versions 0.1.1 à 0.1.6 ne sont ni packagées ni taguées.
+- Prochaine session : vérifier les quatre onglets restants, constater la parité 1.0, puis construire les paquets, le tag et la release.
+
+---
+
 ## 2026-11-07, noms fonctionnels des six onglets
 
 - Décision d'Alexandre : renommer l'affichage, pas les identifiants. Les slugs `permitt`, `mcproster`, `linstruct`, `cleanator`, `billfold`, `lastrun` restent dans les chemins, préférences et rapports ; seuls les libellés changent.

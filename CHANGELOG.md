@@ -33,6 +33,23 @@ screens of the six old applications.
 - The ten old repositories, their releases and the five tower tags were removed on
   2026-11-07. Only BrambleRS remains.
 
+### Security
+
+- Probe results no longer keep the command line or the server's stderr, and an error is
+  masked: a secret expanded from the environment can no longer reach `probes.json`.
+- Secrets are masked in more places: numeric passwords, `KEY=value` assignments, Stripe,
+  Twilio, SendGrid, Shopify and Slack shapes, MCP commands and flag values.
+- The generated Cleanator script keeps every display name on one line and quotes every
+  substituted field.
+- The human CLI output drops control characters (terminal escape sequences).
+- Log reads and zstd decompression are capped; external probes are capped; the MCP probe
+  runs in a reduced environment and a process group, and says what starting a server means.
+- A missing home directory is resolved from `/etc/passwd`; BrambleRS refuses to scan `/`.
+- Saved reports, probe results, settings and the cleanup script are written through a
+  private temporary file and renamed, in 0600.
+- AppImage builds pin `appimagetool` 1.9.1 and verify its SHA256. Links open only for
+  `http` and `https`; JSONC and `/proc/mounts` keep non-ASCII text.
+
 ### Promises
 
 - Read-only: nothing on the machine is modified. Every corrective action is displayed, never

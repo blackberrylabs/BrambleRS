@@ -15,8 +15,8 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 - Le dépôt GitHub s'appelle `blackberrylabs/BrambleRS` ; le dossier local est `Logiciels/BrambleRS`. Les dix anciens dépôts (trois fondations, six modules, template) et leurs releases ont été supprimés le 2026-11-07. Le profil de l'organisation présente BrambleRS.
 - Arborescence du 2026-11-07 : `crates/bramblers` (app), `crates/bramblers-core`, `crates/bramblers-cli`, les trois fondations, et `crates/modules/<id>/core` et `view` pour les six modules.
 - Paquet `bramblers` 0.1.0 construit et `.deb` installé ; l'AppImage a été lancée. Le workspace est en 0.1.6 ; cette version n'a ni paquet ni release. `cargo test --workspace` passe (248 tests au 2026-11-07), fmt et clippy propres.
-- **Les six vues détaillées sont portées.** Permitt, MCProster, Linstruct, Cleanator, Billfold et Lastrun ont leur `view/`, leurs textes, leurs tests et une capture (`docs/screenshots/{permitt,mcproster,linstruct,cleanator,billfold,lastrun}.png`, 0.1.6 non publiée). Les six anciens checkouts ont été supprimés le 2026-11-07. Il reste la vérification écran par écran par Alexandre, puis la 1.0 quand aucune fonctionnalité ne manque.
-- Reste : la vérification des six vues par Alexandre, la parité 1.0, test du `.rpm` sur une machine RPM, épinglage et aperçu social de BrambleRS (réglages GitHub manuels), nettoyage des anciennes captures et de `assets/blackberrylabs.desktop`.
+- **Les six vues détaillées sont portées.** Agent permissions, MCP servers, Instruction files, Disk cleanup, Keys & spend et Activity ont leur `view/`, leurs textes, leurs tests et une capture (`docs/screenshots/{permitt,mcproster,linstruct,cleanator,billfold,lastrun}.png`, 0.1.6 non publiée). Les six anciens checkouts ont été supprimés le 2026-11-07. Il reste la vérification écran par écran par Alexandre, puis la 1.0 quand aucune fonctionnalité ne manque.
+- Reste : la vérification des six vues par Alexandre (Cleanator et Lastrun déjà vus le 2026-11-07), la parité 1.0, test du `.rpm` sur une machine RPM, épinglage et aperçu social de BrambleRS (réglages GitHub manuels), nettoyage des anciennes captures et de `assets/blackberrylabs.desktop`.
 - La 0.1.0 garde l'écran de la tour, réorganisé avec les modules en onglet à gauche. La 1.0 est la parité.
 - Interface du 2026-11-07 : en-tête, rail gauche de 210 px avec « All findings » et les six modules en onglets, quatre chiffres de gravité et liste/détail à droite. Les couleurs de gravité et les thèmes iced sont conservés ; la palette noire et violette de MiningControlRS n'a pas été reprise.
 
@@ -41,9 +41,10 @@ BrambleRS : un logiciel unique qui montre ce que les agents de code IA font à l
 
 ## Commandes (sur le PC d'Alexandre, depuis la racine du dépôt)
 
-- Tester : `cargo test --workspace` ; un crate : `cargo test -p bramblers-core`. `target/` a été supprimé le 2026-11-07 : le premier build reconstruit tout, compte plusieurs minutes.
+- Tester : `cargo test --workspace` ; un crate : `cargo test -p bramblers-core`. `target/` a été reconstruit le 2026-11-07 : les builds suivants sont courts.
 - Avant un commit de code : `cargo fmt --check` puis `cargo clippy --all-targets`.
 - App : `cargo run -p bramblers --bin bramblers`. CLI : `cargo run -p bramblers -- report --json` (ou `report <module> --json`, `list`, `refresh`).
+- Sur ce PC, le rendu Vulkan matériel part en reset du pilote AMD et emporte X avec OpenCode. Pour l'app : `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json WGPU_BACKEND=vulkan cargo run -p bramblers --bin bramblers` (Vulkan logiciel, lavapipe). Ne pas utiliser `WGPU_BACKEND=gl` : les canvas s'affichent mal.
 - `packaging/build.sh` construit le paquet unique (`bramblers`, `.desktop` et icônes `bramblers`, un seul binaire) et a produit les trois paquets 0.1.0. Il efface `target/appimage/bramblers.AppDir` et réécrit `dist/SHA256SUMS` : son lancement demande l'accord d'Alexandre.
 
 <!-- BLOC COMMUN v1, 2026-10-26, conservé comme historique. La série a été supprimée le 2026-11-07 ; BrambleRS la remplace. Les règles d'accord, de méthode et de style ci-dessous restent en vigueur. -->

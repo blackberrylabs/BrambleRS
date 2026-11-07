@@ -3,7 +3,7 @@
 
 Rev. 2 — 2026-11-07, validée le 2026-11-07 (« Oui, je valide »). Proposée après les décisions d'Alexandre du 2026-11-07 : le logiciel ne porte plus le nom de l'org, les six outils deviennent un seul logiciel, et la 0.1.0 garde l'écran actuel de la tour.
 
-Compléments du 2026-11-07, avec l'accord d'Alexandre : nom de la crate de l'app (section 4), calendrier réel des six vues et anciens tags supprimés (section 8), ordre de migration sans archivage (section 9).
+Compléments du 2026-11-07, avec l'accord d'Alexandre : nom de la crate de l'app (section 4), calendrier réel des six vues et anciens tags supprimés (section 8), ordre de migration sans archivage (section 9), noms affichés des six modules (sections 3 et 5).
 
 ## 1. Objet
 
@@ -34,6 +34,8 @@ Accroche : *BrambleRS — everything your AI coding agents do to your machine, o
   - **Linstruct** : les fichiers d'instructions tels que chaque hôte les lit.
   - **Billfold** : les comptes et clés présents, les jetons consommés, prix aux tarifs API.
   - **Lastrun** : ce que les agents ont réellement fait, session par session.
+
+Depuis le 2026-11-07, l'interface affiche ces modules sous des noms fonctionnels : Agent permissions (Permitt), MCP servers (MCProster), Instruction files (Linstruct), Disk cleanup (Cleanator), Keys & spend (Billfold), Activity (Lastrun). Les identifiants internes restent les slugs d'origine (`permitt`, `mcproster`, `linstruct`, `cleanator`, `billfold`, `lastrun`) dans les chemins, les préférences et les rapports.
 - Quatre gravités : 1 agir maintenant, 2 à regarder, 3 bon à savoir, 4 information.
 - Read-only : aucune modification de la machine. Les actions correctives sont affichées, jamais exécutées. Aucune sortie réseau.
 - Anglais par défaut, français en option.
