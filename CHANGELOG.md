@@ -20,7 +20,8 @@ Blackberrylabs tower and puts the six tools inside it.
 
 - The tower screen is kept: four severity counts, one finding list across the six modules,
   and the detail of the selected finding with its evidence and its actions.
-- The module cards show each module's figures and the age of its report.
+- The six modules are tabs in a left rail. The overview keeps the combined list; a module
+  tab limits the counts, the list and the detail to that module.
 - Removed: the "Get it" button, the "Open in <Module>" button and the not-installed state.
   The six modules are always there.
 - English by default, French available, light and dark.
