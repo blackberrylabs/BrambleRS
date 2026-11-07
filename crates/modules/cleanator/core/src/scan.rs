@@ -337,7 +337,11 @@ fn scan_dir(shared: &Shared, path: PathBuf) -> DirNode {
                 let mut other = DirNode::leaf(epath.clone());
                 other.other_fs = true;
                 node.children.push(other);
-                shared.other_fs.lock().unwrap().push(epath);
+                shared
+                    .other_fs
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner())
+                    .push(epath);
                 continue;
             }
             subdirs.push(epath);
@@ -347,7 +351,11 @@ fn scan_dir(shared: &Shared, path: PathBuf) -> DirNode {
         let allocated = meta.blocks() * 512;
         let counted = if ft.is_file() && meta.nlink() > 1 {
             let key = (meta.dev(), meta.ino());
-            let first = shared.seen_inodes.lock().unwrap().insert(key);
+            let first = shared
+                .seen_inodes
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .insert(key);
             if first {
                 allocated
             } else {

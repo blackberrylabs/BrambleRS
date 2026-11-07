@@ -110,7 +110,7 @@ impl<'a> ProbeContext<'a> {
     }
 
     fn docker(&self) -> Option<DockerData> {
-        let mut guard = self.docker.lock().unwrap();
+        let mut guard = self.docker.lock().unwrap_or_else(|e| e.into_inner());
         if guard.is_none() {
             *guard = Some(DockerData::load());
         }
@@ -125,7 +125,7 @@ impl<'a> ProbeContext<'a> {
     }
 
     fn ollama_loaded(&self) -> HashSet<String> {
-        let mut guard = self.ollama_loaded.lock().unwrap();
+        let mut guard = self.ollama_loaded.lock().unwrap_or_else(|e| e.into_inner());
         if guard.is_none() {
             let mut set = HashSet::new();
             if let Some(out) = run("ollama", &["ps"], SHORT) {
