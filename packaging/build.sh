@@ -6,8 +6,9 @@
 #
 # One package, one binary: the desktop app and the command line are both `bramblers`.
 # Needs: cargo, cargo-deb, cargo-generate-rpm (cargo install cargo-deb cargo-generate-rpm),
-# and for the AppImage either `appimagetool` on PATH or network access to fetch it once
-# into packaging/.tools/. Nothing here needs root, and nothing is installed.
+# and for the AppImage network access once: a pinned appimagetool is downloaded into
+# packaging/.tools/ and checked against the SHA256 published in its release. Nothing here
+# needs root, and nothing is installed.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -39,14 +40,41 @@ for t in "${targets[@]}"; do
       ;;
     appimage)
       echo "== AppImage"
-      TOOL="$(command -v appimagetool || true)"
-      if [ -z "$TOOL" ]; then
-        TOOL="$TOOLS/appimagetool-$ARCH"
-        if [ ! -x "$TOOL" ]; then
-          curl -sSL -o "$TOOL" \
-            "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-$ARCH.AppImage"
-          chmod +x "$TOOL"
-        fi
+      # Pinned release, verified against the SHA256 published in the GitHub release.
+      # `continuous` changes without notice; a downloaded tool is never executed unverified.
+      APPIMAGETOOL_VERSION="1.9.1"
+      case "$ARCH" in
+        x86_64)
+          TOOL_ARCH="x86_64"
+          TOOL_SHA256="ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0"
+          ;;
+        aarch64|arm64)
+          TOOL_ARCH="aarch64"
+          TOOL_SHA256="f0837e7448a0c1e4e650a93bb3e85802546e60654ef287576f46c71c126a9158"
+          ;;
+        armv7l|armhf)
+          TOOL_ARCH="armhf"
+          TOOL_SHA256="42b61cba5495d8aaf418a5c9a015a49b85ad92efabcbd3c341f1540440e4e23d"
+          ;;
+        i686|i386)
+          TOOL_ARCH="i686"
+          TOOL_SHA256="7ad9ff47c203aae0149b18f6df9e3018b2e2f470ea644a0413e3ded39e9e3bdb"
+          ;;
+        *)
+          echo "unsupported architecture for appimagetool: $ARCH" >&2
+          exit 2
+          ;;
+      esac
+      TOOL="$TOOLS/appimagetool-$TOOL_ARCH"
+      verify_tool() {
+        ( cd "$TOOLS" && printf '%s  %s\n' "$TOOL_SHA256" "appimagetool-$TOOL_ARCH" | sha256sum -c - >/dev/null )
+      }
+      if [ ! -x "$TOOL" ] || ! verify_tool; then
+        rm -f "$TOOL"
+        curl -sSL -o "$TOOL" \
+          "https://github.com/AppImage/appimagetool/releases/download/$APPIMAGETOOL_VERSION/appimagetool-$TOOL_ARCH.AppImage"
+        chmod +x "$TOOL"
+        verify_tool
       fi
       APPDIR="$ROOT/target/appimage/bramblers.AppDir"
       rm -rf "$APPDIR"
