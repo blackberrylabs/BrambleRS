@@ -3,6 +3,17 @@
 
 ---
 
+## 2026-11-07, la vue Billfold portée dans son onglet
+
+- La crate `crates/modules/billfold/view` (`bramblers-billfold-view`) reprend l'ancienne app (1 542 lignes) sans fenêtre : `View::new`, `update`, `view`, `set_lang`, `set_dark`, `refresh`. Trois onglets : Branchement (hôtes, comptes, crédit, quotas, expiration), Clés (masquées, fichier, état git, hôtes qui les lisent) et Compteur (jetons par hôte, modèle, projet ou jour, dollars équivalent API, part du cache, journaux à venir).
+- La liste des constats garde les quatre gravités, les puces d'hôtes, la recherche et l'affichage des informations ; le détail donne le sens, l'emplacement, la commande de l'hôte et la source.
+- Agencement adapté au rail : la phrase d'en-tête passe sur deux lignes avec les fenêtres 30/90/365 et « Relire » en dessous ; les puces d'hôtes défilent horizontalement au lieu de revenir à la ligne tous les cinq ; les pastilles d'une même ligne de compte s'empilent. À 1 280 px, la colonne de gauche perd 120 px par rapport à l'ancienne fenêtre.
+- Le réglage de la fenêtre (30, 90 ou 365 jours) va dans `~/.config/bramblers/billfold/settings.json` ; l'ancien `~/.config/billfold/settings.json` est lu une fois. Les clés sont masquées à la lecture, rien n'est conservé.
+- Preuves : `cargo test --workspace` passe (230 tests, dont 3 dans la vue), fmt et clippy propres ; capture `docs/screenshots/billfold.png` (1280x820) sur le HOME factice, avec `.claude/.credentials.json`, deux lignes d'usage `claude-jsonl` et une clé `ANTHROPIC_API_KEY` dans `.bashrc` ; `BRAMBLERS_MODULE=billfold` lancé sans panique.
+- Version du workspace passée à 0.1.5. Commit `09078b2` pour la vue. Rien n'a été poussé.
+
+---
+
 ## 2026-11-07, la vue Cleanator portée dans son onglet
 
 - La crate `crates/modules/cleanator/view` (`bramblers-cleanator-view`) reprend l'ancienne app (1 858 lignes en deux fichiers) sans fenêtre : `View::new`, `update`, `view`, `set_lang`, `set_dark`, `refresh`, plus `subscription` pour le compteur de la fenêtre de lecture. L'explorateur est un treemap squarifié en canvas (Bruls, Huizing et van Wijk), avec la légende des catégories ; le panneau garde les recommandations sûres et à vérifier, les groupes de règles, la case par projet, le script copié ou enregistré.

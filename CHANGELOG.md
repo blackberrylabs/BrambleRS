@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.1.5] - 2026-11-07
+
+BrambleRS 0.1.5 brings Billfold's screen into its tab.
+
+### Billfold
+
+- Three tabs. Wiring shows each host, the account it is logged into, the credit behind it
+  (subscription, plan, API key, keyring), the quota bars and the expiry. Keys lists every
+  provider key found, masked, with the file, the git state and the hosts that read it. Meter
+  groups tokens by host, model, project or day, with the API-equivalent dollars, the cache
+  share and the log files the host will prune.
+- The findings list keeps the four severities, the host chips, the search and the information
+  toggle. The detail gives the meaning, where the key sits, the host's own command and the
+  source.
+- The 30, 90 or 365 day window is saved in `~/.config/bramblers/billfold/settings.json`; the
+  old `~/.config/billfold/settings.json` is read once.
+- The scan runs on the home, on a thread. Keys are masked the moment they are read; nothing is
+  kept and nothing is written outside the settings file.
+
+### Still to come
+
+- The Lastrun tab still shows the shared finding list. Its detailed screen comes in 0.1.6.
+- No website, no telemetry, no network request.
+
+### Promises
+
+- Read-only: nothing on the machine is modified. Every corrective action is displayed, never
+  executed.
+- The only writes are the settings files, the probe results, the cleanup script and the saved
+  reports.
+- `#![forbid(unsafe_code)]` across the workspace.
+
 ## [0.1.4] - 2026-11-07
 
 BrambleRS 0.1.4 brings Cleanator's screen into its tab.
