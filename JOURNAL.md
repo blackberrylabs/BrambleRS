@@ -3,6 +3,15 @@
 
 ---
 
+## 2026-11-07, audit de sécurité : F8 et F9 corrigés
+
+- F8, lectures bornées : Billfold et Lastrun refusent un journal de plus de 256 Mio et une décompression zstd de plus de 256 Mio (le fichier est lu par `File::take`, jamais par `fs::read` entier) ; Cleanator plafonne stdout et stderr de chaque sonde externe à 16 Mio. Commit `d4a8299`.
+- F9, texte non ASCII : `strip_jsonc` parcourt les caractères au lieu des octets, donc `/home/rémi` reste `/home/rémi` dans un fichier JSONC ; `unescape` de `/proc/mounts` reconstruit les octets avant de décoder l'UTF-8. Tests ajoutés. Commit `6a6b0b7`.
+- Preuves : `cargo test --workspace` passe 243 tests, `cargo clippy --workspace --all-targets` et `cargo fmt --check` propres. Les deux commits de code restent locaux, avec le commit de journal.
+- Restent les constats F10 à F15 du rapport.
+
+---
+
 ## 2026-11-07, audit de sécurité : F7 corrigé
 
 - Décision d'Alexandre (« go avec ta reco ») : garder le scan des invites et des réponses pour trouver les identifiants, et corriger les textes plutôt que restreindre le scan.
