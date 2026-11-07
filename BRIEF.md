@@ -1,191 +1,109 @@
-# BRIEF — la tour de contrôle Blackberrylabs
-<!-- Project brief (French). Code, comments, commits and README are in English. -->
+# BRIEF — BrambleRS
+<!-- Rev. 2 validée le 2026-11-07 par Alexandre. Remplace la rev. 1 du 2026-10-16. Français : pilotage. Code, docs, commits, README en anglais. -->
 
-Rev. 1 — 2026-10-16, valide le 2026-10-16 (« Je valide », T0 a T4 prises). Quatrieme logiciel
-de la famille, le premier qui ne lit rien lui-meme.
+Rev. 2 — 2026-11-07, validée le 2026-11-07 (« Oui, je valide »). Proposée après les décisions d'Alexandre du 2026-11-07 : le logiciel ne porte plus le nom de l'org, les six outils deviennent un seul logiciel, et la 0.1.0 garde l'écran actuel de la tour.
 
 ## 1. Objet
 
-**Un seul ecran qui dit a un developpeur ou un vibe codeur ce qui cloche sur sa machine cote
-IA — le plus grave en premier — et d'ou il ouvre l'outil Blackberrylabs qui va bien.**
+**BrambleRS est un logiciel unique qui montre ce que les agents de code IA font à la machine, le plus grave en premier, et ouvre chaque constat au bon endroit.**
 
-La tour ne calcule rien : elle lance les modules installes, lit leurs rapports, les assemble
-en une liste de constats triee, et ouvre le module concerne au bon endroit. Elle est aussi
-la vitrine de la famille : un module absent est montre avec ou le prendre.
+Il remplace la tour Blackberrylabs et les six outils séparés (Cleanator, MCProster, Permitt, Linstruct, Billfold, Lastrun). Blackberrylabs reste le nom de l'organisation ; BrambleRS est son produit. Les projets sans rapport avec BrambleRS (MiningControlRS, etc.) restent des dépôts séparés de l'organisation. À terme, BrambleRS reprend toutes les fonctionnalités des six apps ; la 0.1.0 est la première étape, pas la cible finale. La 1.0 sera atteinte quand toutes les fonctionnalités des six apps seront dans BrambleRS.
 
-Accroche : *Blackberrylabs — everything your AI agents do to your machine, on one screen.
-Read-only, like the tools behind it.*
+Accroche : *BrambleRS — everything your AI coding agents do to your machine, on one screen. Read-only.*
 
-## 2. Pourquoi
+## 2. Décisions de restructuration
 
-- La recherche du 16/10 : les gens arrivent **apres** l'incident, par un moteur de recherche,
-  avec une question (disque plein, agent qui supprime, outil qui agit sans demander). Ils
-  n'ouvrent pas trois inspecteurs ; ils veulent une reponse en dix secondes.
-- Alexandre, 16/10 : « Blackberrylabs, c'est comme un vrai petit projet avec plein d'outils
-  MVP qu'on va ameliorer avec le temps » ; « a terme, la tour de controle d'un developpeur ou
-  d'un vibe codeur sur son poste ». La tour est le produit ; les outils sont ses modules.
-- Convention du 16/10 : des outils separes, une fondation commune, « la tour rassemble sans
-  absorber ».
+- **D1 2026-11-07** : le logiciel s'appelle **BrambleRS**. Le suffixe RS distingue la version Rust, comme MiningControlRS. Blackberrylabs reste l'organisation. Décidé par Alexandre.
+- **D2 2026-11-07** : un seul logiciel, un seul dépôt, un seul paquet. Les six outils deviennent des modules internes, plus six logiciels séparés. Décidé par Alexandre.
+- **D3 2026-11-07** : la 0.1.0 reprend l'écran actuel de la tour (liste de constats, résumés, détail). Les six apps détaillées ne sont pas reprises en 0.1.0 ; la cible 0.x est de reprendre toutes leurs fonctionnalités (D7). Décidé par Alexandre.
+- **D4 2026-11-07** : les anciens dépôts sont archivés, pas supprimés. Les releases restent téléchargeables. Proposition de l'agent, validée avec la rev. 2.
+- **D5 2026-11-07** : les projets sans rapport avec BrambleRS restent des dépôts séparés de l'org. Décidé par Alexandre.
+- **D6 2026-11-07** : une seule app iced, un binaire `bramblers`, un paquet `bramblers`, des crates internes `bramblers-*`. Proposition de l'agent, validée avec la rev. 2.
+- **D7 2026-11-07** : la cible 0.x est de reprendre **toutes les fonctionnalités des six apps** dans BrambleRS, vue par vue, jusqu'à ce qu'aucune app séparée n'ait de raison d'exister. La 0.1.0 n'attend pas ce portage. La 1.0 est le jalon de parité. Décidé par Alexandre.
 
-## 3. Posture
+## 3. Ce que BrambleRS 0.1.0 fait
 
-Decision T1 (16/10, « B version liste de constats ») : la tour est un **tableau de bord**,
-pas un hall. Quatre chiffres en haut, une liste de constats tous modules confondus, triee
-par gravite, chaque ligne ouvrant le module au bon endroit. Pas de croisement entre modules
-en v1 : ils viendront quand cinq ou six modules montreront lesquels se repondent.
+- Un écran d'accueil : quatre chiffres, une liste de constats tous modules confondus, triée par gravité. Chaque constat ouvre le détail (preuves, actions affichées) et le module concerné.
+- Six modules internes, chacun fournit ses chiffres et ses constats :
+  - **Cleanator** : ce que l'outillage IA laisse sur le disque.
+  - **MCProster** : les serveurs MCP déclarés, doublons, commandes mortes, jetons en clair.
+  - **Permitt** : ce que chaque agent peut faire sans demander, et quel réglage le dit.
+  - **Linstruct** : les fichiers d'instructions tels que chaque hôte les lit.
+  - **Billfold** : les comptes et clés présents, les jetons consommés, prix aux tarifs API.
+  - **Lastrun** : ce que les agents ont réellement fait, session par session.
+- Quatre gravités : 1 agir maintenant, 2 à regarder, 3 bon à savoir, 4 information.
+- Read-only : aucune modification de la machine. Les actions correctives sont affichées, jamais exécutées. Aucune sortie réseau.
+- Anglais par défaut, français en option.
+- **Limite de la 0.1.0** : les inventaires complets des six apps (tableaux, sessions, disques, comptes) ne sont pas encore dans l'écran ; le rapport ne transporte que les constats. Le portage des six vues détaillées est la feuille de route 0.x (D7), pas une option.
 
-Ce qu'elle n'est pas : un quatrieme inspecteur (elle ne lit aucun fichier d'hote, ne scanne
-aucun disque), un gestionnaire (elle n'agit jamais), un pilote des projets d'Alexandre
-(tranche le 16/10 : Blackberrylabs seulement).
+## 4. Architecture
 
-## 4. Le contrat tour ↔ module — le coeur de ce BRIEF
+- Un workspace Rust unique, un `Cargo.lock`, une version.
+- Un seul radical technique : `bramblers`. Le nom affiché est `BrambleRS`, l'org reste `Blackberrylabs`.
+- `crates/bramblers-core` : registre des six modules, orchestration, cache, tri, modèle commun.
+- `crates/bramblers-report` : types du rapport et des gravités (ancien `bbl-report`), schéma interne `bramblers-report/1`.
+- `crates/bramblers-hostrules` : fiches d'hôtes et lecteurs (ancien `bbl-hostrules`).
+- `crates/bramblers-ui` : palette et briques iced (ancien `bbl-ui`).
+- `crates/bramblers-app` : l'app iced unique, l'écran actuel de la tour.
+- `crates/bramblers-cli` : le CLI `bramblers`, avec `report --json` et les sous-commandes des six modules.
+- `crates/modules/<id>/core` (crate `bramblers-<id>-core`) : la logique des six outils, réutilisée telle quelle. Les six apps ne sont pas importées en 0.1.0.
+- **Un binaire `bramblers`** : sans argument, l'app ; `bramblers report --json` pour le rapport global ; `bramblers report <module> --json` pour un module.
+- **Un paquet `bramblers`**, une entrée de menu `BrambleRS` (`Exec=bramblers`, `Icon=bramblers`), une icône. Le paquet remplace et est en conflit avec `blackberrylabs`, `blackberrylabs-full` et les six paquets de modules.
+- **Chemins** : `~/.config/bramblers/` et `~/.local/state/bramblers/`. Un shim lit les anciens chemins `~/.config/blackberrylabs/` et `~/.local/state/blackberrylabs/` au premier lancement.
+- **Dépôt et dossier local** : `blackberrylabs/BrambleRS` et `Logiciels/BrambleRS`. GitHub est insensible à la casse ; le nom affiché garde `BrambleRS`.
 
-« Bien faire des le depart » (Alexandre, 16/10) = soigner le contrat, pas l'ecran. Il doit
-tenir quand le dixieme module arrivera.
+## 5. Après la 0.1.0 : toutes les fonctionnalités des six apps
 
-### 4.1 Un module = un binaire qui produit un rapport
+La cible n'est pas un tableau de bord qui laisse six apps à côté. Chaque fonctionnalité des six apps doit vivre dans BrambleRS :
 
-`<module> report --json` ecrit sur stdout un document `bbl-report/1`. Les trois modules
-existants l'ajoutent (etape 0) : `cleanator-cli report`, `mcproster report`, `permitt report`.
-Leurs `--json` actuels restent ; `report` est la vue normalisee.
+- **Cleanator** : le découpage du disque, les assistants, les projets, l'explorateur, le panneau de recommandations et le script de nettoyage.
+- **MCProster** : le tableau des serveurs, les filtres, le détail, les sondes, les constats.
+- **Permitt** : le tableau des hôtes, les filtres, la matrice de permissions, les preuves, les constats.
+- **Linstruct** : les dossiers, les hôtes, la liste des fichiers, le détail, les constats.
+- **Billfold** : les comptes, le câblage, les clés, le compteur, les constats.
+- **Lastrun** : les sessions, les suppressions, les paquets, les refus, les diffs, les constats.
 
-### 4.2 Le rapport (`bbl-report/1`)
+Le portage se fait vue par vue, en 0.x, sans bloquer la 0.1.0. Une vue est terminée quand l'app correspondante n'a plus de fonctionnalité que BrambleRS n'a pas. Les six apps restent archivées comme référence, jamais comme produit parallèle. La 1.0 est atteinte quand cette liste est vide côté apps.
 
-```jsonc
-{
-  "schema": "bbl-report/1",
-  "module": { "id": "permitt", "name": "Permitt", "version": "0.1.0",
-              "verb": "inspect",                       // clean | inventory | inspect | …
-              "tagline": "What your AI agents may do without asking",
-              "app": "permitt-app", "cli": "permitt",
-              "home": "https://github.com/blackberrylabs/permitt" },
-  "generated_at": "2026-10-16T21:03:00Z",
-  "duration_ms": 120,
-  "summary": [                                         // 2 a 4 chiffres, ceux des cartes KPI
-    { "key": "hosts", "label": "Hosts installed", "value": "4", "tone": "neutral" },
-    { "key": "auto",  "label": "Run without asking", "value": "6", "tone": "alert" }
-  ],
-  "findings": [
-    { "id": "runs-without-asking/opencode/commands",   // stable dans le module : la tour s'en sert pour « deja vu »
-      "severity": 2,                                   // 1 agir maintenant · 2 a regarder · 3 bon a savoir · 4 information
-      "kind": "runs-without-asking",                   // le slug du module, tel quel
-      "title": "OpenCode runs shell commands without asking",
-      "subject": { "kind": "host", "label": "OpenCode" },   // host | server | path | file | setting
-      "detail": "by default, nothing changed it — « Most permissions default to \"allow\" »",
-      "evidence": [ { "label": "~/.config/opencode/opencode.json", "path": "/home/…/opencode.json", "line": null } ],
-      "actions": [ { "kind": "hint", "label": "Add a permission block in ~/.config/opencode/opencode.json" },
-                   { "kind": "open-file", "label": "Open file", "target": "/home/…/opencode.json" } ],
-      "open": { "app": "permitt-app", "args": ["--select", "opencode:commands"] }   // le module au bon endroit
-    }
-  ],
-  "notes": [ "3 shell files read", "Cursor's Run Mode is not readable" ],   // phrases courtes, facultatif
-  "errors": []                                         // ce qui n'a pas pu etre lu
-}
-```
+## 6. Ce qui disparaît
 
-Regles du rapport :
-- **Gravite commune, quatre niveaux**, definis en mots dans la crate : 1 = agir maintenant
-  (perte de donnees possible, secret en clair, contournement dans un shell) ; 2 = a regarder
-  (agit sans demander, acces large, gros volume recuperable) ; 3 = bon a savoir (doublon,
-  version qui differe, liste de refus seule) ; 4 = information (desactive, pas en cache).
-  Chaque module **mappe ses propres constats** sur cette echelle ; la tour ne reinterprete pas.
-- **Rien d'inedit dans le rapport** : il ne contient que ce que le module affiche deja. Pas de
-  secret (les modules masquent avant), pas de chemin que le module ne montrerait pas.
-- **Les actions sont affichees, jamais executees** par la tour — meme regle que partout.
-- **Versionne** : `bbl-report/1`. Un champ ajoute = meme version (les lecteurs ignorent
-  l'inconnu). Un champ retire ou change de sens = `bbl-report/2`, et la tour lit les deux.
+- La découverte des modules sur le PATH, les fiches `modules/*.toml`, le champ `latest`, `bundle.sh`, `github_meta.sh` multi-dépôts, le gabarit `template`.
+- Le `report --json` par module, le bouton « Get it », le bouton « Open in <Module> ».
+- Les six apps séparées et leurs écrans détaillés en 0.1.0 ; leurs fonctionnalités reviennent en 0.x (section 5).
+- Le contrat externe `bbl-report/1` ; il devient le schéma interne `bramblers-report/1`. Les champs de distribution (`app`, `cli`, `home`, `open`) ne sont plus lus.
+- Les six dépôts actifs et leurs releases séparées. Ils sont archivés après la 0.1.0.
 
-### 4.3 La crate `bbl-report`
+## 7. Règles
 
-Troisieme fondation, avec `hostrules` (le coeur) et `bbl-ui` (le visage) : les types Rust du
-rapport, la serialisation, la validation, l'echelle de gravite en mots, et un test de
-conformite que chaque module execute sur sa propre sortie. Depot `blackberrylabs/bbl-report`,
-MIT, dependance git par tag. Nom verifie libre sur crates.io.
+- **R1 Read-only** : BrambleRS ne modifie rien ; il lit, agrège, affiche.
+- **R2 Écriture** : uniquement `~/.config/bramblers/` et `~/.local/state/bramblers/`.
+- **R3 Réseau** : aucune sortie réseau.
+- **R4 Actions** : les actions correctives sont affichées, jamais exécutées.
+- **R5 Modularité interne** : la logique d'un module vit dans son crate ; l'app ne connaît que le registre et les types communs.
+- **R6 Langue** : anglais par défaut, français en option.
+- **R7 Une version** : un `CHANGELOG`, un `README`, un paquet, une release.
 
-### 4.4 La decouverte des modules
+## 8. Versions
 
-Une liste declarative dans la tour, meme esprit que les fiches d'hotes : id, nom, verbe,
-binaires attendus (`cli`, `app`), commande de rapport, version minimale de schema, page
-d'accueil, paquets. Un module est **installe** si son binaire est sur le `PATH` (ou a un
-chemin declare). Absent : la tour le montre quand meme, avec sa description et ou le
-prendre — la vitrine. Ajouter un module = une fiche + un binaire conforme.
+- **0.1.0** : la restructuration. Un dépôt, une app, l'écran actuel, six cores, un paquet.
+- **0.2.0 à 0.x** : le portage des six vues détaillées, une ou plusieurs par release.
+- **1.0.0** : la parité. Toutes les fonctionnalités des six apps vivent dans BrambleRS ; aucune app séparée n'a de fonctionnalité propre.
 
-### 4.5 Le rafraichissement (decision T2, 16/10)
+Les tags de la nouvelle ligne sont `bramblers-v0.1.0`, `bramblers-v0.2.0`, etc. : le dépôt renommé garde les anciens tags `v0.1.0` à `v0.4.0` de la tour, et un nouveau `v0.1.0` entrerait en collision. La version du paquet est `0.1.0`.
 
-A l'ouverture, la tour **affiche le dernier rapport enregistre, avec son age**, puis
-**relance chaque module en arriere-plan** et remplace quand c'est pret. Relance manuelle
-toujours possible, par module ou globale. Les rapports enregistres vivent dans
-`~/.local/state/blackberrylabs/<module>/report.json` et sont **ecrits par la tour**, pas
-par les modules : leurs promesses (rien d'ecrit hors leur propre dossier de reglages)
-restent intactes. Un module lent (Cleanator scanne le disque) montre un etat « en cours »
-sans bloquer les autres.
+## 9. Migration
 
-### 4.6 Ouvrir au bon endroit
+Le détail est dans `00_cadrage/2026-11-07_plan_restructuration.md`. Ordre : nom et BRIEF validés, monodépôt avec les six cores, registre interne (plus de PATH ni de sous-processus), app actuelle renommée BrambleRS, paquet unique, archivage GitHub, release 0.1.0. Chaque étape est livrable et testée ; aucune suppression de dépôt.
 
-`open.app` + `open.args` : chaque app accepte un argument de selection (`--select …`), a
-ajouter a l'etape 0 (Permitt a deja l'equivalent par variable d'environnement). Si l'app n'est
-pas installee, la tour affiche la commande.
+## 10. Hors périmètre (0.1.0)
 
-## 5. L'ecran (a ne pas surconcevoir)
+- Modules externes, plugins tiers, découverte sur le PATH.
+- Croisements entre modules, historique et tendances, notifications.
+- Exécution d'actions correctives.
+- Site web et pages de documentation publiques (nécessaires à la découverte, mais hors de cette rev).
 
-Meme visage que les trois modules (`bbl-ui`) : cartes KPI en haut (les `summary` de chaque
-module, agrégés simplement : un chiffre par module ou les quatre plus parlants), la liste de
-constats au centre (gravite en pastille, module en etiquette, titre, sujet ; clic → detail a
-droite : `detail`, preuves, actions, bouton « Open in <module> »), les modules en bas ou en
-colonne (installes, version, age du rapport, « rafraichir » ; absents avec « ou le prendre »).
-Filtres : par module, par gravite minimale, texte. Pied : statut, EN·FR, theme.
+Les six vues détaillées ne sont pas hors périmètre : elles sont planifiées en 0.x (section 5).
 
-Ce qui n'a **pas** besoin d'etre tranche maintenant : la disposition exacte, l'agregation des
-KPI, un historique (« deja vu » grace aux `id`), des notifications. Maquette validee avant le
-code de l'app, comme pour les autres.
+## 11. Ce qui reste de la rev. 1
 
-## 6. Regles
-
-- **R1 La tour ne lit aucun fichier d'hote et ne scanne rien** : elle lance, lit, assemble,
-  trie, ouvre.
-- **R2 Rien d'ecrit** hors `~/.config/blackberrylabs/` (reglages d'interface) et
-  `~/.local/state/blackberrylabs/<module>/report.json` (rapports enregistres).
-- **R3 Aucune sortie reseau.** Les liens « ou le prendre » sont affiches, pas suivis.
-- **R4 Les actions sont affichees, jamais executees.**
-- **R5 Un module se branche par le contrat seulement** : pas de code specifique a un module
-  dans la tour, hors sa fiche declarative.
-- **R6 Anglais partout, francais en option**, visage `bbl-ui`.
-
-## 7. Etapes
-
-0. **Le contrat** : crate `bbl-report` (types, gravite, validation, test de conformite) ;
-   `report --json` dans Cleanator, MCProster, Permitt (avec le mapping de leurs constats sur
-   les quatre gravites, ecrit dans chaque CHANGELOG) ; `--select` dans les trois apps. Un
-   commit par module. C'est l'etape la plus longue et la plus importante.
-1. **La tour, coeur et CLI** : fiches de modules, lancement, lecture, cache, tri ; `bbl`
-   (ou le nom choisi) en ligne de commande : `bbl` (la liste), `bbl modules`, `bbl refresh`,
-   `--json`. Faux rapports en fixtures ; tests : « rien n'est ecrit hors R2 », « un rapport
-   inconnu (schema 2, champ en plus) est lu sans casser », « un module absent est montre ».
-2. **L'app** (maquette validee avant le code).
-3. Paquets, depot, release 0.1.0 — sur accord. README d'organisation Blackberrylabs qui
-   presente la famille et renvoie a chaque module.
-
-## 8. Hors perimetre (v1)
-
-Croisements entre modules ; historique et tendances ; notifications ; execution d'actions ;
-modules non Blackberrylabs ; pilotage des projets d'Alexandre (autre chose, autre nom si un
-jour).
-
-## 9. Decisions
-
-- **T0 2026-10-16** — Le nom : l'application s'appelle **Blackberrylabs** (binaire `bbl`, app
-  `bbl-app`) : la tour porte le nom de la famille parce qu'elle *est* le produit ; les
-  modules gardent leurs noms. (`bbl`, `bblabs`, `blackberrylabs`, `bbl-report` libres sur
-  crates.io.) Depot `blackberrylabs/blackberrylabs`, dossier local `Logiciels/Blackberrylabs`.
-- **T1 2026-10-16** — Tableau de bord, version « une liste de constats », pas un hall ; pas de
-  croisement en v1.
-- **T2 2026-10-16** — Dernier rapport affiche avec son age, relance en arriere-plan,
-  rapports ecrits par la tour dans `~/.local/state/blackberrylabs/`.
-- **T3 2026-10-16** — Quatre niveaux de gravite communs, mappes par chaque module.
-- **T4 2026-10-16** — `bbl-report` est une crate a part (ni dans `hostrules`, ni dans
-  `bbl-ui`) : ce n'est ni lecture d'hotes ni interface, c'est le contrat.
-- **T5 2026-10-17** — « S'integre facilement » s'ecrit : un gabarit de depot
-  (`blackberrylabs/template`, qui parle deja le contrat et garde deja les promesses) et une
-  page `docs/new-module.md` dans la tour (les trois obligations d'un module : `report`,
-  mapping des gravites ecrit dans le CHANGELOG, `--select` ; puis la fiche). Decide avec
-  Alexandre apres la 0.1.0 (« Oui, pour ta recommandation »).
+Les promesses des six outils, les quatre gravités, le read-only, l'absence de réseau, les actions affichées seulement, la phrase de famille, le soin du contrat (devenu interne), la découverte par recherche (à porter par la documentation). Le reste (tour séparée, modules sur le PATH, releases par module, six apps) est remplacé. La cible 0.x reprend les six apps ; la 1.0 marque la parité.

@@ -1,5 +1,7 @@
-# PLAN — Blackberrylabs (la tour de controle)
+# PLAN — BrambleRS (ex-Blackberrylabs)
 <!-- Project plan (French). -->
+
+**2026-11-07 : restructuration validée.** Le produit s'appelle BrambleRS. Les étapes 0 à 7 ci-dessous sont l'historique de la tour ; la suite est l'étape 8.
 
 ## Etape 0. Le contrat
 - [x] BRIEF rev. 1 ; T0 nom, T1 tableau de bord « liste de constats », T2 rafraichissement — 2026-10-16
@@ -82,7 +84,22 @@ module non plus.
 - [x] Passation a OpenCode : `AGENTS.md` (source unique des regles, `CLAUDE.md` en pointeur) et `opencode.json` dans les douze depots ; etat de la serie dans `Logiciels/PASSATION.md` — 2026-10-26
 - [ ] Publications (X, Reddit, autres) : decision d'Alexandre, module par module, selon le plan
 
-## Apres 0.1.0 (idees, non engagees)
+> Suspendue par la restructuration du 2026-11-07 : le plan de promotion sera réécrit pour BrambleRS après la 0.1.0.
+
+## Etape 8. Restructuration BrambleRS (0.1.0) — décision du 2026-11-07
+- [x] BRIEF rev. 2 validé (« Oui, je valide ») ; nom BrambleRS, radical technique `bramblers`, org Blackberrylabs — 2026-11-07
+- [ ] Monodépôt : importer les trois fondations et les six cores, dépendances par chemin, workspace `crates/bramblers-*` et `crates/modules/<id>/core`
+- [ ] Registre interne : plus de PATH ni de sous-processus, l'app appelle les six cores ; tests et rapports identiques
+- [ ] Binaire et CLI `bramblers` : `report --json`, `report <module> --json`
+- [ ] Paquet `bramblers` : .deb/.rpm/AppImage, menu `BrambleRS`, icône `bramblers`, shim config/état
+- [ ] GitHub : renommer le dépôt en `BrambleRS`, archiver les dix anciens dépôts (pas supprimer), profil d'org, release 0.1.0, tag `bramblers-v0.1.0`
+- [ ] Nettoyage local : dossier `BrambleRS`, AGENTS/CLAUDE/PLAN/JOURNAL
+- [ ] 0.2.0+ : portage des six vues détaillées (Cleanator, MCProster, Permitt, Linstruct, Billfold, Lastrun)
+- [ ] 1.0.0 : parité, toutes les fonctionnalités des six apps dans BrambleRS
+
+## Historique — idees de la tour 0.x (remplacees par l'etape 8)
+
+> Ces idees appartiennent a la tour 0.x. La restructuration du 2026-11-07 les remplace ; elles restent ici comme historique.
 - Lire aussi des fiches deposees dans `~/.config/blackberrylabs/modules/` (modules tiers), en plus des fiches embarquees.
 - La tour comme porte d'entree de la famille (idee d'Alexandre, 17/10) : « Get it » ouvre directement le bon paquet de la bonne release (format detecte via `/etc/os-release`), le navigateur telecharge ; R3 intact. README d'organisation qui presente la tour en premier.
 - Verifier l'installation d'un module apres « Get it » (relecture du PATH a la demande).

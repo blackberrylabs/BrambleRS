@@ -1,5 +1,16 @@
-# JOURNAL — Blackberrylabs (la tour de controle)
+# JOURNAL — BrambleRS (ex-Blackberrylabs)
 <!-- Project journal (French), newest first. -->
+
+---
+
+## 2026-11-07, BrambleRS : un seul logiciel, un seul dépôt
+
+- Décision d'Alexandre : le logiciel ne s'appelle plus Blackberrylabs (c'est l'org) mais **BrambleRS** ; les six outils deviennent un seul logiciel, un seul dépôt, un seul paquet. MiningControlRS et les projets sans rapport restent séparés.
+- Périmètre de la 0.1.0 : l'écran actuel de la tour (liste, résumés, détail des constats). Les six apps détaillées sortent du produit en 0.1.0 ; elles seront archivées avec leurs dépôts, et **toutes leurs fonctionnalités reviennent dans BrambleRS en 0.x**, une vue après l'autre. La 1.0 est le jalon de parité.
+- Nomenclature validée : produit `BrambleRS`, dépôt `blackberrylabs/BrambleRS`, radical technique `bramblers` partout (paquet, binaire, crates, chemins, tags `bramblers-v0.1.0`). Org `Blackberrylabs` inchangée.
+- `BRIEF.md` passe en rev. 2 ; `PLAN.md` gagne l'étape 8 ; le plan détaillé est dans `00_cadrage/2026-11-07_plan_restructuration.md` (hors git).
+- Rien n'a été poussé ni modifié sur GitHub. Les anciens dépôts seront archivés, pas supprimés, après la 0.1.0.
+- Preuve : « Oui, je valide » du 2026-11-07 ; `BRIEF.md` rev. 2 ; étape 8 de `PLAN.md`.
 
 ---
 
