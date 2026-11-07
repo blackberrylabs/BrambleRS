@@ -38,6 +38,9 @@ section = "devel"
 priority = "optional"
 depends = "$auto, libxkbcommon0, libwayland-client0 | libx11-6"
 recommends = "libvulkan1, mesa-vulkan-drivers"
+conflicts = "blackberrylabs, blackberrylabs-full, billfold, cleanator, lastrun, linstruct, mcproster, permitt"
+replaces = "blackberrylabs, blackberrylabs-full, billfold, cleanator, lastrun, linstruct, mcproster, permitt"
+provides = "blackberrylabs, blackberrylabs-full, billfold, cleanator, lastrun, linstruct, mcproster, permitt"
 assets = [
     ["target/release/bramblers", "usr/bin/", "755"],
     ["../../assets/bramblers.desktop", "usr/share/applications/", "644"],
@@ -72,3 +75,35 @@ assets = [
     { source = "README.md", dest = "/usr/share/doc/bramblers/README.md", mode = "644", doc = true },
     { source = "LICENSE", dest = "/usr/share/licenses/bramblers/LICENSE", mode = "644", doc = true },
 ]
+
+# The old tower and the six module packages are replaced by this one package. RPM has no
+# Replaces: Obsoletes is its equivalent.
+[package.metadata.generate-rpm.conflicts]
+blackberrylabs = "*"
+"blackberrylabs-full" = "*"
+billfold = "*"
+cleanator = "*"
+lastrun = "*"
+linstruct = "*"
+mcproster = "*"
+permitt = "*"
+
+[package.metadata.generate-rpm.obsoletes]
+blackberrylabs = "*"
+"blackberrylabs-full" = "*"
+billfold = "*"
+cleanator = "*"
+lastrun = "*"
+linstruct = "*"
+mcproster = "*"
+permitt = "*"
+
+[package.metadata.generate-rpm.provides]
+blackberrylabs = "*"
+"blackberrylabs-full" = "*"
+billfold = "*"
+cleanator = "*"
+lastrun = "*"
+linstruct = "*"
+mcproster = "*"
+permitt = "*"
